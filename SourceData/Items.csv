@@ -1,16 +1,16 @@
-ItemID,ItemName,ItemType,SizeX,SizeY,CanRotate,MaxStackSize,BaseWeight,BasePrice,IconPath,MeshClassPath,IsContainer,ContainerGridSizeX,ContainerGridSizeY,LuaScriptPath,ItemDescription
-WPN_Rifle_AK47,AK-47Í»»÷²½Ç¹,Weapon,4,2,TRUE,1,3.47,2700,/Game/UI/Icons/AK47,/Game/Weapons/BP_AK47,FALSE,0,0,,¾­µäµÄ7.62mmÍ»»÷²½Ç¹£¬ÍşÁ¦Ç¿´ó
-WPN_Pistol_Glock,¸ñÂå¿Ë17ÊÖÇ¹,Weapon,2,2,TRUE,1,0.625,8500,/Game/UI/Icons/Glock,/Game/Weapons/BP_Glock,FALSE,0,0,,9mm°ë×Ô¶¯ÊÖÇ¹£¬¿É¿¿ĞÔ¸ß
-AMO_762_Standard,7.62mmµ¯Ò©,Ammo,1,1,FALSE,60,0.012,80,/Game/UI/Icons/Ammo762,/Game/Ammo/BP_Ammo762,FALSE,0,0,,±ê×¼7.62x39mm²½Ç¹µ¯Ò©
-AMO_9mm_Standard,9mmµ¯Ò©,Ammo,1,1,FALSE,50,0.008,35,/Game/UI/Icons/Ammo9mm,/Game/Ammo/BP_Ammo9mm,FALSE,0,0,,±ê×¼9x19mmÊÖÇ¹µ¯Ò©
-MED_Bandage,±Á´ø,Medical,1,1,FALSE,5,0.05,200,/Game/UI/Icons/Bandage,/Game/Medical/BP_Bandage,FALSE,0,0,Items/Bandage.lua,¿ìËÙÖ¹Ñª£¬»Ö¸´ÉÙÁ¿ÉúÃüÖµ
-MED_FirstAidKit,¼±¾È°ü,Medical,2,1,FALSE,3,0.4,1500,/Game/UI/Icons/FirstAid,/Game/Medical/BP_FirstAid,FALSE,0,0,Items/FirstAidKit.lua,È«ÃæÒ½ÁÆ¹¤¾ß£¬»Ö¸´´óÁ¿ÉúÃüÖµ
-MED_Painkiller,Ö¹Í´Ò©,Medical,1,1,FALSE,10,0.02,500,/Game/UI/Icons/Painkiller,/Game/Medical/BP_Painkiller,FALSE,0,0,Items/Painkiller.lua,»º½âÌÛÍ´£¬ÁÙÊ±ÌáÉıÒÆ¶¯ËÙ¶È
-CNT_Backpack_Small,Ğ¡ĞÍ±³°ü,Container,4,4,FALSE,1,0.8,5000,/Game/UI/Icons/BackpackSmall,/Game/Containers/BP_BackpackSmall,TRUE,6,6,,Çá±ãµÄ±³°ü£¬6x6¸ñ×ÓÈİÁ¿
-CNT_Backpack_Large,´óĞÍ±³°ü,Container,5,5,FALSE,1,1.5,15000,/Game/UI/Icons/BackpackLarge,/Game/Containers/BP_BackpackLarge,TRUE,10,10,,´óÈİÁ¿±³°ü£¬10x10¸ñ×ÓÈİÁ¿
-CNT_TacticalVest,Õ½Êõ±³ĞÄ,Container,3,3,FALSE,1,1.2,8000,/Game/UI/Icons/TacticalVest,/Game/Containers/BP_TacticalVest,TRUE,8,4,,×¨ÒµÕ½Êõ±³ĞÄ£¬8x4¸ñ×Ó£¬ÊÊºÏ´æ·Åµ¯Ò©
-KEY_Dorm_Room203,203ËŞÉáÔ¿³×,Key,1,1,FALSE,1,0.01,2000,/Game/UI/Icons/Key,/Game/Items/BP_Key,FALSE,0,0,Items/Key.lua,´ò¿ª203ºÅËŞÉá·¿ÃÅ
-KEY_Factory_Office,¹¤³§°ì¹«ÊÒÔ¿³×,Key,1,1,FALSE,1,0.01,5000,/Game/UI/Icons/KeyGold,/Game/Items/BP_KeyGold,FALSE,0,0,Items/Key.lua,¹¤³§°ì¹«ÊÒµÄÔ¿³×£¬¾İËµÀïÃæÓĞºÃ¶«Î÷
-MISC_WaterBottle,Ë®Æ¿,Consumable,1,2,FALSE,3,0.5,150,/Game/UI/Icons/Water,/Game/Items/BP_Water,FALSE,0,0,Items/Water.lua,²¹³äË®·Ö£¬»Ö¸´ÄÍÁ¦
-MISC_EnergyDrink,ÄÜÁ¿ÒûÁÏ,Consumable,1,1,FALSE,5,0.25,300,/Game/UI/Icons/EnergyDrink,/Game/Items/BP_EnergyDrink,FALSE,0,0,Items/EnergyDrink.lua,¿ìËÙ»Ö¸´ÄÍÁ¦£¬¶ÌÊ±¼äÌáÉı·´Ó¦ËÙ¶È
-MISC_GoldChain,½ğÁ´×Ó,Misc,1,1,FALSE,1,0.15,12000,/Game/UI/Icons/GoldChain,/Game/Items/BP_GoldChain,FALSE,0,0,,¸ß¼ÛÖµÎïÆ·£¬¿ÉÒÔÂô¸øÉÌÈË
+ï»¿ItemID,ItemName,ItemType,SizeX,SizeY,CanRotate,MaxStackSize,BaseWeight,BuyPrice,SellPrice,TraderStock,RefreshInterval,IconPath,MeshClassPath,IsContainer,ContainerGridSizeX,ContainerGridSizeY,LuaScriptPath,ItemDescription
+WPN_Rifle_AK47,AK-47çªå‡»æ­¥æª,Weapon,4,2,True,1,3.47,25000,12000,3,7200,/Game/UI/Icons/AK47,/Game/Weapons/BP_AK47,False,0,0,,ç»å…¸çš„7.62mmçªå‡»æ­¥æªï¼Œå¨åŠ›å¼ºå¤§
+WPN_Pistol_Glock,æ ¼æ´›å…‹17æ‰‹æª,Weapon,2,2,True,1,0.625,8500,4000,5,3600,/Game/UI/Icons/Glock,/Game/Weapons/BP_Glock,False,0,0,,9mmåŠè‡ªåŠ¨æ‰‹æªï¼Œå¯é æ€§é«˜
+AMO_762_Standard,7.62mmå¼¹è¯,Ammo,1,1,False,60,0.012,80,40,500,1800,/Game/UI/Icons/Ammo762,/Game/Ammo/BP_Ammo762,False,0,0,,æ ‡å‡†7.62x39mmæ­¥æªå¼¹è¯
+AMO_9mm_Standard,9mmå¼¹è¯,Ammo,1,1,False,50,0.008,35,18,800,1800,/Game/UI/Icons/Ammo9mm,/Game/Ammo/BP_Ammo9mm,False,0,0,,æ ‡å‡†9x19mmæ‰‹æªå¼¹è¯
+MED_Bandage,ç»·å¸¦,Medical,1,1,False,5,0.05,200,80,50,1800,/Game/UI/Icons/Bandage,/Game/Medical/BP_Bandage,False,0,0,Items/Bandage.lua,å¿«é€Ÿæ­¢è¡€ï¼Œæ¢å¤å°‘é‡ç”Ÿå‘½å€¼
+MED_FirstAidKit,æ€¥æ•‘åŒ…,Medical,2,1,False,3,0.4,1500,600,20,3600,/Game/UI/Icons/FirstAid,/Game/Medical/BP_FirstAid,False,0,0,Items/FirstAidKit.lua,å…¨é¢åŒ»ç–—å·¥å…·ï¼Œæ¢å¤å¤§é‡ç”Ÿå‘½å€¼
+MED_Painkiller,æ­¢ç—›è¯,Medical,1,1,False,10,0.02,500,200,30,3600,/Game/UI/Icons/Painkiller,/Game/Medical/BP_Painkiller,False,0,0,Items/Painkiller.lua,ç¼“è§£ç–¼ç—›ï¼Œä¸´æ—¶æå‡ç§»åŠ¨é€Ÿåº¦
+CNT_Backpack_Small,å°å‹èƒŒåŒ…,Container,4,4,False,1,0.8,5000,2000,10,86400,/Game/UI/Icons/BackpackSmall,/Game/Containers/BP_BackpackSmall,True,6,6,,è½»ä¾¿çš„èƒŒåŒ…ï¼Œ6x6æ ¼å­å®¹é‡
+CNT_Backpack_Large,å¤§å‹èƒŒåŒ…,Container,5,5,False,1,1.5,15000,6000,5,86400,/Game/UI/Icons/BackpackLarge,/Game/Containers/BP_BackpackLarge,True,10,10,,å¤§å®¹é‡èƒŒåŒ…ï¼Œ10x10æ ¼å­å®¹é‡
+CNT_TacticalVest,æˆ˜æœ¯èƒŒå¿ƒ,Container,3,3,False,1,1.2,8000,3200,8,86400,/Game/UI/Icons/TacticalVest,/Game/Containers/BP_TacticalVest,True,8,4,,ä¸“ä¸šæˆ˜æœ¯èƒŒå¿ƒï¼Œ8x4æ ¼å­ï¼Œé€‚åˆå­˜æ”¾å¼¹è¯
+KEY_Dorm_Room203,203å®¿èˆé’¥åŒ™,Key,1,1,False,1,0.01,2000,500,1,86400,/Game/UI/Icons/Key,/Game/Items/BP_Key,False,0,0,Items/Key.lua,æ‰“å¼€203å·å®¿èˆæˆ¿é—¨
+KEY_Factory_Office,å·¥å‚åŠå…¬å®¤é’¥åŒ™,Key,1,1,False,1,0.01,5000,1000,1,86400,/Game/UI/Icons/KeyGold,/Game/Items/BP_KeyGold,False,0,0,Items/Key.lua,å·¥å‚åŠå…¬å®¤çš„é’¥åŒ™ï¼Œæ®è¯´é‡Œé¢æœ‰å¥½ä¸œè¥¿
+MISC_WaterBottle,æ°´ç“¶,Consumable,1,2,False,3,0.5,150,50,100,1800,/Game/UI/Icons/Water,/Game/Items/BP_Water,False,0,0,Items/Water.lua,è¡¥å……æ°´åˆ†ï¼Œæ¢å¤è€åŠ›
+MISC_EnergyDrink,èƒ½é‡é¥®æ–™,Consumable,1,1,False,5,0.25,300,120,60,3600,/Game/UI/Icons/EnergyDrink,/Game/Items/BP_EnergyDrink,False,0,0,Items/EnergyDrink.lua,å¿«é€Ÿæ¢å¤è€åŠ›ï¼ŒçŸ­æ—¶é—´æå‡ååº”é€Ÿåº¦
+MISC_GoldChain,é‡‘é“¾å­,Misc,1,1,False,1,0.15,12000,12000,0,0,/Game/UI/Icons/GoldChain,/Game/Items/BP_GoldChain,False,0,0,,é«˜ä»·å€¼ç‰©å“ï¼Œå¯ä»¥å–ç»™å•†äºº

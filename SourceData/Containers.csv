@@ -1,8 +1,0 @@
-ContainerID,ContainerName,GridWidth,GridHeight,MaxWeight,FilterTypes
-PlayerInventory,玩家背包,10,10,50.0,
-LootBox_Small,小型战利品箱,6,6,-1.0,
-LootBox_Large,大型战利品箱,10,8,-1.0,
-AmmoBox,弹药箱,8,4,-1.0,Ammo
-MedicalBox,医疗箱,6,6,-1.0,Medical
-WeaponRack,武器架,12,6,-1.0,Weapon
-SafeBox,保险箱,4,4,20.0,

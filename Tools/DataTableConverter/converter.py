@@ -50,16 +50,6 @@ class DataTableConverter:
                     "source": "Items.csv",
                     "output": "DT_ItemDefinition.csv",
                     "primary_key": "ItemID"
-                },
-                "containers": {
-                    "source": "Containers.csv",
-                    "output": "DT_ContainerConfig.csv",
-                    "primary_key": "ContainerID"
-                },
-                "economy": {
-                    "source": "Economy.csv",
-                    "output": "DT_EconomyConfig.csv",
-                    "primary_key": "ItemID"
                 }
             }
         }
@@ -85,11 +75,22 @@ class DataTableConverter:
             print(f"❌ 源文件不存在: {source_path}")
             return False
 
-        try:
-            df = pd.read_csv(source_path, encoding='utf-8-sig')
-            print(f"✅ 读取成功: {len(df)} 行数据")
-        except Exception as e:
-            print(f"❌ 读取失败: {e}")
+        # 尝试多种编码格式读取
+        encodings = ['utf-8-sig', 'utf-8', 'gbk', 'gb2312', 'gb18030']
+        df = None
+        last_error = None
+
+        for encoding in encodings:
+            try:
+                df = pd.read_csv(source_path, encoding=encoding)
+                print(f"✅ 读取成功: {len(df)} 行数据 (编码: {encoding})")
+                break
+            except (UnicodeDecodeError, Exception) as e:
+                last_error = e
+                continue
+
+        if df is None:
+            print(f"❌ 读取失败: {last_error}")
             return False
 
         # 2. 数据验证
@@ -131,10 +132,6 @@ class DataTableConverter:
         if table_name == "items":
             self._validate_items(df)
 
-        # 容器表特殊验证
-        if table_name == "containers":
-            self._validate_containers(df)
-
         # 输出验证结果
         if self.warnings:
             print(f"\n⚠️  警告 ({len(self.warnings)} 个):")
@@ -166,11 +163,24 @@ class DataTableConverter:
             self.errors.append(f"物品尺寸必须 > 0: {invalid_ids}")
 
         # 检查价格合法性
-        if 'BasePrice' in df.columns:
-            negative_price = df[df['BasePrice'] < 0]
+        if 'BuyPrice' in df.columns:
+            negative_price = df[df['BuyPrice'] < 0]
             if not negative_price.empty:
                 invalid_ids = negative_price['ItemID'].tolist()
-                self.errors.append(f"物品价格不能为负: {invalid_ids}")
+                self.errors.append(f"物品购买价格不能为负: {invalid_ids}")
+
+        if 'SellPrice' in df.columns:
+            negative_price = df[df['SellPrice'] < 0]
+            if not negative_price.empty:
+                invalid_ids = negative_price['ItemID'].tolist()
+                self.errors.append(f"物品出售价格不能为负: {invalid_ids}")
+
+        # 检查库存合法性
+        if 'TraderStock' in df.columns:
+            negative_stock = df[df['TraderStock'] < 0]
+            if not negative_stock.empty:
+                invalid_ids = negative_stock['ItemID'].tolist()
+                self.errors.append(f"商人库存不能为负: {invalid_ids}")
 
         # 检查容器配置
         containers = df[df['IsContainer'] == True]
@@ -178,13 +188,6 @@ class DataTableConverter:
             if pd.isna(row.get('ContainerGridSizeX')) or pd.isna(row.get('ContainerGridSizeY')):
                 self.errors.append(f"容器 {row['ItemID']} 未定义网格尺寸")
 
-    def _validate_containers(self, df: pd.DataFrame):
-        """验证容器表"""
-        # 检查网格尺寸
-        invalid_grid = df[(df['GridWidth'] <= 0) | (df['GridHeight'] <= 0)]
-        if not invalid_grid.empty:
-            invalid_ids = invalid_grid['ContainerID'].tolist()
-            self.errors.append(f"容器网格尺寸必须 > 0: {invalid_ids}")
 
     def _transform_table(self, table_name: str, df: pd.DataFrame) -> pd.DataFrame:
         """转换数据表为 UE 格式"""
@@ -200,8 +203,17 @@ class DataTableConverter:
         if 'BaseWeight' in df.columns:
             df['BaseWeight'] = df['BaseWeight'].fillna(0.0)
 
-        if 'BasePrice' in df.columns:
-            df['BasePrice'] = df['BasePrice'].fillna(0).astype(int)
+        if 'BuyPrice' in df.columns:
+            df['BuyPrice'] = df['BuyPrice'].fillna(0).astype(int)
+
+        if 'SellPrice' in df.columns:
+            df['SellPrice'] = df['SellPrice'].fillna(0).astype(int)
+
+        if 'TraderStock' in df.columns:
+            df['TraderStock'] = df['TraderStock'].fillna(0).astype(int)
+
+        if 'RefreshInterval' in df.columns:
+            df['RefreshInterval'] = df['RefreshInterval'].fillna(0).astype(int)
 
         if 'IsContainer' in df.columns:
             df['IsContainer'] = df['IsContainer'].fillna(False)

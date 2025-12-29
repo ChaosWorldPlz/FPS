@@ -14,11 +14,14 @@ UENUM(BlueprintType)
 enum class EItemType : uint8
 {
 	Weapon      UMETA(DisplayName = "武器"),
+	Armor       UMETA(DisplayName = "防具"),
 	Ammo        UMETA(DisplayName = "弹药"),
 	Medical     UMETA(DisplayName = "医疗"),
 	Container   UMETA(DisplayName = "容器"),
 	Key         UMETA(DisplayName = "钥匙"),
 	Consumable  UMETA(DisplayName = "消耗品"),
+	Quest       UMETA(DisplayName = "任务物品"),
+	Collectables UMETA(DisplayName = "收藏品"),
 	Misc        UMETA(DisplayName = "杂项")
 };
 
@@ -69,9 +72,21 @@ struct FItemDefinitionRow : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
 	float BaseWeight;
 
-	/** 基础价格（可被经济系统覆盖） */
+	/** 购买价格（从商人处购买） */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Economy")
-	int32 BasePrice;
+	int32 BuyPrice;
+
+	/** 出售价格（卖给商人） */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Economy")
+	int32 SellPrice;
+
+	/** 商人库存数量（0 = 不在商店出售） */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Economy")
+	int32 TraderStock;
+
+	/** 库存刷新间隔（秒，0 = 不刷新） */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Economy")
+	int32 RefreshInterval;
 
 	/** 物品图标（UI显示） */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visual")
@@ -113,7 +128,10 @@ struct FItemDefinitionRow : public FTableRowBase
 		, bCanRotate(true)
 		, MaxStackSize(1)
 		, BaseWeight(0.0f)
-		, BasePrice(0)
+		, BuyPrice(0)
+		, SellPrice(0)
+		, TraderStock(0)
+		, RefreshInterval(0)
 		, bIsContainer(false)
 		, ContainerGridSizeX(0)
 		, ContainerGridSizeY(0)
@@ -151,84 +169,17 @@ struct FItemMeshRow : public FTableRowBase
 	TArray<TSoftObjectPtr<UMaterialInterface>> Materials;
 };
 
-/**
- * 容器配置行
- * 定义不同类型容器的属性（玩家背包、战利品箱等）
- */
-USTRUCT(BlueprintType)
-struct FContainerConfigRow : public FTableRowBase
-{
-	GENERATED_BODY()
-
-	/** 容器ID（主键） */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Container")
-	FName ContainerID;
-
-	/** 网格宽度 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Grid")
-	int32 GridWidth;
-
-	/** 网格高度 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Grid")
-	int32 GridHeight;
-
-	/** 最大承重（kg）-1 = 无限制 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Properties")
-	float MaxWeight;
-
-	/** 白名单物品类型（空 = 允许所有） */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Filter")
-	TArray<EItemType> FilterTypes;
-
-	/** 容器名称 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Container")
-	FText ContainerName;
-
-	FContainerConfigRow()
-		: GridWidth(10)
-		, GridHeight(10)
-		, MaxWeight(-1.0f)
-	{
-	}
-};
-
-/**
- * 经济配置行
- * 动态价格配置，可覆盖物品基础价格
- */
-USTRUCT(BlueprintType)
-struct FEconomyConfigRow : public FTableRowBase
-{
-	GENERATED_BODY()
-
-	/** 物品ID（外键 → ItemDefinition） */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Economy")
-	FName ItemID;
-
-	/** 购买价格 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Price")
-	int32 BuyPrice;
-
-	/** 出售价格 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Price")
-	int32 SellPrice;
-
-	/** 商人库存数量 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stock")
-	int32 TraderStock;
-
-	/** 库存刷新间隔（秒） */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stock")
-	float RefreshInterval;
-
-	FEconomyConfigRow()
-		: BuyPrice(0)
-		, SellPrice(0)
-		, TraderStock(0)
-		, RefreshInterval(3600.0f)
-	{
-	}
-};
+// ============================================================
+// 已废弃的结构体（数据已合并到 FItemDefinitionRow）
+// ============================================================
+//
+// FContainerConfigRow - 容器配置已合并到 FItemDefinitionRow
+// FEconomyConfigRow - 经济数据已合并到 FItemDefinitionRow
+//
+// 如果你的代码中引用了这些结构体，请：
+// 1. 容器配置 → 使用 FItemDefinitionRow 的 bIsContainer, ContainerGridSizeX, ContainerGridSizeY
+// 2. 经济配置 → 使用 FItemDefinitionRow 的 BuyPrice, SellPrice, TraderStock, RefreshInterval
+// ============================================================
 
 /**
  * 物品实例
