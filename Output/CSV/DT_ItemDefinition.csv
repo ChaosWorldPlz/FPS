@@ -14,3 +14,4 @@ KEY_Factory_Office,工厂办公室钥匙,Key,1,1,False,1,0.01,5000,1000,1,86400,
 MISC_WaterBottle,水瓶,Consumable,1,2,False,3,0.5,150,50,100,1800,/Game/UI/Icons/Water,/Game/Items/BP_Water,False,0,0,Items/Water.lua,补充水分，恢复耐力
 MISC_EnergyDrink,能量饮料,Consumable,1,1,False,5,0.25,300,120,60,3600,/Game/UI/Icons/EnergyDrink,/Game/Items/BP_EnergyDrink,False,0,0,Items/EnergyDrink.lua,快速恢复耐力，短时间提升反应速度
 MISC_GoldChain,金链子,Misc,1,1,False,1,0.15,12000,12000,0,0,/Game/UI/Icons/GoldChain,/Game/Items/BP_GoldChain,False,0,0,,高价值物品，可以卖给商人
+COL_Mouse,鼠标,Collectables,1,1,False,1,0.08,550,420,1,1800,/Game/UI/Icons/Mouse,/Game/Items/BP_Mouse,False,0,0,,电竞鼠标，上面有浅显的油性笔签名-Nxko
