@@ -1,0 +1,24 @@
+{
+    "source_path": "../../SourceData",
+    "output_path": "../../Output/CSV",
+    "tables": {
+        "items": {
+            "source": "Items.csv",
+            "output": "DT_ItemDefinition.csv",
+            "primary_key": "ItemID",
+            "description": "物品定义表"
+        },
+        "containers": {
+            "source": "Containers.csv",
+            "output": "DT_ContainerConfig.csv",
+            "primary_key": "ContainerID",
+            "description": "容器配置表"
+        },
+        "economy": {
+            "source": "Economy.csv",
+            "output": "DT_EconomyConfig.csv",
+            "primary_key": "ItemID",
+            "description": "经济配置表"
+        }
+    }
+}

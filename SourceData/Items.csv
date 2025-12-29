@@ -1,0 +1,16 @@
+ItemID,ItemName,ItemType,SizeX,SizeY,CanRotate,MaxStackSize,BaseWeight,BasePrice,IconPath,MeshClassPath,IsContainer,ContainerGridSizeX,ContainerGridSizeY,LuaScriptPath,ItemDescription
+WPN_Rifle_AK47,AK-47突击步枪,Weapon,4,2,TRUE,1,3.47,2700,/Game/UI/Icons/AK47,/Game/Weapons/BP_AK47,FALSE,0,0,,经典的7.62mm突击步枪，威力强大
+WPN_Pistol_Glock,格洛克17手枪,Weapon,2,2,TRUE,1,0.625,8500,/Game/UI/Icons/Glock,/Game/Weapons/BP_Glock,FALSE,0,0,,9mm半自动手枪，可靠性高
+AMO_762_Standard,7.62mm弹药,Ammo,1,1,FALSE,60,0.012,80,/Game/UI/Icons/Ammo762,/Game/Ammo/BP_Ammo762,FALSE,0,0,,标准7.62x39mm步枪弹药
+AMO_9mm_Standard,9mm弹药,Ammo,1,1,FALSE,50,0.008,35,/Game/UI/Icons/Ammo9mm,/Game/Ammo/BP_Ammo9mm,FALSE,0,0,,标准9x19mm手枪弹药
+MED_Bandage,绷带,Medical,1,1,FALSE,5,0.05,200,/Game/UI/Icons/Bandage,/Game/Medical/BP_Bandage,FALSE,0,0,Items/Bandage.lua,快速止血，恢复少量生命值
+MED_FirstAidKit,急救包,Medical,2,1,FALSE,3,0.4,1500,/Game/UI/Icons/FirstAid,/Game/Medical/BP_FirstAid,FALSE,0,0,Items/FirstAidKit.lua,全面医疗工具，恢复大量生命值
+MED_Painkiller,止痛药,Medical,1,1,FALSE,10,0.02,500,/Game/UI/Icons/Painkiller,/Game/Medical/BP_Painkiller,FALSE,0,0,Items/Painkiller.lua,缓解疼痛，临时提升移动速度
+CNT_Backpack_Small,小型背包,Container,4,4,FALSE,1,0.8,5000,/Game/UI/Icons/BackpackSmall,/Game/Containers/BP_BackpackSmall,TRUE,6,6,,轻便的背包，6x6格子容量
+CNT_Backpack_Large,大型背包,Container,5,5,FALSE,1,1.5,15000,/Game/UI/Icons/BackpackLarge,/Game/Containers/BP_BackpackLarge,TRUE,10,10,,大容量背包，10x10格子容量
+CNT_TacticalVest,战术背心,Container,3,3,FALSE,1,1.2,8000,/Game/UI/Icons/TacticalVest,/Game/Containers/BP_TacticalVest,TRUE,8,4,,专业战术背心，8x4格子，适合存放弹药
+KEY_Dorm_Room203,203宿舍钥匙,Key,1,1,FALSE,1,0.01,2000,/Game/UI/Icons/Key,/Game/Items/BP_Key,FALSE,0,0,Items/Key.lua,打开203号宿舍房门
+KEY_Factory_Office,工厂办公室钥匙,Key,1,1,FALSE,1,0.01,5000,/Game/UI/Icons/KeyGold,/Game/Items/BP_KeyGold,FALSE,0,0,Items/Key.lua,工厂办公室的钥匙，据说里面有好东西
+MISC_WaterBottle,水瓶,Consumable,1,2,FALSE,3,0.5,150,/Game/UI/Icons/Water,/Game/Items/BP_Water,FALSE,0,0,Items/Water.lua,补充水分，恢复耐力
+MISC_EnergyDrink,能量饮料,Consumable,1,1,FALSE,5,0.25,300,/Game/UI/Icons/EnergyDrink,/Game/Items/BP_EnergyDrink,FALSE,0,0,Items/EnergyDrink.lua,快速恢复耐力，短时间提升反应速度
+MISC_GoldChain,金链子,Misc,1,1,FALSE,1,0.15,12000,/Game/UI/Icons/GoldChain,/Game/Items/BP_GoldChain,FALSE,0,0,,高价值物品，可以卖给商人
