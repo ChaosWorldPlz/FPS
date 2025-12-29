@@ -1,0 +1,12 @@
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+.vs/
+.idea/
+*.sln/
+.claude/
+*.md
