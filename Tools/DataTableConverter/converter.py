@@ -224,6 +224,19 @@ class DataTableConverter:
         if 'ContainerGridSizeY' in df.columns:
             df['ContainerGridSizeY'] = df['ContainerGridSizeY'].fillna(0).astype(int)
 
+        # ========== UE 资源路径转换 ==========
+        # IconPath → Icon (TSoftObjectPtr<UTexture2D>)
+        if 'IconPath' in df.columns:
+            print(f"   转换 IconPath → Icon...")
+            df['Icon'] = df['IconPath'].apply(self._convert_to_texture_path)
+            df = df.drop(columns=['IconPath'])
+
+        # MeshClassPath → MeshClass (TSoftClassPtr<AActor>)
+        if 'MeshClassPath' in df.columns:
+            print(f"   转换 MeshClassPath → MeshClass...")
+            df['MeshClass'] = df['MeshClassPath'].apply(self._convert_to_class_path)
+            df = df.drop(columns=['MeshClassPath'])
+
         # 转换布尔值为 UE 格式
         bool_columns = df.select_dtypes(include=['bool']).columns
         for col in bool_columns:
@@ -234,6 +247,29 @@ class DataTableConverter:
 
         print(f"✅ 转换完成")
         return df
+
+    def _convert_to_texture_path(self, path: str) -> str:
+        """转换为 UE Texture2D 资源路径格式"""
+        if pd.isna(path) or path == '':
+            return ''
+
+        # 提取资源名称（路径最后一部分）
+        asset_name = Path(path).name
+
+        # 格式: Texture2D'/Game/UI/Icons/AK47.AK47'
+        return f"Texture2D'{path}.{asset_name}'"
+
+    def _convert_to_class_path(self, path: str) -> str:
+        """转换为 UE Class 资源路径格式"""
+        if pd.isna(path) or path == '':
+            return ''
+
+        # 提取资源名称（路径最后一部分）
+        asset_name = Path(path).name
+
+        # 格式: Class'/Game/Weapons/BP_AK47.BP_AK47_C'
+        # UE Blueprint 类名需要加 _C 后缀
+        return f"Class'{path}.{asset_name}_C'"
 
     def convert_all(self) -> bool:
         """转换所有数据表"""
