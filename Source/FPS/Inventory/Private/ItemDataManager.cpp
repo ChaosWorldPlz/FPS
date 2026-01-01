@@ -9,16 +9,27 @@ void UItemDataManager::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	// 硬引用方式加载（适合小型项目） 这里我期望改用其他方法，结合lua或者？，总之杜绝硬引用
-	static ConstructorHelpers::FObjectFinder<UDataTable> ItemTableFinder(
+	UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] ========== 初始化开始 =========="));
+
+	// 使用 LoadObject 加载 DataTable（临时方案，以后会改用异步加载）
+	// TODO: 改用 TSoftObjectPtr + 异步加载，详见开发指南 TODO 1
+	ItemDefinitionTable = LoadObject<UDataTable>(
+		nullptr,
 		TEXT("/Game/Data/Items/DT_ItemDefinition")
 	);
 
-	if (ItemTableFinder.Succeeded())
+	if (ItemDefinitionTable)
 	{
-		ItemDefinitionTable = ItemTableFinder.Object;
+		UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] DataTable 加载成功！"));
 		BuildCache();
+		UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] 缓存构建完成，共 %d 个物品"), ItemCache.Num());
 	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("[ItemDataManager] DataTable 加载失败！路径: /Game/Data/Items/DT_ItemDefinition"));
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] ========== 初始化结束 =========="));
 }
 
 bool UItemDataManager::IsContainerItem(FName ItemID) const
@@ -41,14 +52,24 @@ void UItemDataManager::BuildCache()
 	if (!ItemDefinitionTable) return;
 
 	TArray<FName> RowNames = ItemDefinitionTable->GetRowNames();
+	UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] DataTable 有 %d 行"), RowNames.Num());
+
 	for (FName RowName : RowNames)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] 处理行: %s"), *RowName.ToString());
+
 		FItemDefinitionRow* Row = ItemDefinitionTable->FindRow<FItemDefinitionRow>(
-			RowName, TEXT("GameDataManager")
+			RowName, TEXT("ItemDataManager")
 		);
 		if (Row)
 		{
 			ItemCache.Add(RowName, Row);
+			UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] 缓存: %s (Size: %dx%d)"),
+				*RowName.ToString(), Row->SizeX, Row->SizeY);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("[ItemDataManager] 无法找到行数据: %s"), *RowName.ToString());
 		}
 	}
 }

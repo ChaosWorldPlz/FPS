@@ -98,7 +98,8 @@ class DataTableConverter:
             return False
 
         # 3. 数据转换
-        df = self._transform_table(table_name, df)
+        primary_key = table_config.get("primary_key")
+        df = self._transform_table(table_name, df, primary_key)
 
         # 4. 输出文件
         try:
@@ -182,20 +183,37 @@ class DataTableConverter:
                 invalid_ids = negative_stock['ItemID'].tolist()
                 self.errors.append(f"商人库存不能为负: {invalid_ids}")
 
-        # 检查容器配置
-        containers = df[df['IsContainer'] == True]
-        for idx, row in containers.iterrows():
-            if pd.isna(row.get('ContainerGridSizeX')) or pd.isna(row.get('ContainerGridSizeY')):
-                self.errors.append(f"容器 {row['ItemID']} 未定义网格尺寸")
+        # 检查容器配置（注意：源文件用 IsContainer，转换后变成 bIsContainer）
+        is_container_col = 'IsContainer' if 'IsContainer' in df.columns else 'bIsContainer'
+        if is_container_col in df.columns:
+            containers = df[df[is_container_col] == True]
+            for idx, row in containers.iterrows():
+                if pd.isna(row.get('ContainerGridSizeX')) or pd.isna(row.get('ContainerGridSizeY')):
+                    self.errors.append(f"容器 {row['ItemID']} 未定义网格尺寸")
 
 
-    def _transform_table(self, table_name: str, df: pd.DataFrame) -> pd.DataFrame:
+    def _transform_table(self, table_name: str, df: pd.DataFrame, primary_key: str = None) -> pd.DataFrame:
         """转换数据表为 UE 格式"""
         print(f"\n🔄 数据转换...")
 
-        # 填充默认值
-        if 'CanRotate' in df.columns:
-            df['CanRotate'] = df['CanRotate'].fillna(True)
+        # ========== 列名映射（CSV列名 → C++属性名） ==========
+        column_mapping = {
+            'CanRotate': 'bCanRotate',
+            'IsContainer': 'bIsContainer',
+        }
+        df = df.rename(columns=column_mapping)
+        for old_name, new_name in column_mapping.items():
+            if new_name in df.columns:
+                print(f"   列名映射: {old_name} → {new_name}")
+
+        # ========== 添加缺失的列 ==========
+        if 'AllowedItemTypes' not in df.columns:
+            df['AllowedItemTypes'] = ''
+            print(f"   添加列: AllowedItemTypes")
+
+        # ========== 填充默认值 ==========
+        if 'bCanRotate' in df.columns:
+            df['bCanRotate'] = df['bCanRotate'].fillna(True)
 
         if 'MaxStackSize' in df.columns:
             df['MaxStackSize'] = df['MaxStackSize'].fillna(1).astype(int)
@@ -215,8 +233,8 @@ class DataTableConverter:
         if 'RefreshInterval' in df.columns:
             df['RefreshInterval'] = df['RefreshInterval'].fillna(0).astype(int)
 
-        if 'IsContainer' in df.columns:
-            df['IsContainer'] = df['IsContainer'].fillna(False)
+        if 'bIsContainer' in df.columns:
+            df['bIsContainer'] = df['bIsContainer'].fillna(False)
 
         if 'ContainerGridSizeX' in df.columns:
             df['ContainerGridSizeX'] = df['ContainerGridSizeX'].fillna(0).astype(int)
@@ -244,6 +262,12 @@ class DataTableConverter:
 
         # 处理空字符串
         df = df.fillna('')
+
+        # ========== 添加 Row Name 列（UE DataTable 第一列） ==========
+        if primary_key and primary_key in df.columns:
+            # 插入 "---" 列作为第一列，值和 primary_key 相同
+            df.insert(0, '---', df[primary_key])
+            print(f"   添加 Row Name 列（使用 {primary_key} 的值）")
 
         print(f"✅ 转换完成")
         return df
