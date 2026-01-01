@@ -27,10 +27,12 @@ bool UItemDataManager::IsContainerItem(FName ItemID) const
 
 	if (!ItemDef)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[ItemDataManager] IsContainerItem : Item Definition not found , return false , ItemID: %s", ItemID));
+		UE_LOG(LogTemp, Error,
+			TEXT("[ItemDataManager] IsContainerItem: Item not found: %s"),
+			*ItemID.ToString());
 		return false;
 	}
-	
+
 	return ItemDef->bIsContainer;
 }
 

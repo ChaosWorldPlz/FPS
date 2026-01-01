@@ -33,19 +33,22 @@ public:
 	// 根据ItemId从缓存中获取物品定义指针
 	FORCEINLINE  const FItemDefinitionRow* GetItemDefinition(FName ItemID) const {	return ItemCache.FindRef(ItemID); }
 
-	// 获取物品尺寸（考虑旋转）
-	FORCEINLINE FIntPoint GetItemSize(FName ItemID, bool bRotated) const{
+	// 获取物品尺寸（考虑旋转，考虑空值）
+	FORCEINLINE TOptional<FIntPoint> GetItemSize(FName ItemID, bool bRotated) const
+	{
 		const FItemDefinitionRow* ItemDef = GetItemDefinition(ItemID);
 		if (!ItemDef)
 		{
-			UE_LOG(LogTemp, Error, TEXT("[ItemDataManager] GetItemSize : Item Definition not found , return 1*1 , ItemID: %s", ItemID));
-			return FIntPoint(1,1);
+			UE_LOG(LogTemp, Error,
+				TEXT("[ItemDataManager] GetItemSize: Item not found: %s"),
+				*ItemID.ToString());
+			return TOptional<FIntPoint>(); // 返回空值
 		}
 		if (bRotated && ItemDef->bCanRotate)
 		{
-			return FIntPoint(ItemDef->SizeY,ItemDef->SizeX);
+			return FIntPoint(ItemDef->SizeY, ItemDef->SizeX);
 		}
-		return FIntPoint(ItemDef->SizeX,ItemDef->SizeY);
+		return FIntPoint(ItemDef->SizeX, ItemDef->SizeY);
 	}
 
 	// 判断是否是容器物品

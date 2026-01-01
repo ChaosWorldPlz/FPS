@@ -4,11 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "FPS/Inventory/InventoryTypes.h"
 #include "InventoryGridComponent.generated.h"
-
-
-struct FInventoryItemPlacement;
-struct FInventoryItem;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPS_API UInventoryGridComponent : public UActorComponent
@@ -43,7 +40,7 @@ private:
 
 	// 运行时数据
 	UPROPERTY()
-	TArray<FInventoryItemPlacement> Items;  // 所有已放置的物品
+	TMap<FGuid, FInventoryItemPlacement> Items;  // 所有已放置的物品 (InstanceID -> Placement)
 
 	UPROPERTY()
 	TArray<FGuid> OccupancyGrid;  // 占用状态（一维数组表示二维网格）
@@ -61,6 +58,6 @@ private:
 	void ClearGridOccupancy(FGuid ItemID);
 
 	// 从 ItemDataManager获取物品尺寸
-	FIntPoint GetItemSize(FName ItemDefID, bool bRotated) const;
+	TOptional<FIntPoint> GetItemSize(FName ItemDefID, bool bRotated) const;
 		
 };
