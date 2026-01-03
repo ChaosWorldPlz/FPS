@@ -9,6 +9,7 @@
 
 class UImage;
 class UTextBlock;
+class UInventoryGridWidget;
 
 /**
  * 物品图标 Widget 基类
@@ -23,6 +24,14 @@ public:
 	/** 设置物品数据 */
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SetItemData(const FInventoryItem& InItem, bool bRotated);
+
+	/** 设置所属的网格 Widget */
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetOwningGrid(UInventoryGridWidget* InOwningGrid) { OwningGrid = InOwningGrid; }
+
+	/** 获取所属的网格 Widget */
+	UFUNCTION(BlueprintPure, Category = "Inventory")
+	UInventoryGridWidget* GetOwningGrid() const { return OwningGrid; }
 
 	/** 获取物品实例 ID */
 	UFUNCTION(BlueprintPure, Category = "Inventory")
@@ -56,6 +65,10 @@ protected:
 	/** 是否已旋转 */
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bIsRotated = false;
+
+	/** 所属的网格 Widget */
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	TObjectPtr<UInventoryGridWidget> OwningGrid;
 
 	/** 蓝图可重写：物品数据设置后的回调 */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")

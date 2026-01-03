@@ -117,6 +117,9 @@ void UInventoryGridWidget::GenerateItemIcons()
 			continue;
 		}
 
+		// 设置所属网格（用于 Lua 中获取父级）
+		IconWidget->SetOwningGrid(this);
+
 		// 设置物品数据
 		IconWidget->SetItemData(Placement.Item, Placement.bIsRotated);
 

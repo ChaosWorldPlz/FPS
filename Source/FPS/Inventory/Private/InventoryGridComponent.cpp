@@ -34,7 +34,7 @@ void UInventoryGridComponent::BeginPlay()
 
 }
 
-bool UInventoryGridComponent::CanPlaceItem(FName ItemDefID, FIntPoint Position, bool bRotated)
+bool UInventoryGridComponent::CanPlaceItem(FName ItemDefID, FIntPoint Position, bool bRotated, FGuid IgnoreItemID)
 {
 	// 拿到 bRotated 状态 Item 的 Size X 和 Size Y
 	TOptional<FIntPoint> IsItemValid = GetItemSize(ItemDefID, bRotated);
@@ -79,8 +79,8 @@ bool UInventoryGridComponent::CanPlaceItem(FName ItemDefID, FIntPoint Position, 
 		}
 	}
 
-	// 检查目标区域是否被占用
-	return !IsAreaOccupied(Position, ItemSize, FGuid());
+	// 检查目标区域是否被占用（传入 IgnoreItemID 以忽略指定物品）
+	return !IsAreaOccupied(Position, ItemSize, IgnoreItemID);
 }
 
 bool UInventoryGridComponent::AddItem(const FInventoryItem& Item, FIntPoint Position, bool bRotated)

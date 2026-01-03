@@ -29,7 +29,7 @@ public:
 
 	/** 检查是否可以放置物品（不实际放置） */
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool CanPlaceItem(FName ItemDefID, FIntPoint Position, bool bRotated);
+	bool CanPlaceItem(FName ItemDefID, FIntPoint Position, bool bRotated, FGuid IgnoreItemID = FGuid());
 
 	/** 添加物品到网格 */
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
