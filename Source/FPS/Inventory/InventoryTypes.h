@@ -245,3 +245,62 @@ struct FInventoryItemPlacement
 	{
 	}
 };
+
+/**
+ * 背包区域定义（"兜"）
+ * 用于定义背包内的物理隔断区域
+ * 物品不能跨区域放置，大物品需要足够大的连续区域
+ *
+ * 设计示例：
+ * - 便宜背包 3x3：分成 1x3 + 2x3 两个区域，无法放置 3x3 物品
+ * - 贵背包 3x3：整个 3x3 是一个区域，可以放置 3x3 物品
+ */
+USTRUCT(BlueprintType)
+struct FInventoryRegion
+{
+	GENERATED_BODY()
+
+	/** 区域名称（用于调试/UI显示） */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Region")
+	FName RegionName;
+
+	/** 区域起始坐标（左上角） */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Region")
+	FIntPoint Offset;
+
+	/** 区域大小（宽x高，格子数） */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Region")
+	FIntPoint Size;
+
+	FInventoryRegion()
+		: RegionName(NAME_None)
+		, Offset(FIntPoint::ZeroValue)
+		, Size(FIntPoint(1, 1))
+	{
+	}
+
+	FInventoryRegion(FName InName, FIntPoint InOffset, FIntPoint InSize)
+		: RegionName(InName)
+		, Offset(InOffset)
+		, Size(InSize)
+	{
+	}
+
+	/** 检查一个点是否在此区域内 */
+	bool ContainsPoint(FIntPoint Point) const
+	{
+		return Point.X >= Offset.X
+			&& Point.Y >= Offset.Y
+			&& Point.X < Offset.X + Size.X
+			&& Point.Y < Offset.Y + Size.Y;
+	}
+
+	/** 检查一个矩形是否完全在此区域内 */
+	bool ContainsRect(FIntPoint RectOffset, FIntPoint RectSize) const
+	{
+		return RectOffset.X >= Offset.X
+			&& RectOffset.Y >= Offset.Y
+			&& RectOffset.X + RectSize.X <= Offset.X + Size.X
+			&& RectOffset.Y + RectSize.Y <= Offset.Y + Size.Y;
+	}
+};

@@ -36,44 +36,51 @@ void UInventoryGridComponent::BeginPlay()
 
 bool UInventoryGridComponent::CanPlaceItem(FName ItemDefID, FIntPoint Position, bool bRotated)
 {
-	// 需要找到连续的，形状匹配的Area
-	// 剪枝思想： 需要满足条件的区域里面找
-	//  Rule I : Item Size X 、Size Y、 Size X * Size Y 均小于 GridSize
-	//  Rule II : 在GridSize 里 找连续的满足 bRotated 状态下的 ItemDef 的 Area
-	
 	// 拿到 bRotated 状态 Item 的 Size X 和 Size Y
-	TOptional<FIntPoint> IsItemValid = GetItemSize(ItemDefID,bRotated);
+	TOptional<FIntPoint> IsItemValid = GetItemSize(ItemDefID, bRotated);
 
-	// 如果 根据ItemDefID 拿不到ItemSize, 说明有报错
+	// 如果根据 ItemDefID 拿不到 ItemSize，说明有报错
 	if (!IsItemValid.IsSet())
 	{
 		UE_LOG(LogTemp, Error,
-			TEXT("[InventoryGridComponent] CanPlaceItem ItemDefID %s 没有有效的 ItemSize"),
+			TEXT("[CanPlaceItem] ItemDefID %s 没有有效的 ItemSize"),
 			*ItemDefID.ToString());
 		return false;
 	}
-	
-	//起始位置+物品尺寸 不能超过GridSize , 
-	if (Position.X <0 || Position.Y <0)
+
+	// 起始位置不能为负数
+	if (Position.X < 0 || Position.Y < 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("[InventoryGridComponent] CanPlaceItem 起始位置为负数！"));
-		return false; //起始位置为负数
+		UE_LOG(LogTemp, Warning, TEXT("[CanPlaceItem] 起始位置为负数！"));
+		return false;
 	}
 
 	FIntPoint ItemSize = IsItemValid.GetValue();
-	// 超出边界
-	if (Position.X + ItemSize.X>GridSize.X ||Position.Y + ItemSize.Y>GridSize.Y)
+
+	// 超出网格边界
+	if (Position.X + ItemSize.X > GridSize.X || Position.Y + ItemSize.Y > GridSize.Y)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[InventoryGridComponent] CanPlaceItem 物品 %s 超出 GridSize (%d, %d)"),
+		UE_LOG(LogTemp, Warning, TEXT("[CanPlaceItem] 物品 %s 超出 GridSize (%d, %d)"),
 			*ItemDefID.ToString(),
 			GridSize.X,
 			GridSize.Y);
 		return false;
 	}
 
-	// 如果返回 { 只要存在哪怕一个【装得下Item的格子】没有被任何物品标记占据 } 是 True
-	// 认为装得下 ， 但还没装
-	return !IsAreaOccupied(Position,ItemSize,FGuid());
+	// 区域检查：如果定义了区域，物品必须完全在某一个区域内
+	if (Regions.Num() > 0)
+	{
+		int32 RegionIndex = FindRegionForPlacement(Position, ItemSize);
+		if (RegionIndex == INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[CanPlaceItem] 物品 %s 跨区域或不在任何区域内"),
+				*ItemDefID.ToString());
+			return false;
+		}
+	}
+
+	// 检查目标区域是否被占用
+	return !IsAreaOccupied(Position, ItemSize, FGuid());
 }
 
 bool UInventoryGridComponent::AddItem(const FInventoryItem& Item, FIntPoint Position, bool bRotated)
@@ -100,13 +107,16 @@ bool UInventoryGridComponent::AddItem(const FInventoryItem& Item, FIntPoint Posi
 
 	// 添加到 Items Map（Key: InstanceID, Value: Placement）- O(1)
 	Items.Add(Item.InstanceID, ItemPlacement);
-	
+
 	UE_LOG(LogTemp, Log,
-		TEXT("[InventoryGridComponent] AddItem Successfully added item %s at (%d, %d), InstanceID: %s"),
-		 *Item.ItemDefID.ToString(),
-		 Position.X, Position.Y,
-		 *Item.InstanceID.ToString());
-	
+		TEXT("[AddItem] Successfully added item %s at (%d, %d), InstanceID: %s"),
+		*Item.ItemDefID.ToString(),
+		Position.X, Position.Y,
+		*Item.InstanceID.ToString());
+
+	// 广播变化事件，通知 UI 刷新
+	OnInventoryChanged.Broadcast();
+
 	return true;
 }
 
@@ -128,6 +138,9 @@ bool UInventoryGridComponent::RemoveItem(FGuid ItemInstanceID)
 	UE_LOG(LogTemp, Log,
 		TEXT("[RemoveItem] Successfully removed item: %s"),
 		*ItemInstanceID.ToString());
+
+	// 广播变化事件，通知 UI 刷新
+	OnInventoryChanged.Broadcast();
 
 	return true;
 }
@@ -227,7 +240,104 @@ TOptional<FIntPoint> UInventoryGridComponent::GetItemSize(FName ItemDefID, bool 
 
 	// 这里为什么不统一用ItemDataMgr->GetItemSize(ItemDefID,bRotated); 是为了让日志直观
 	// ItemDataMgr->GetItemSize里面还有关于 ItemDefID是否有效的判断贝贝
-	return ItemDataMgr->GetItemSize(ItemDefID,bRotated);
+	return ItemDataMgr->GetItemSize(ItemDefID, bRotated);
 }
 
+bool UInventoryGridComponent::MoveItem(FGuid ItemInstanceID, FIntPoint NewPosition, bool bNewRotated)
+{
+	// 1. 查找物品
+	FInventoryItemPlacement* Placement = Items.Find(ItemInstanceID);
+	if (!Placement)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[MoveItem] Item not found: %s"), *ItemInstanceID.ToString());
+		return false;
+	}
 
+	// 2. 获取物品尺寸
+	TOptional<FIntPoint> ItemSizeOpt = GetItemSize(Placement->Item.ItemDefID, bNewRotated);
+	if (!ItemSizeOpt.IsSet())
+	{
+		UE_LOG(LogTemp, Error, TEXT("[MoveItem] Cannot get item size"));
+		return false;
+	}
+	FIntPoint ItemSize = ItemSizeOpt.GetValue();
+
+	// 3. 边界检查
+	if (NewPosition.X < 0 || NewPosition.Y < 0 ||
+		NewPosition.X + ItemSize.X > GridSize.X ||
+		NewPosition.Y + ItemSize.Y > GridSize.Y)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[MoveItem] Out of bounds"));
+		return false;
+	}
+
+	// 4. 区域检查
+	if (Regions.Num() > 0)
+	{
+		int32 RegionIndex = FindRegionForPlacement(NewPosition, ItemSize);
+		if (RegionIndex == INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[MoveItem] 物品跨区域或不在任何区域内"));
+			return false;
+		}
+	}
+
+	// 5. 检查新位置是否可用（忽略自己当前占用的格子）
+	if (IsAreaOccupied(NewPosition, ItemSize, ItemInstanceID))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[MoveItem] Target position occupied"));
+		return false;
+	}
+
+	// 6. 清除旧占用
+	ClearGridOccupancy(ItemInstanceID);
+
+	// 7. 标记新占用
+	MarkGridOccupied(NewPosition, ItemSize, ItemInstanceID);
+
+	// 8. 更新放置数据
+	Placement->GridPosition = NewPosition;
+	Placement->bIsRotated = bNewRotated;
+
+	UE_LOG(LogTemp, Log, TEXT("[MoveItem] Item moved to (%d, %d), Rotated: %s"),
+		NewPosition.X, NewPosition.Y,
+		bNewRotated ? TEXT("Yes") : TEXT("No"));
+
+	// 9. 广播变化事件
+	OnInventoryChanged.Broadcast();
+
+	return true;
+}
+
+TArray<FInventoryItemPlacement> UInventoryGridComponent::GetAllItems() const
+{
+	TArray<FInventoryItemPlacement> Result;
+	Items.GenerateValueArray(Result);
+	return Result;
+}
+
+bool UInventoryGridComponent::GetItemPlacement(FGuid ItemInstanceID, FInventoryItemPlacement& OutPlacement) const
+{
+	const FInventoryItemPlacement* Found = Items.Find(ItemInstanceID);
+	if (Found)
+	{
+		OutPlacement = *Found;
+		return true;
+	}
+	return false;
+}
+
+int32 UInventoryGridComponent::FindRegionForPlacement(FIntPoint Position, FIntPoint Size) const
+{
+	// 遍历所有区域，找到能完全容纳物品的区域
+	for (int32 i = 0; i < Regions.Num(); ++i)
+	{
+		if (Regions[i].ContainsRect(Position, Size))
+		{
+			return i;
+		}
+	}
+
+	// 没有找到合适的区域
+	return INDEX_NONE;
+}
