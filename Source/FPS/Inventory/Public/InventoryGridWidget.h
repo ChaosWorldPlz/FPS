@@ -50,6 +50,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TSubclassOf<UItemIconWidget> ItemIconWidgetClass;
 
+	/** 右键菜单 Widget 类（在蓝图中设置） */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|UI")
+	TSubclassOf<UUserWidget> ContextMenuWidgetClass;
+
+	/** Tooltip Widget 类（在蓝图中设置） */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|UI")
+	TSubclassOf<UUserWidget> TooltipWidgetClass;
+
 	// UMG 组件（在蓝图中绑定）
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UCanvasPanel> GridCanvas;

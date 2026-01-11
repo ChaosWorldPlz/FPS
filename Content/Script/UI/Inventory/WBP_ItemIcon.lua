@@ -62,13 +62,43 @@ function WBP_ItemIcon:OnMouseButtonDown(MyGeometry, MouseEvent)
         return UE.UWidgetBlueprintLibrary.Handled()
 
     elseif bIsRightButton then
-        -- 右键：显示右键菜单（TODO）
+        -- 右键：显示右键菜单
         print("[WBP_ItemIcon] WBP_ItemIcon: Right click, show context menu")
-        -- GridWidget:ShowContextMenu(self)
+        GridWidget:ShowContextMenu(self)
         return UE.UWidgetBlueprintLibrary.Handled()
     end
 
     return UE.UWidgetBlueprintLibrary.Unhandled()
+end
+
+--[[
+============================================================================
+                              鼠标悬停事件
+============================================================================
+--]]
+
+-- 鼠标进入时显示 Tooltip
+function WBP_ItemIcon:OnMouseEnter(MyGeometry, MouseEvent)
+    print("[WBP_ItemIcon] OnMouseEnter")
+
+    local GridWidget = self:FindParentInventoryGrid()
+    if GridWidget then
+        GridWidget:ShowTooltip(self)
+    end
+
+    return UE.UWidgetBlueprintLibrary.Handled()
+end
+
+-- 鼠标离开时隐藏 Tooltip
+function WBP_ItemIcon:OnMouseLeave(MouseEvent)
+    print("[WBP_ItemIcon] OnMouseLeave")
+
+    local GridWidget = self:FindParentInventoryGrid()
+    if GridWidget then
+        GridWidget:HideTooltip()
+    end
+
+    return UE.UWidgetBlueprintLibrary.Handled()
 end
 
 --[[

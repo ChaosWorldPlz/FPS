@@ -555,6 +555,163 @@ end
 
 --[[
 ============================================================================
+                              右键菜单
+============================================================================
+--]]
+
+-- 显示右键菜单
+-- @param ItemWidget: 被右键点击的 ItemIconWidget
+function WBP_InventoryGrid:ShowContextMenu(ItemWidget)
+    if not ItemWidget then
+        print("[WBP_InventoryGrid] ShowContextMenu: ItemWidget is nil")
+        return
+    end
+
+    -- 如果正在拖拽，不显示菜单
+    if self.DragState.IsDragging then
+        print("[WBP_InventoryGrid] ShowContextMenu: Currently dragging, ignore")
+        return
+    end
+
+    -- 先隐藏已有的菜单
+    self:HideContextMenu()
+
+    -- 创建菜单（如果还没有）
+    if not self.ContextMenuWidget then
+        -- 需要在蓝图中设置 ContextMenuWidgetClass
+        if not self.ContextMenuWidgetClass then
+            print("[WBP_InventoryGrid] ShowContextMenu: ContextMenuWidgetClass is not set!")
+            return
+        end
+
+        self.ContextMenuWidget = UE.UWidgetBlueprintLibrary.Create(
+            self,
+            self.ContextMenuWidgetClass,
+            nil
+        )
+
+        if self.ContextMenuWidget then
+            -- 添加到 Viewport 以确保显示在最上层
+            self.ContextMenuWidget:AddToViewport(100)
+        end
+    end
+
+    if not self.ContextMenuWidget then
+        print("[WBP_InventoryGrid] ShowContextMenu: Failed to create ContextMenu")
+        return
+    end
+
+    -- 获取鼠标位置作为菜单位置
+    local PlayerController = UE.UGameplayStatics.GetPlayerController(self, 0)
+    local MouseX, MouseY = 0, 0
+    if PlayerController then
+        local bSuccess
+        bSuccess, MouseX, MouseY = PlayerController:GetMousePosition(MouseX, MouseY)
+    end
+    local ScreenPos = UE.FVector2D(MouseX, MouseY)
+
+    -- 设置菜单位置（使用 SetPositionInViewport）
+    self.ContextMenuWidget:SetPositionInViewport(ScreenPos, false)
+
+    -- 显示菜单
+    self.ContextMenuWidget:ShowAtPosition(ScreenPos, ItemWidget, self)
+
+    print(string.format("[WBP_InventoryGrid] ShowContextMenu at (%.0f, %.0f)", MouseX, MouseY))
+end
+
+-- 隐藏右键菜单
+function WBP_InventoryGrid:HideContextMenu()
+    if self.ContextMenuWidget then
+        self.ContextMenuWidget:Hide()
+    end
+end
+
+--[[
+============================================================================
+                              Tooltip
+============================================================================
+--]]
+
+-- 显示 Tooltip
+-- @param ItemWidget: 鼠标悬停的 ItemIconWidget
+function WBP_InventoryGrid:ShowTooltip(ItemWidget)
+    if not ItemWidget then
+        return
+    end
+
+    -- 如果正在拖拽，不显示 Tooltip
+    if self.DragState.IsDragging then
+        return
+    end
+
+    -- 创建 Tooltip（如果还没有）
+    if not self.TooltipWidget then
+        -- 需要在蓝图中设置 TooltipWidgetClass
+        if not self.TooltipWidgetClass then
+            print("[WBP_InventoryGrid] ShowTooltip: TooltipWidgetClass is not set!")
+            return
+        end
+
+        self.TooltipWidget = UE.UWidgetBlueprintLibrary.Create(
+            self,
+            self.TooltipWidgetClass,
+            nil
+        )
+
+        if self.TooltipWidget then
+            -- 添加到 Viewport
+            self.TooltipWidget:AddToViewport(99)
+        end
+    end
+
+    if not self.TooltipWidget then
+        return
+    end
+
+    -- 设置物品数据
+    self.TooltipWidget:SetItemData(ItemWidget)
+
+    -- 更新位置
+    self:UpdateTooltipPosition()
+
+    -- 显示 Tooltip
+    self.TooltipWidget:SetVisibility(UE.ESlateVisibility.HitTestInvisible)
+
+    self.CurrentHoveredItem = ItemWidget
+end
+
+-- 隐藏 Tooltip
+function WBP_InventoryGrid:HideTooltip()
+    if self.TooltipWidget then
+        self.TooltipWidget:SetVisibility(UE.ESlateVisibility.Collapsed)
+    end
+    self.CurrentHoveredItem = nil
+end
+
+-- 更新 Tooltip 位置（跟随鼠标）
+function WBP_InventoryGrid:UpdateTooltipPosition()
+    if not self.TooltipWidget then
+        return
+    end
+
+    -- 获取鼠标位置
+    local PlayerController = UE.UGameplayStatics.GetPlayerController(self, 0)
+    local MouseX, MouseY = 0, 0
+    if PlayerController then
+        local bSuccess
+        bSuccess, MouseX, MouseY = PlayerController:GetMousePosition(MouseX, MouseY)
+    end
+
+    -- 偏移一点，避免遮挡鼠标
+    local OffsetX = 15
+    local OffsetY = 15
+
+    -- 使用 SetPositionInViewport（因为 Tooltip 是添加到 Viewport 的）
+    self.TooltipWidget:SetPositionInViewport(UE.FVector2D(MouseX + OffsetX, MouseY + OffsetY), false)
+end
+
+--[[
+============================================================================
                            重写 RefreshInventory
 ============================================================================
 --]]
