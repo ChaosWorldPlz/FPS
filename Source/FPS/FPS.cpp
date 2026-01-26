@@ -2,6 +2,16 @@
 
 #include "FPS.h"
 #include "Modules/ModuleManager.h"
+#include "GAS/FPSGameplayTags.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, FPS, "FPS" );
- 
+class FFPSModule : public FDefaultGameModuleImpl
+{
+public:
+	virtual void StartupModule() override
+	{
+		// Initialize native gameplay tags
+		FFPSGameplayTags::InitializeNativeTags();
+	}
+};
+
+IMPLEMENT_PRIMARY_GAME_MODULE(FFPSModule, FPS, "FPS");

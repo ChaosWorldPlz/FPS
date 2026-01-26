@@ -16,7 +16,11 @@ public class FPS : ModuleRules
 			"EnhancedInput",
 			"UMG",
 			"Slate",
-			"SlateCore"
+			"SlateCore",
+			"GameplayAbilities",
+			"GameplayTags",
+			"GameplayTasks",
+			"Niagara"
 		});
 	}
 }

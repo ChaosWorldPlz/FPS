@@ -10,6 +10,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GAS/FPSAbilitySystemComponent.h"
+#include "GAS/FPSGameplayAbility.h"
+#include "GAS/FPSCombatAttributeSet.h"
+#include "Weapon/FPSWeaponBase.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -17,11 +22,13 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 // AFPSCharacter
 
 AFPSCharacter::AFPSCharacter()
+	: bAbilitiesInitialized(false)
+	, bDead(false)
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-		
-	// Create a CameraComponent	
+
+	// Create a CameraComponent
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
@@ -36,18 +43,93 @@ AFPSCharacter::AFPSCharacter()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+	// Create the Ability System Component
+	AbilitySystemComponent = CreateDefaultSubobject<UFPSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+
+	// Create the Combat Attribute Set (automatically registered with ASC)
+	CombatAttributeSet = CreateDefaultSubobject<UFPSCombatAttributeSet>(TEXT("CombatAttributeSet"));
+}
+
+UAbilitySystemComponent* AFPSCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 void AFPSCharacter::BeginPlay()
 {
-	// Call the base class  
+	// Call the base class
 	Super::BeginPlay();
+}
+
+void AFPSCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	// Initialize the ability system when possessed by a controller
+	InitializeAbilitySystem();
+}
+
+void AFPSCharacter::InitializeAbilitySystem()
+{
+	if (AbilitySystemComponent && !bAbilitiesInitialized)
+	{
+		// Initialize ability actor info - for single player, owner and avatar are both this character
+		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+
+		// Bind death delegate
+		if (CombatAttributeSet)
+		{
+			CombatAttributeSet->OnDeath.AddDynamic(this, &AFPSCharacter::OnDeath);
+		}
+
+		// Grant default abilities
+		GrantDefaultAbilities();
+
+		// Apply default effects
+		ApplyDefaultEffects();
+
+		bAbilitiesInitialized = true;
+
+		UE_LOG(LogTemplateCharacter, Log, TEXT("Ability System initialized for %s"), *GetName());
+	}
+}
+
+void AFPSCharacter::GrantDefaultAbilities()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	for (const TSubclassOf<UGameplayAbility>& AbilityClass : DefaultAbilities)
+	{
+		if (AbilityClass)
+		{
+			AbilitySystemComponent->GrantAbility(AbilityClass, 1);
+		}
+	}
+}
+
+void AFPSCharacter::ApplyDefaultEffects()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	for (const TSubclassOf<UGameplayEffect>& EffectClass : DefaultEffects)
+	{
+		if (EffectClass)
+		{
+			AbilitySystemComponent->ApplyEffectToSelf(EffectClass, 1.0f);
+		}
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
 
 void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{	
+{
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
@@ -75,7 +157,7 @@ void AFPSCharacter::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		// add movement 
+		// add movement
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
@@ -91,5 +173,70 @@ void AFPSCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void AFPSCharacter::EquipWeapon(AFPSWeaponBase* NewWeapon)
+{
+	if (!NewWeapon || NewWeapon == CurrentWeapon)
+	{
+		return;
+	}
+
+	// Unequip current weapon
+	UnequipWeapon();
+
+	// Equip new weapon
+	CurrentWeapon = NewWeapon;
+	CurrentWeapon->OnEquip(this);
+
+	// Attach weapon to character
+	if (Mesh1P)
+	{
+		CurrentWeapon->AttachToComponent(Mesh1P, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("GripPoint"));
+	}
+
+	UE_LOG(LogTemplateCharacter, Log, TEXT("%s equipped weapon: %s"), *GetName(), *NewWeapon->GetName());
+}
+
+void AFPSCharacter::UnequipWeapon()
+{
+	if (!CurrentWeapon)
+	{
+		return;
+	}
+
+	CurrentWeapon->OnUnequip();
+	CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	CurrentWeapon = nullptr;
+}
+
+void AFPSCharacter::OnDeath(AActor* Killer)
+{
+	if (bDead)
+	{
+		return;
+	}
+
+	bDead = true;
+
+	UE_LOG(LogTemplateCharacter, Log, TEXT("%s has died. Killer: %s"),
+		*GetName(),
+		Killer ? *Killer->GetName() : TEXT("Unknown"));
+
+	// Disable movement
+	{
+		if (GetCharacterMovement())
+		{
+			/*GetCharacterMovement()->DisableMovement();*/
+			UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+			MovementComponent->DisableMovement();
+		}
+	}
+
+	// Disable input
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		DisableInput(PC);
 	}
 }
