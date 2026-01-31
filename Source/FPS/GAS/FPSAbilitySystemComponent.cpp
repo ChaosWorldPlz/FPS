@@ -7,8 +7,9 @@
 
 UFPSAbilitySystemComponent::UFPSAbilitySystemComponent()
 {
-	// Default settings for single-player FPS
-	ReplicationMode = EGameplayEffectReplicationMode::Full;
+	// Mixed mode: replicate GE to owner only, GC/cues to all
+	ReplicationMode = EGameplayEffectReplicationMode::Mixed;
+	SetIsReplicated(true);
 }
 
 void UFPSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -112,10 +113,7 @@ float UFPSAbilitySystemComponent::GetAttributeValue(FGameplayAttribute Attribute
 		return 0.0f;
 	}
 
-	/*float Value = 0.0f;
-	GetGameplayAttributeValue(Attribute,true);
-	return Value;*/
-	return GetNumericAttributeBase(Attribute);
+	return GetNumericAttribute(Attribute);
 }
 
 void UFPSAbilitySystemComponent::SetAttributeBaseValue(FGameplayAttribute Attribute, float NewValue)

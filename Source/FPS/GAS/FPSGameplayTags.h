@@ -64,6 +64,11 @@ public:
 	FGameplayTag Event_Weapon_Fired;
 	FGameplayTag Event_Weapon_Reloaded;
 
+	// Team Tags
+	FGameplayTag Team_A;
+	FGameplayTag Team_B;
+	FGameplayTag Team_None;
+
 	// Input Tags (for Enhanced Input binding)
 	FGameplayTag Input_Fire;
 	FGameplayTag Input_Reload;

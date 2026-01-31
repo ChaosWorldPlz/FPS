@@ -63,6 +63,11 @@ void FFPSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Event_Weapon_Fired, "FPS.Event.Weapon.Fired", "Weapon was fired");
 	AddTag(Event_Weapon_Reloaded, "FPS.Event.Weapon.Reloaded", "Weapon was reloaded");
 
+	// Team Tags
+	AddTag(Team_A, "FPS.Team.A", "Team A (Red)");
+	AddTag(Team_B, "FPS.Team.B", "Team B (Blue)");
+	AddTag(Team_None, "FPS.Team.None", "No team assigned");
+
 	// Input Tags
 	AddTag(Input_Fire, "FPS.Input.Fire", "Fire input action");
 	AddTag(Input_Reload, "FPS.Input.Reload", "Reload input action");

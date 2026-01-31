@@ -20,7 +20,8 @@ public class FPS : ModuleRules
 			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
-			"Niagara"
+			"Niagara",
+			"AIModule"
 		});
 	}
 }

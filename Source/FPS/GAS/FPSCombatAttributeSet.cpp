@@ -4,6 +4,8 @@
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 #include "AbilitySystemComponent.h"
+#include "FPS/Team/FPSPlayerState.h"
+#include "FPS/FPSCharacter.h"
 
 UFPSCombatAttributeSet::UFPSCombatAttributeSet()
 	: bDead(false)
@@ -138,6 +140,28 @@ void UFPSCombatAttributeSet::HandleDamage(const FGameplayEffectModCallbackData& 
 		SetArmor(NewArmor);
 
 		OnArmorChanged.Broadcast(OldArmor, NewArmor, Instigator);
+	}
+
+	// Track damage stats on PlayerState
+	{
+		// Victim damage taken
+		AActor* OwnerActor = GetOwningAbilitySystemComponent() ? GetOwningAbilitySystemComponent()->GetAvatarActor() : nullptr;
+		if (AFPSCharacter* VictimChar = Cast<AFPSCharacter>(OwnerActor))
+		{
+			if (AFPSPlayerState* VictimPS = VictimChar->GetFPSPlayerState())
+			{
+				VictimPS->AddDamageTaken(RemainingDamage);
+			}
+		}
+
+		// Instigator damage dealt
+		if (AFPSCharacter* InstigatorChar = Cast<AFPSCharacter>(Instigator))
+		{
+			if (AFPSPlayerState* InstigatorPS = InstigatorChar->GetFPSPlayerState())
+			{
+				InstigatorPS->AddDamageDealt(RemainingDamage);
+			}
+		}
 	}
 
 	// Apply remaining damage to health

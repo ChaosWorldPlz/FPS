@@ -6,15 +6,18 @@
 #include "AbilitySystemComponent.h"
 #include "FPS/GAS/FPSAbilitySystemComponent.h"
 #include "FPS/GAS/FPSCombatAttributeSet.h"
+#include "FPS/Team/FPSPlayerState.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "GenericTeamAgentInterface.h"
 
 const FName AFPSWeaponBase::MuzzleSocketName = TEXT("Muzzle");
 
 AFPSWeaponBase::AFPSWeaponBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 
 	// Create weapon mesh
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
@@ -50,6 +53,8 @@ void AFPSWeaponBase::OnEquip(AFPSCharacter* NewOwner)
 	}
 
 	OwningCharacter = NewOwner;
+	SetOwner(NewOwner);
+	SetInstigator(NewOwner);
 	SetWeaponState(EFPSWeaponState::Equipping);
 
 	// Grant abilities
@@ -134,7 +139,16 @@ void AFPSWeaponBase::Fire()
 	);
 	LastFireTime = GetWorld()->GetTimeSeconds();
 
-	// Perform hit scan for each pellet
+	// In multiplayer, clients should send fire request to server
+	if (OwningCharacter.IsValid() && OwningCharacter->IsLocallyControlled() && !HasAuthority())
+	{
+		FVector MuzzleLoc = GetMuzzleLocation();
+		FVector FireDir = OwningCharacter->GetControlRotation().Vector();
+		ServerFire(MuzzleLoc, FireDir);
+		return;
+	}
+
+	// Server or standalone: perform hit scan
 	for (int32 i = 0; i < WeaponData->PelletsPerShot; i++)
 	{
 		FVector MuzzleLoc = GetMuzzleLocation();
@@ -147,12 +161,108 @@ void AFPSWeaponBase::Fire()
 		{
 			ApplyDamage(HitResult);
 		}
+
+		// Broadcast effects to all clients
+		MulticastFireEffects(MuzzleLoc, HitResult);
 	}
 
-	// Play fire sound
+	// Play fire sound (on server, multicast handles clients)
 	if (WeaponData->FireSound.IsValid())
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, WeaponData->FireSound.LoadSynchronous(), GetMuzzleLocation());
+	}
+}
+
+//-------------------------------------------------------------------
+// Network RPCs
+//-------------------------------------------------------------------
+
+bool AFPSWeaponBase::ServerFire_Validate(FVector MuzzleLocation, FVector FireDirection)
+{
+	// Basic validation: check muzzle position isn't too far from expected
+	FVector ServerMuzzle = GetMuzzleLocation();
+	float Distance = FVector::Dist(MuzzleLocation, ServerMuzzle);
+	return Distance <= MaxMuzzlePositionError;
+}
+
+void AFPSWeaponBase::ServerFire_Implementation(FVector MuzzleLocation, FVector FireDirection)
+{
+	if (!WeaponData || !CanFire())
+	{
+		return;
+	}
+
+	// Consume ammo on server
+	if (WeaponData->bUsesAmmo)
+	{
+		AmmoInfo.ConsumeAmmo();
+		OnAmmoChanged.Broadcast(AmmoInfo.CurrentMagazine, AmmoInfo.CurrentReserve);
+	}
+
+	// Set fire cooldown on server
+	bCanFireAgain = false;
+	float FireDelay = WeaponData->GetTimeBetweenShots();
+	GetWorldTimerManager().SetTimer(
+		FireCooldownTimerHandle,
+		this,
+		&AFPSWeaponBase::ResetFireCooldown,
+		FireDelay,
+		false
+	);
+	LastFireTime = GetWorld()->GetTimeSeconds();
+
+	// Server performs hit scan with spread
+	for (int32 i = 0; i < WeaponData->PelletsPerShot; i++)
+	{
+		// Apply spread to client-provided direction
+		FVector SpreadDir = FireDirection;
+		if (CurrentSpread > 0.0f)
+		{
+			float HalfSpreadRad = FMath::DegreesToRadians(CurrentSpread * 0.5f);
+			float RandomAngle = FMath::FRand() * 2.0f * PI;
+			float RandomRadius = FMath::FRand() * HalfSpreadRad;
+
+			FVector Right = FVector::CrossProduct(SpreadDir, FVector::UpVector).GetSafeNormal();
+			FVector Up = FVector::CrossProduct(Right, SpreadDir).GetSafeNormal();
+
+			SpreadDir = SpreadDir.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Cos(RandomAngle)), Up);
+			SpreadDir = SpreadDir.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Sin(RandomAngle)), Right);
+			SpreadDir = SpreadDir.GetSafeNormal();
+		}
+
+		FVector EndPoint = MuzzleLocation + (SpreadDir * WeaponData->MaxRange);
+		FHitResult HitResult = PerformLineTrace(MuzzleLocation, EndPoint);
+
+		if (HitResult.bBlockingHit)
+		{
+			ApplyDamage(HitResult);
+		}
+
+		MulticastFireEffects(MuzzleLocation, HitResult);
+	}
+
+	IncreaseSpread();
+}
+
+void AFPSWeaponBase::MulticastFireEffects_Implementation(FVector MuzzleLocation, FHitResult HitResult)
+{
+	// Skip for the local player who already played effects
+	if (OwningCharacter.IsValid() && OwningCharacter->IsLocallyControlled())
+	{
+		return;
+	}
+
+	// Play fire sound
+	if (WeaponData && WeaponData->FireSound.IsValid())
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, WeaponData->FireSound.LoadSynchronous(), MuzzleLocation);
+	}
+
+	// Impact effects at hit location
+	if (HitResult.bBlockingHit && WeaponData && WeaponData->ImpactEffect.IsValid())
+	{
+		// Spawn impact effect via Niagara or particle system
+		// This is left for Lua/Blueprint to handle specific effects
 	}
 }
 
@@ -399,9 +509,34 @@ FHitResult AFPSWeaponBase::PerformLineTrace(const FVector& Start, const FVector&
 	return HitResult;
 }
 
+bool AFPSWeaponBase::IsFriendlyTarget(const FHitResult& HitResult) const
+{
+	if (!HitResult.GetActor())
+	{
+		return false;
+	}
+
+	AFPSCharacter* OwnerChar = OwningCharacter.IsValid() ? OwningCharacter.Get() : nullptr;
+	AFPSCharacter* TargetChar = Cast<AFPSCharacter>(HitResult.GetActor());
+
+	if (OwnerChar && TargetChar)
+	{
+		ETeamAttitude::Type Attitude = OwnerChar->GetTeamAttitudeTowards(*TargetChar);
+		return Attitude == ETeamAttitude::Friendly;
+	}
+
+	return false;
+}
+
 void AFPSWeaponBase::ApplyDamage(const FHitResult& HitResult)
 {
 	if (!WeaponData || !HitResult.GetActor())
+	{
+		return;
+	}
+
+	// Team filtering: don't damage friendlies
+	if (IsFriendlyTarget(HitResult))
 	{
 		return;
 	}

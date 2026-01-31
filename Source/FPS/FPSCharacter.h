@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
+#include "GenericTeamAgentInterface.h"
 #include "GameplayTagContainer.h"
 #include "Logging/LogMacros.h"
+#include "Team/FPSTeamTypes.h"
 #include "FPSCharacter.generated.h"
 
 class UInputComponent;
@@ -21,17 +23,22 @@ class UFPSCombatAttributeSet;
 class UGameplayEffect;
 class UGameplayAbility;
 class AFPSWeaponBase;
+class AFPSPlayerState;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class AFPSCharacter : public ACharacter, public IAbilitySystemInterface
+class AFPSCharacter : public ACharacter, public IAbilitySystemInterface, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Mesh, meta = (AllowPrivateAccess = "true"))
 	USkeletalMeshComponent* Mesh1P;
+
+	/** Third person mesh (seen by others) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Mesh, meta = (AllowPrivateAccess = "true"))
+	USkeletalMeshComponent* Mesh3P;
 
 	/** First person camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -60,6 +67,11 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	//~ End IAbilitySystemInterface
 
+	//~ Begin IGenericTeamAgentInterface
+	virtual FGenericTeamId GetGenericTeamId() const override;
+	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& Other) const override;
+	//~ End IGenericTeamAgentInterface
+
 	/** Get the FPS-specific ability system component */
 	UFUNCTION(BlueprintCallable, Category = "FPS|GAS")
 	UFPSAbilitySystemComponent* GetFPSAbilitySystemComponent() const { return AbilitySystemComponent; }
@@ -72,9 +84,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "FPS|Combat")
 	bool IsDead() const { return bDead; }
 
+	/** Get the team of this character */
+	UFUNCTION(BlueprintPure, Category = "FPS|Team")
+	EFPSTeam GetTeam() const;
+
+	/** Get the FPS player state */
+	UFUNCTION(BlueprintPure, Category = "FPS|Team")
+	AFPSPlayerState* GetFPSPlayerState() const;
+
+	/** Reset character for respawn (restore health, re-enable input) */
+	void ResetForRespawn();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Initialize the ability system for this character */
 	void InitializeAbilitySystem();
@@ -103,7 +128,7 @@ public:
 	//-------------------------------------------------------------------
 
 	/** Currently equipped weapon */
-	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Weapon")
 	AFPSWeaponBase* CurrentWeapon;
 
 	/** Equip a weapon */
@@ -134,6 +159,7 @@ protected:
 	bool bAbilitiesInitialized;
 
 	/** Flag to track if character is dead */
+	UPROPERTY(Replicated)
 	bool bDead;
 
 	/** Called when the character dies */
@@ -143,6 +169,8 @@ protected:
 public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	/** Returns Mesh3P subobject **/
+	USkeletalMeshComponent* GetMesh3P() const { return Mesh3P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 

@@ -15,6 +15,9 @@
 #include "GAS/FPSGameplayAbility.h"
 #include "GAS/FPSCombatAttributeSet.h"
 #include "Weapon/FPSWeaponBase.h"
+#include "Team/FPSPlayerState.h"
+#include "FPSGameMode.h"
+#include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -40,14 +43,30 @@ AFPSCharacter::AFPSCharacter()
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
-	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
+
+	// Create third person mesh (visible to other players)
+	Mesh3P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh3P"));
+	Mesh3P->SetupAttachment(GetCapsuleComponent());
+	Mesh3P->SetOwnerNoSee(true);
+	Mesh3P->bCastDynamicShadow = true;
+	Mesh3P->CastShadow = true;
 
 	// Create the Ability System Component
 	AbilitySystemComponent = CreateDefaultSubobject<UFPSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
 	// Create the Combat Attribute Set (automatically registered with ASC)
 	CombatAttributeSet = CreateDefaultSubobject<UFPSCombatAttributeSet>(TEXT("CombatAttributeSet"));
+}
+
+void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSCharacter, CurrentWeapon);
+	DOREPLIFETIME(AFPSCharacter, bDead);
 }
 
 UAbilitySystemComponent* AFPSCharacter::GetAbilitySystemComponent() const
@@ -55,9 +74,65 @@ UAbilitySystemComponent* AFPSCharacter::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
+//-------------------------------------------------------------------
+// IGenericTeamAgentInterface
+//-------------------------------------------------------------------
+
+FGenericTeamId AFPSCharacter::GetGenericTeamId() const
+{
+	AFPSPlayerState* PS = GetFPSPlayerState();
+	if (PS)
+	{
+		return FGenericTeamId(static_cast<uint8>(PS->GetTeam()));
+	}
+	return FGenericTeamId::NoTeam;
+}
+
+ETeamAttitude::Type AFPSCharacter::GetTeamAttitudeTowards(const AActor& Other) const
+{
+	const IGenericTeamAgentInterface* OtherTeamAgent = Cast<const IGenericTeamAgentInterface>(&Other);
+	if (!OtherTeamAgent)
+	{
+		return ETeamAttitude::Neutral;
+	}
+
+	FGenericTeamId MyTeamId = GetGenericTeamId();
+	FGenericTeamId OtherTeamId = OtherTeamAgent->GetGenericTeamId();
+
+	if (MyTeamId == FGenericTeamId::NoTeam || OtherTeamId == FGenericTeamId::NoTeam)
+	{
+		return ETeamAttitude::Neutral;
+	}
+
+	if (MyTeamId == OtherTeamId)
+	{
+		return ETeamAttitude::Friendly;
+	}
+
+	return ETeamAttitude::Hostile;
+}
+
+//-------------------------------------------------------------------
+// Team
+//-------------------------------------------------------------------
+
+EFPSTeam AFPSCharacter::GetTeam() const
+{
+	AFPSPlayerState* PS = GetFPSPlayerState();
+	return PS ? PS->GetTeam() : EFPSTeam::None;
+}
+
+AFPSPlayerState* AFPSCharacter::GetFPSPlayerState() const
+{
+	return Cast<AFPSPlayerState>(GetPlayerState());
+}
+
+//-------------------------------------------------------------------
+// Lifecycle
+//-------------------------------------------------------------------
+
 void AFPSCharacter::BeginPlay()
 {
-	// Call the base class
 	Super::BeginPlay();
 }
 
@@ -65,7 +140,15 @@ void AFPSCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
-	// Initialize the ability system when possessed by a controller
+	// Server: Initialize ability system with PlayerState as owner for proper replication
+	InitializeAbilitySystem();
+}
+
+void AFPSCharacter::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	// Client: Initialize ability system when player state replicates
 	InitializeAbilitySystem();
 }
 
@@ -73,8 +156,9 @@ void AFPSCharacter::InitializeAbilitySystem()
 {
 	if (AbilitySystemComponent && !bAbilitiesInitialized)
 	{
-		// Initialize ability actor info - for single player, owner and avatar are both this character
-		AbilitySystemComponent->InitAbilityActorInfo(this, this);
+		// For multiplayer: Owner = PlayerState (for replication), Avatar = this character
+		AActor* OwnerActor = GetPlayerState() ? Cast<AActor>(GetPlayerState()) : this;
+		AbilitySystemComponent->InitAbilityActorInfo(OwnerActor, this);
 
 		// Bind death delegate
 		if (CombatAttributeSet)
@@ -82,11 +166,12 @@ void AFPSCharacter::InitializeAbilitySystem()
 			CombatAttributeSet->OnDeath.AddDynamic(this, &AFPSCharacter::OnDeath);
 		}
 
-		// Grant default abilities
-		GrantDefaultAbilities();
-
-		// Apply default effects
-		ApplyDefaultEffects();
+		// Only grant abilities on server
+		if (HasAuthority())
+		{
+			GrantDefaultAbilities();
+			ApplyDefaultEffects();
+		}
 
 		bAbilitiesInitialized = true;
 
@@ -124,6 +209,27 @@ void AFPSCharacter::ApplyDefaultEffects()
 			AbilitySystemComponent->ApplyEffectToSelf(EffectClass, 1.0f);
 		}
 	}
+}
+
+void AFPSCharacter::ResetForRespawn()
+{
+	bDead = false;
+	bAbilitiesInitialized = false;
+
+	// Re-enable movement
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+
+	// Re-enable input
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		EnableInput(PC);
+	}
+
+	// Re-initialize abilities and effects (restores health etc.)
+	InitializeAbilitySystem();
 }
 
 //////////////////////////////////////////////////////////////////////////// Input
@@ -225,18 +331,33 @@ void AFPSCharacter::OnDeath(AActor* Killer)
 		Killer ? *Killer->GetName() : TEXT("Unknown"));
 
 	// Disable movement
+	if (GetCharacterMovement())
 	{
-		if (GetCharacterMovement())
-		{
-			/*GetCharacterMovement()->DisableMovement();*/
-			UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
-			MovementComponent->DisableMovement();
-		}
+		UCharacterMovementComponent* MovementComponent = GetCharacterMovement();
+		MovementComponent->DisableMovement();
 	}
 
 	// Disable input
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		DisableInput(PC);
+	}
+
+	// Notify GameMode on server
+	if (HasAuthority())
+	{
+		AFPSPlayerState* VictimPS = GetFPSPlayerState();
+
+		// Find killer's player state
+		AFPSPlayerState* KillerPS = nullptr;
+		if (AFPSCharacter* KillerChar = Cast<AFPSCharacter>(Killer))
+		{
+			KillerPS = KillerChar->GetFPSPlayerState();
+		}
+
+		if (AFPSGameMode* GM = GetWorld()->GetAuthGameMode<AFPSGameMode>())
+		{
+			GM->HandlePlayerDeath(VictimPS, KillerPS);
+		}
 	}
 }

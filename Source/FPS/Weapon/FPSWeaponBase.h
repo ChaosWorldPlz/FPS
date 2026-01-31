@@ -25,6 +25,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWeaponStateChangedDelegate, EFPSW
  *
  * Base class for all weapons in the FPS project.
  * Handles weapon state, ammo, and integrates with GAS for abilities.
+ * Includes network RPCs for multiplayer fire synchronization.
  */
 UCLASS(Abstract, Blueprintable)
 class FPS_API AFPSWeaponBase : public AActor
@@ -123,6 +124,18 @@ public:
 	virtual void MeleeAttack();
 
 	//-------------------------------------------------------------------
+	// Network RPCs
+	//-------------------------------------------------------------------
+
+	/** Client requests server to fire */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire(FVector MuzzleLocation, FVector FireDirection);
+
+	/** Broadcast fire effects to all clients */
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastFireEffects(FVector MuzzleLocation, FHitResult HitResult);
+
+	//-------------------------------------------------------------------
 	// State Queries
 	//-------------------------------------------------------------------
 
@@ -202,8 +215,11 @@ protected:
 	/** Perform line trace for hit detection */
 	FHitResult PerformLineTrace(const FVector& Start, const FVector& End) const;
 
-	/** Apply damage to hit target */
+	/** Apply damage to hit target (with team filtering) */
 	void ApplyDamage(const FHitResult& HitResult);
+
+	/** Check if target is friendly (returns true if should skip damage) */
+	bool IsFriendlyTarget(const FHitResult& HitResult) const;
 
 	//-------------------------------------------------------------------
 	// GAS Integration
@@ -237,6 +253,9 @@ protected:
 
 	/** Reset fire cooldown */
 	void ResetFireCooldown();
+
+	/** Max allowed distance between client-reported muzzle and server muzzle */
+	static constexpr float MaxMuzzlePositionError = 200.0f;
 
 private:
 	/** Name of muzzle socket */
