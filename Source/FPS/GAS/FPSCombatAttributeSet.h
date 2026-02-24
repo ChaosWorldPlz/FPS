@@ -9,6 +9,22 @@
 // Forward declarations
 class AFPSCharacter;
 
+/** Record of damage dealt by an instigator, used for assist tracking */
+USTRUCT()
+struct FDamageRecord
+{
+	GENERATED_BODY()
+
+	/** Who dealt the damage */
+	TWeakObjectPtr<AActor> Instigator;
+
+	/** How much actual health damage was dealt (after armor) */
+	float DamageAmount = 0.0f;
+
+	/** World time when the damage occurred */
+	double Timestamp = 0.0;
+};
+
 // Delegate for attribute changes
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnAttributeChangedDelegate, float, OldValue, float, NewValue, AActor*, Instigator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathDelegate, AActor*, Killer);
@@ -156,6 +172,22 @@ protected:
 	UFUNCTION()
 	virtual void OnRep_MovementSpeed(const FGameplayAttributeData& OldValue);
 
+public:
+	//-------------------------------------------------------------------
+	// Assist Tracking
+	//-------------------------------------------------------------------
+
+	/**
+	 * Get all actors who contributed damage within a time window.
+	 * @param TimeWindow How far back to look (in seconds)
+	 * @param ExcludeActor Actor to exclude (typically the killer)
+	 * @return Map of Instigator -> TotalDamage
+	 */
+	TMap<AActor*, float> GetRecentDamageContributors(float TimeWindow, AActor* ExcludeActor = nullptr) const;
+
+	/** Clear all damage records (call after death processing) */
+	void ClearDamageRecords();
+
 private:
 	/** Handle damage calculation with armor absorption */
 	void HandleDamage(const FGameplayEffectModCallbackData& Data);
@@ -168,4 +200,7 @@ private:
 
 	/** Flag to prevent multiple death triggers */
 	bool bDead;
+
+	/** Recent damage records for assist tracking (server only, not replicated) */
+	TArray<FDamageRecord> DamageRecords;
 };

@@ -22,6 +22,12 @@ class FPS_API UGA_WeaponMelee : public UFPSGameplayAbility
 public:
 	UGA_WeaponMelee();
 
+	virtual bool CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+		const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayTagContainer* SourceTags = nullptr,
+		const FGameplayTagContainer* TargetTags = nullptr,
+		OUT FGameplayTagContainer* OptionalRelevantTags = nullptr) const override;
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo,
@@ -49,6 +55,10 @@ protected:
 	/** Duration of melee attack */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
 	float MeleeDuration = 0.5f;
+
+	/** Stamina cost for melee attack (0 = free) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")
+	float StaminaCost = 20.0f;
 
 	/** Damage effect class */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Melee")

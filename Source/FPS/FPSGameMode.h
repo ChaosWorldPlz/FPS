@@ -10,6 +10,7 @@
 class AFPSPlayerState;
 class AFPSGameState;
 class AFPSCharacter;
+class AFPSExtractionZone;
 class UFPSMenuSubsystem;
 
 /**
@@ -45,6 +46,14 @@ public:
 	/** Minimum players to start match */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FPS|Match")
 	int32 MinPlayersToStart;
+
+	/** Time window for assist eligibility (seconds before death) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FPS|Match")
+	float AssistTimeWindow = 10.0f;
+
+	/** Minimum damage threshold for assist (fraction of MaxHealth, 0-1) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FPS|Match")
+	float AssistDamageThreshold = 0.2f;
 
 	//-------------------------------------------------------------------
 	// Team Assignment
@@ -87,6 +96,10 @@ public:
 	/** Get typed game state */
 	UFUNCTION(BlueprintPure, Category = "FPS|Match")
 	AFPSGameState* GetFPSGameState() const;
+
+	/** Called when players successfully extract from a zone */
+	UFUNCTION(BlueprintCallable, Category = "FPS|Match")
+	void OnPlayerExtracted(AFPSExtractionZone* ExtractionZone);
 
 	/** Get the menu subsystem */
 	UFUNCTION(BlueprintCallable, Category = "Menu")

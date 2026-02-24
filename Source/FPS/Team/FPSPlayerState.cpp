@@ -8,7 +8,7 @@ AFPSPlayerState::AFPSPlayerState()
 	, Kills(0)
 	, Deaths(0)
 	, Assists(0)
-	, Score(0)
+	, MatchScore(0)
 	, DamageDealt(0.0f)
 	, DamageTaken(0.0f)
 {
@@ -22,7 +22,7 @@ void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	DOREPLIFETIME(AFPSPlayerState, Kills);
 	DOREPLIFETIME(AFPSPlayerState, Deaths);
 	DOREPLIFETIME(AFPSPlayerState, Assists);
-	DOREPLIFETIME(AFPSPlayerState, Score);
+	DOREPLIFETIME(AFPSPlayerState, MatchScore);
 	DOREPLIFETIME(AFPSPlayerState, DamageDealt);
 	DOREPLIFETIME(AFPSPlayerState, DamageTaken);
 }
@@ -75,9 +75,9 @@ void AFPSPlayerState::AddScore(int32 Amount)
 	{
 		return;
 	}
-	int32 OldScore = Score;
-	Score += Amount;
-	OnScoreChanged.Broadcast(OldScore, Score);
+	int32 OldScore = MatchScore;
+	MatchScore += Amount;
+	OnScoreChanged.Broadcast(OldScore, MatchScore);
 }
 
 void AFPSPlayerState::AddDamageDealt(float Amount)
@@ -107,7 +107,7 @@ void AFPSPlayerState::ResetStats()
 	Kills = 0;
 	Deaths = 0;
 	Assists = 0;
-	Score = 0;
+	MatchScore = 0;
 	DamageDealt = 0.0f;
 	DamageTaken = 0.0f;
 }
@@ -122,7 +122,7 @@ void AFPSPlayerState::OnRep_Kills()
 	OnKillsChanged.Broadcast(Kills);
 }
 
-void AFPSPlayerState::OnRep_Score()
+void AFPSPlayerState::OnRep_MatchScore()
 {
-	OnScoreChanged.Broadcast(Score - 1, Score); // approximate old value
+	OnScoreChanged.Broadcast(MatchScore - 1, MatchScore); // approximate old value
 }

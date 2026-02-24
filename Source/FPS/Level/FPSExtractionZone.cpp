@@ -4,6 +4,7 @@
 #include "Components/BoxComponent.h"
 #include "FPS/FPSCharacter.h"
 #include "FPS/FPSGameMode.h"
+#include "FPS/Inventory/Public/InventoryGridComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 AFPSExtractionZone::AFPSExtractionZone()
@@ -113,8 +114,33 @@ bool AFPSExtractionZone::CanPlayerExtract(APawn* Player) const
 	// Check requirements
 	if (bHasRequirements && RequiredItemID != NAME_None)
 	{
-		// TODO: Check player inventory for required item
-		// For now, return true
+		const AFPSCharacter* Character = Cast<AFPSCharacter>(Player);
+		if (!Character)
+		{
+			return false;
+		}
+
+		const UInventoryGridComponent* Inventory = Character->FindComponentByClass<UInventoryGridComponent>();
+		if (!Inventory)
+		{
+			return false;
+		}
+
+		TArray<FInventoryItemPlacement> AllItems = Inventory->GetAllItems();
+		bool bHasItem = false;
+		for (const FInventoryItemPlacement& Placement : AllItems)
+		{
+			if (Placement.Item.ItemDefID == RequiredItemID)
+			{
+				bHasItem = true;
+				break;
+			}
+		}
+
+		if (!bHasItem)
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -151,6 +177,31 @@ void AFPSExtractionZone::UpdateExtractionProgress(float DeltaTime)
 
 void AFPSExtractionZone::CompleteExtraction()
 {
+	// Consume required items before completing
+	if (bHasRequirements && bConsumeRequiredItem && RequiredItemID != NAME_None)
+	{
+		for (const TObjectPtr<APawn>& PlayerPawn : PlayersInZone)
+		{
+			if (!PlayerPawn) continue;
+
+			AFPSCharacter* Character = Cast<AFPSCharacter>(PlayerPawn.Get());
+			if (!Character) continue;
+
+			UInventoryGridComponent* Inventory = Character->FindComponentByClass<UInventoryGridComponent>();
+			if (!Inventory) continue;
+
+			TArray<FInventoryItemPlacement> AllItems = Inventory->GetAllItems();
+			for (const FInventoryItemPlacement& Placement : AllItems)
+			{
+				if (Placement.Item.ItemDefID == RequiredItemID)
+				{
+					Inventory->RemoveItem(Placement.Item.InstanceID);
+					break;
+				}
+			}
+		}
+	}
+
 	SetExtractionState(EFPSExtractionState::Complete);
 
 	// Notify game mode

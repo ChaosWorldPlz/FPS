@@ -164,6 +164,16 @@ void UFPSCombatAttributeSet::HandleDamage(const FGameplayEffectModCallbackData& 
 		}
 	}
 
+	// Record damage for assist tracking (server only)
+	if (Instigator && RemainingDamage > 0.0f)
+	{
+		FDamageRecord Record;
+		Record.Instigator = Instigator;
+		Record.DamageAmount = RemainingDamage;
+		Record.Timestamp = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+		DamageRecords.Add(Record);
+	}
+
 	// Apply remaining damage to health
 	if (RemainingDamage > 0.0f)
 	{
@@ -220,6 +230,42 @@ void UFPSCombatAttributeSet::CheckDeath(AActor* Instigator)
 		bDead = true;
 		OnDeath.Broadcast(Instigator);
 	}
+}
+
+//-------------------------------------------------------------------
+// Assist Tracking
+//-------------------------------------------------------------------
+
+TMap<AActor*, float> UFPSCombatAttributeSet::GetRecentDamageContributors(float TimeWindow, AActor* ExcludeActor) const
+{
+	TMap<AActor*, float> Contributors;
+
+	const double CurrentTime = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+	const double CutoffTime = CurrentTime - TimeWindow;
+
+	for (const FDamageRecord& Record : DamageRecords)
+	{
+		if (Record.Timestamp < CutoffTime)
+		{
+			continue;
+		}
+
+		AActor* InstigatorActor = Record.Instigator.Get();
+		if (!InstigatorActor || InstigatorActor == ExcludeActor)
+		{
+			continue;
+		}
+
+		float& TotalDamage = Contributors.FindOrAdd(InstigatorActor, 0.0f);
+		TotalDamage += Record.DamageAmount;
+	}
+
+	return Contributors;
+}
+
+void UFPSCombatAttributeSet::ClearDamageRecords()
+{
+	DamageRecords.Empty();
 }
 
 //-------------------------------------------------------------------

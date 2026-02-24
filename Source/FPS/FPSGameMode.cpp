@@ -6,7 +6,11 @@
 #include "Team/FPSPlayerState.h"
 #include "Team/FPSGameState.h"
 #include "Level/FPSPlayerStart.h"
+#include "Level/FPSExtractionZone.h"
 #include "System/FPSMenuSubsystem.h"
+#include "GAS/FPSCombatAttributeSet.h"
+#include "Weapon/FPSWeaponBase.h"
+#include "Weapon/FPSWeaponDataAsset.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerStart.h"
@@ -143,10 +147,87 @@ void AFPSGameMode::HandlePlayerDeath(AFPSPlayerState* Victim, AFPSPlayerState* K
 			GS->AddTeamScore(Killer->GetTeam(), KillScore);
 		}
 
-		// Notify clients for kill feed
-		if (APlayerController* KillerPC = Cast<APlayerController>(Killer->GetOwner()))
+	}
+
+	// --- Assist Tracking ---
+	{
+		AController* VictimController = Cast<AController>(Victim->GetOwner());
+		AFPSCharacter* VictimChar = VictimController ? Cast<AFPSCharacter>(VictimController->GetPawn()) : nullptr;
+
+		if (VictimChar)
 		{
-			// Kill feed can be handled by Lua via delegates
+			UFPSCombatAttributeSet* CombatAttrs = VictimChar->GetCombatAttributeSet();
+			if (CombatAttrs)
+			{
+				const float MaxHealth = CombatAttrs->GetMaxHealth();
+				const float DamageThreshold = MaxHealth * AssistDamageThreshold;
+
+				// Get killer's pawn to exclude from assist list
+				AActor* KillerPawn = nullptr;
+				if (Killer)
+				{
+					AController* KillerController = Cast<AController>(Killer->GetOwner());
+					if (KillerController)
+					{
+						KillerPawn = KillerController->GetPawn();
+					}
+				}
+
+				TMap<AActor*, float> Contributors = CombatAttrs->GetRecentDamageContributors(AssistTimeWindow, KillerPawn);
+
+				for (const auto& Pair : Contributors)
+				{
+					if (Pair.Value >= DamageThreshold)
+					{
+						AFPSCharacter* ContribChar = Cast<AFPSCharacter>(Pair.Key);
+						if (ContribChar)
+						{
+							AFPSPlayerState* ContribPS = ContribChar->GetFPSPlayerState();
+							if (ContribPS && ContribPS != Victim && ContribPS != Killer)
+							{
+								ContribPS->AddAssist();
+							}
+						}
+					}
+				}
+
+				CombatAttrs->ClearDamageRecords();
+			}
+		}
+	}
+
+	// --- Kill Feed Broadcast ---
+	{
+		FFPSKillFeedInfo KillFeedInfo;
+		KillFeedInfo.VictimName = Victim->GetPlayerName();
+		KillFeedInfo.VictimTeam = Victim->GetTeam();
+
+		if (Killer && Killer != Victim)
+		{
+			KillFeedInfo.KillerName = Killer->GetPlayerName();
+			KillFeedInfo.KillerTeam = Killer->GetTeam();
+
+			// Get weapon info from killer's character
+			AController* KillerController = Cast<AController>(Killer->GetOwner());
+			AFPSCharacter* KillerChar = KillerController ? Cast<AFPSCharacter>(KillerController->GetPawn()) : nullptr;
+			if (KillerChar && KillerChar->GetCurrentWeapon())
+			{
+				AFPSWeaponBase* Weapon = KillerChar->GetCurrentWeapon();
+				if (Weapon->WeaponData)
+				{
+					KillFeedInfo.WeaponType = Weapon->WeaponData->WeaponType;
+				}
+				KillFeedInfo.bHeadshot = Weapon->bLastHitWasHeadshot;
+			}
+		}
+
+		for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			AFPSPlayerController* PC = Cast<AFPSPlayerController>(*It);
+			if (PC)
+			{
+				PC->ClientShowKillFeed(KillFeedInfo);
+			}
 		}
 	}
 
@@ -404,6 +485,13 @@ void AFPSGameMode::SetFPSMatchState(EFPSMatchState NewState)
 AFPSGameState* AFPSGameMode::GetFPSGameState() const
 {
 	return Cast<AFPSGameState>(GameState);
+}
+
+void AFPSGameMode::OnPlayerExtracted(AFPSExtractionZone* ExtractionZone)
+{
+	// TODO: Handle extraction result (e.g. end raid, save inventory, etc.)
+	UE_LOG(LogTemp, Log, TEXT("Players extracted from zone: %s"),
+		ExtractionZone ? *ExtractionZone->GetName() : TEXT("Unknown"));
 }
 
 UFPSMenuSubsystem* AFPSGameMode::GetMenuSubsystem() const

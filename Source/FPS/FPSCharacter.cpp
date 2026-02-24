@@ -17,6 +17,7 @@
 #include "Weapon/FPSWeaponBase.h"
 #include "Team/FPSPlayerState.h"
 #include "FPSGameMode.h"
+#include "GAS/FPSGameplayTags.h"
 #include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -67,6 +68,7 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 
 	DOREPLIFETIME(AFPSCharacter, CurrentWeapon);
 	DOREPLIFETIME(AFPSCharacter, bDead);
+	DOREPLIFETIME(AFPSCharacter, bIsSprinting);
 }
 
 UAbilitySystemComponent* AFPSCharacter::GetAbilitySystemComponent() const
@@ -134,6 +136,33 @@ AFPSPlayerState* AFPSCharacter::GetFPSPlayerState() const
 void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Cache base walk speed for sprint calculations
+	if (GetCharacterMovement())
+	{
+		BaseWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	}
+}
+
+void AFPSCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!bDead && HasAuthority())
+	{
+		UpdateStamina(DeltaTime);
+	}
+}
+
+void AFPSCharacter::Jump()
+{
+	if (!HasStamina(JumpStaminaCost))
+	{
+		return;
+	}
+
+	ConsumeStamina(JumpStaminaCost);
+	Super::Jump();
 }
 
 void AFPSCharacter::PossessedBy(AController* NewController)
@@ -239,8 +268,8 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		// Jumping (uses our override for stamina check)
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFPSCharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -248,6 +277,13 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFPSCharacter::Look);
+
+		// Sprinting
+		if (SprintAction)
+		{
+			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AFPSCharacter::StartSprint);
+			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopSprint);
+		}
 	}
 	else
 	{
@@ -317,6 +353,117 @@ void AFPSCharacter::UnequipWeapon()
 	CurrentWeapon = nullptr;
 }
 
+//-------------------------------------------------------------------
+// Stamina System
+//-------------------------------------------------------------------
+
+void AFPSCharacter::StartSprint()
+{
+	if (bDead || bIsSprinting)
+	{
+		return;
+	}
+
+	if (!HasStamina(0.1f))
+	{
+		return;
+	}
+
+	bIsSprinting = true;
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
+	}
+
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->AddLooseGameplayTag(FFPSGameplayTags::Get().State_Sprinting);
+	}
+}
+
+void AFPSCharacter::StopSprint()
+{
+	if (!bIsSprinting)
+	{
+		return;
+	}
+
+	bIsSprinting = false;
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
+	}
+
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->RemoveLooseGameplayTag(FFPSGameplayTags::Get().State_Sprinting);
+	}
+}
+
+bool AFPSCharacter::HasStamina(float Amount) const
+{
+	if (!CombatAttributeSet)
+	{
+		return false;
+	}
+	return CombatAttributeSet->GetStamina() >= Amount;
+}
+
+bool AFPSCharacter::ConsumeStamina(float Amount)
+{
+	if (!HasStamina(Amount))
+	{
+		return false;
+	}
+
+	if (AbilitySystemComponent && CombatAttributeSet)
+	{
+		float NewStamina = FMath::Max(0.0f, CombatAttributeSet->GetStamina() - Amount);
+		AbilitySystemComponent->SetNumericAttributeBase(
+			UFPSCombatAttributeSet::GetStaminaAttribute(), NewStamina);
+	}
+
+	LastStaminaConsumeTime = GetWorld()->GetTimeSeconds();
+	return true;
+}
+
+void AFPSCharacter::UpdateStamina(float DeltaTime)
+{
+	if (!CombatAttributeSet || !AbilitySystemComponent)
+	{
+		return;
+	}
+
+	// Sprint drain
+	if (bIsSprinting)
+	{
+		float DrainAmount = SprintStaminaDrainRate * DeltaTime;
+		if (!ConsumeStamina(DrainAmount))
+		{
+			StopSprint();
+		}
+		return; // No regen while sprinting
+	}
+
+	// Regen: only after delay since last consumption
+	float CurrentStamina = CombatAttributeSet->GetStamina();
+	float MaxStamina = CombatAttributeSet->GetMaxStamina();
+
+	if (CurrentStamina < MaxStamina)
+	{
+		float TimeSinceLastConsume = GetWorld()->GetTimeSeconds() - LastStaminaConsumeTime;
+		if (TimeSinceLastConsume >= StaminaRegenDelay)
+		{
+			float RegenRate = CombatAttributeSet->GetStaminaRegenRate();
+			float NewStamina = FMath::Min(MaxStamina, CurrentStamina + RegenRate * DeltaTime);
+			AbilitySystemComponent->SetNumericAttributeBase(
+				UFPSCombatAttributeSet::GetStaminaAttribute(), NewStamina);
+		}
+	}
+}
+
 void AFPSCharacter::OnDeath(AActor* Killer)
 {
 	if (bDead)
@@ -325,6 +472,9 @@ void AFPSCharacter::OnDeath(AActor* Killer)
 	}
 
 	bDead = true;
+
+	// Stop sprinting on death
+	StopSprint();
 
 	UE_LOG(LogTemplateCharacter, Log, TEXT("%s has died. Killer: %s"),
 		*GetName(),

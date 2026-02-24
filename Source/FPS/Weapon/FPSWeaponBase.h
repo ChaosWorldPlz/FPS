@@ -67,6 +67,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon|State")
 	float CurrentSpread = 0.0f;
 
+	/** Whether the last hit was a headshot (set during ApplyDamage, read by GameMode for kill feed) */
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon|State")
+	bool bLastHitWasHeadshot = false;
+
 	/** Owning character */
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon|State")
 	TWeakObjectPtr<AFPSCharacter> OwningCharacter;

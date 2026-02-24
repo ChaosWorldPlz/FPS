@@ -167,10 +167,15 @@ void AFPSPlayerController::LeaveGame()
 // Client RPCs
 //-------------------------------------------------------------------
 
-void AFPSPlayerController::ClientShowKillFeed_Implementation(const FString& KillerName, const FString& VictimName)
+void AFPSPlayerController::ClientShowKillFeed_Implementation(FFPSKillFeedInfo KillFeedInfo)
 {
-	// This is a hook point for Lua/Blueprint to display kill feed UI
-	UE_LOG(LogTemp, Log, TEXT("Kill Feed: %s eliminated %s"), *KillerName, *VictimName);
+	UE_LOG(LogTemp, Log, TEXT("Kill Feed: %s eliminated %s (Weapon: %d, Headshot: %s)"),
+		*KillFeedInfo.KillerName, *KillFeedInfo.VictimName,
+		static_cast<int32>(KillFeedInfo.WeaponType),
+		KillFeedInfo.bHeadshot ? TEXT("Yes") : TEXT("No"));
+
+	// Broadcast to Lua/Blueprint listeners
+	OnKillFeedReceived.Broadcast(KillFeedInfo);
 }
 
 void AFPSPlayerController::ClientOnMatchStateChanged_Implementation(EFPSMatchState NewState, EFPSTeam Winner)

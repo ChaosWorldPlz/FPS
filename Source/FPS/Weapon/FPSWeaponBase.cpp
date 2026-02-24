@@ -546,7 +546,8 @@ void AFPSWeaponBase::ApplyDamage(const FHitResult& HitResult)
 	float Damage = WeaponData->GetDamageAtRange(Distance);
 
 	// Check for headshot
-	if (HitResult.BoneName == TEXT("head"))
+	bLastHitWasHeadshot = (HitResult.BoneName == TEXT("head"));
+	if (bLastHitWasHeadshot)
 	{
 		Damage *= WeaponData->HeadshotMultiplier;
 	}

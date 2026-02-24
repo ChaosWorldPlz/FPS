@@ -60,6 +60,10 @@ class AFPSCharacter : public ACharacter, public IAbilitySystemInterface, public 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	/** Sprint Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
+
 public:
 	AFPSCharacter();
 
@@ -97,6 +101,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void Jump() override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
@@ -122,6 +128,42 @@ public:
 	/** Default effects to apply on spawn (e.g., initial attribute values) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS|Effects")
 	TArray<TSubclassOf<UGameplayEffect>> DefaultEffects;
+
+	//-------------------------------------------------------------------
+	// Stamina System
+	//-------------------------------------------------------------------
+
+	/** Stamina drain rate while sprinting (per second) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS|Stamina")
+	float SprintStaminaDrainRate = 20.0f;
+
+	/** Stamina cost per jump */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS|Stamina")
+	float JumpStaminaCost = 15.0f;
+
+	/** Stamina cost per melee attack */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS|Stamina")
+	float MeleeStaminaCost = 20.0f;
+
+	/** Delay before stamina starts regenerating after last consumption (seconds) */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS|Stamina")
+	float StaminaRegenDelay = 1.0f;
+
+	/** Movement speed multiplier while sprinting */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS|Stamina")
+	float SprintSpeedMultiplier = 1.5f;
+
+	/** Check if currently sprinting */
+	UFUNCTION(BlueprintPure, Category = "FPS|Stamina")
+	bool IsSprinting() const { return bIsSprinting; }
+
+	/** Check if character has enough stamina */
+	UFUNCTION(BlueprintPure, Category = "FPS|Stamina")
+	bool HasStamina(float Amount) const;
+
+	/** Consume stamina. Returns true if enough stamina was available. */
+	UFUNCTION(BlueprintCallable, Category = "FPS|Stamina")
+	bool ConsumeStamina(float Amount);
 
 	//-------------------------------------------------------------------
 	// Weapon System
@@ -161,6 +203,25 @@ protected:
 	/** Flag to track if character is dead */
 	UPROPERTY(Replicated)
 	bool bDead;
+
+	/** Whether the player is currently sprinting */
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "FPS|Stamina")
+	bool bIsSprinting = false;
+
+	/** Cached base walk speed (from CharacterMovementComponent) */
+	float BaseWalkSpeed = 0.0f;
+
+	/** Time of last stamina consumption (for regen delay) */
+	float LastStaminaConsumeTime = 0.0f;
+
+	/** Start sprinting */
+	void StartSprint();
+
+	/** Stop sprinting */
+	void StopSprint();
+
+	/** Tick-based stamina drain and regen */
+	void UpdateStamina(float DeltaTime);
 
 	/** Called when the character dies */
 	UFUNCTION()

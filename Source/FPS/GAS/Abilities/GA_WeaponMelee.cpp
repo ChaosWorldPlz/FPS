@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GA_WeaponMelee.h"
+#include "FPS/FPSCharacter.h"
 #include "FPS/Weapon/FPSWeaponBase.h"
 #include "FPS/GAS/FPSGameplayTags.h"
 #include "AbilitySystemComponent.h"
@@ -19,12 +20,45 @@ UGA_WeaponMelee::UGA_WeaponMelee()
 	BlockAbilitiesWithTag.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Reload);
 }
 
+bool UGA_WeaponMelee::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayTagContainer* SourceTags,
+	const FGameplayTagContainer* TargetTags,
+	FGameplayTagContainer* OptionalRelevantTags) const
+{
+	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
+	{
+		return false;
+	}
+
+	if (StaminaCost > 0.0f)
+	{
+		AFPSCharacter* Character = Cast<AFPSCharacter>(ActorInfo->AvatarActor.Get());
+		if (Character && !Character->HasStamina(StaminaCost))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void UGA_WeaponMelee::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+
+	// Deduct stamina cost
+	if (StaminaCost > 0.0f)
+	{
+		AFPSCharacter* Character = Cast<AFPSCharacter>(ActorInfo->AvatarActor.Get());
+		if (Character)
+		{
+			Character->ConsumeStamina(StaminaCost);
+		}
+	}
 
 	// Perform melee attack
 	PerformMeleeAttack();

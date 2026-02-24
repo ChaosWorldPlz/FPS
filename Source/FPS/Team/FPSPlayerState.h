@@ -48,7 +48,7 @@ public:
 	int32 GetAssists() const { return Assists; }
 
 	UFUNCTION(BlueprintPure, Category = "FPS|Stats")
-	int32 GetMatchScore() const { return Score; }
+	int32 GetMatchScore() const { return MatchScore; }
 
 	UFUNCTION(BlueprintPure, Category = "FPS|Stats")
 	float GetDamageDealt() const { return DamageDealt; }
@@ -103,8 +103,8 @@ protected:
 	UPROPERTY(Replicated)
 	int32 Assists;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Score)
-	int32 Score;
+	UPROPERTY(ReplicatedUsing = OnRep_MatchScore)
+	int32 MatchScore;
 
 	UPROPERTY(Replicated)
 	float DamageDealt;
@@ -119,5 +119,5 @@ protected:
 	void OnRep_Kills();
 
 	UFUNCTION()
-	void OnRep_Score();
+	void OnRep_MatchScore();
 };

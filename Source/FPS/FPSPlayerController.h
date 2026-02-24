@@ -5,11 +5,39 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Team/FPSTeamTypes.h"
+#include "Weapon/FPSWeaponTypes.h"
 #include "FPSPlayerController.generated.h"
 
 class UInputMappingContext;
 class UInputAction;
 class UFPSMenuSubsystem;
+
+/** Information about a kill for the kill feed UI */
+USTRUCT(BlueprintType)
+struct FFPSKillFeedInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly, Category = "KillFeed")
+	FString KillerName;
+
+	UPROPERTY(BlueprintReadOnly, Category = "KillFeed")
+	FString VictimName;
+
+	UPROPERTY(BlueprintReadOnly, Category = "KillFeed")
+	EFPSTeam KillerTeam = EFPSTeam::None;
+
+	UPROPERTY(BlueprintReadOnly, Category = "KillFeed")
+	EFPSTeam VictimTeam = EFPSTeam::None;
+
+	UPROPERTY(BlueprintReadOnly, Category = "KillFeed")
+	EFPSWeaponType WeaponType = EFPSWeaponType::None;
+
+	UPROPERTY(BlueprintReadOnly, Category = "KillFeed")
+	bool bHeadshot = false;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnKillFeedReceived, const FFPSKillFeedInfo&, KillFeedInfo);
 
 /**
  * AFPSPlayerController
@@ -62,7 +90,11 @@ public:
 
 	/** Show kill feed on client */
 	UFUNCTION(Client, Reliable)
-	void ClientShowKillFeed(const FString& KillerName, const FString& VictimName);
+	void ClientShowKillFeed(FFPSKillFeedInfo KillFeedInfo);
+
+	/** Delegate for Lua/Blueprint to bind kill feed UI */
+	UPROPERTY(BlueprintAssignable, Category = "FPS|Events")
+	FOnKillFeedReceived OnKillFeedReceived;
 
 	/** Notify client of match state change */
 	UFUNCTION(Client, Reliable)
