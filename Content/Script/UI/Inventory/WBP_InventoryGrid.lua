@@ -543,14 +543,46 @@ end
 
 --[[
 ============================================================================
+                            自动整理
+============================================================================
+--]]
+
+-- 整理背包（触发入口，触发方式由调用方决定）
+-- 用法：
+--   按钮触发：  OnSortButtonClicked → self:SortInventory()
+--   捡拾触发：  OnItemAdded        → self:SortInventory()
+function WBP_InventoryGrid:SortInventory()
+    if not self.InventoryComponent then
+        print("[WBP_InventoryGrid] SortInventory: InventoryComponent 为空")
+        return
+    end
+
+    local GameInstance = UE.UGameplayStatics.GetGameInstance(self)
+    if not GameInstance then return end
+
+    local DataManager = GameInstance:GetSubsystem(UE.UItemDataManager)
+    if not DataManager then
+        print("[WBP_InventoryGrid] SortInventory: DataManager 未找到")
+        return
+    end
+
+    local Sorter = require("Core.InventorySorter")
+    local ok = Sorter:Sort(self.InventoryComponent, DataManager)
+
+    if ok then
+        self:PlaySound("Sort")
+    end
+end
+
+--[[
+============================================================================
                               音效
 ============================================================================
 --]]
 
 function WBP_InventoryGrid:PlaySound(SoundName)
-    -- TODO: 实现音效播放
-    -- 需要在蓝图中配置 SoundMap 或使用 DataTable
-    print(string.format("[WBP_InventoryGrid] PlaySound: %s", SoundName))
+    local SoundManager = require("Core.SoundManager")
+    SoundManager:Get():PlayInventorySound(SoundName, self:GetOwningPlayerPawn())
 end
 
 --[[
