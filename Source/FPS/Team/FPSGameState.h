@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameStateBase.h"
+#include "GameFramework/GameState.h"
 #include "FPSTeamTypes.h"
 #include "FPSGameState.generated.h"
 
@@ -14,7 +14,7 @@
  * Tracks match state, team scores, and match timer.
  */
 UCLASS()
-class FPS_API AFPSGameState : public AGameStateBase
+class FPS_API AFPSGameState : public AGameState
 {
 	GENERATED_BODY()
 
@@ -28,7 +28,7 @@ public:
 	//-------------------------------------------------------------------
 
 	UFUNCTION(BlueprintPure, Category = "FPS|Match")
-	EFPSMatchState GetMatchState() const { return MatchState; }
+	EFPSMatchState GetFPSMatchState() const { return FPSMatchState; }
 
 	/** Set match state (server only) */
 	void SetMatchState(EFPSMatchState NewState);
@@ -91,8 +91,8 @@ public:
 	FOnTeamScoreChanged OnTeamScoreChanged;
 
 protected:
-	UPROPERTY(ReplicatedUsing = OnRep_MatchState)
-	EFPSMatchState MatchState;
+	UPROPERTY(ReplicatedUsing = OnRep_FPSMatchState)
+	EFPSMatchState FPSMatchState;
 
 	UPROPERTY(ReplicatedUsing = OnRep_TeamAScore)
 	int32 TeamAScore;
@@ -104,7 +104,7 @@ protected:
 	float MatchTimeRemaining;
 
 	UFUNCTION()
-	void OnRep_MatchState();
+	void OnRep_FPSMatchState();
 
 	UFUNCTION()
 	void OnRep_TeamAScore();
@@ -113,5 +113,5 @@ protected:
 	void OnRep_TeamBScore();
 
 private:
-	EFPSMatchState PreviousMatchState;
+	EFPSMatchState PreviousFPSMatchState;
 };

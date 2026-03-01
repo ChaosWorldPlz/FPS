@@ -55,7 +55,7 @@ void AFPSGameMode::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	AFPSGameState* GS = GetFPSGameState();
-	if (GS && GS->GetMatchState() == EFPSMatchState::InProgress)
+	if (GS && GS->GetFPSMatchState() == EFPSMatchState::InProgress)
 	{
 		UpdateMatchTimer(DeltaSeconds);
 	}
@@ -64,23 +64,47 @@ void AFPSGameMode::Tick(float DeltaSeconds)
 void AFPSGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+}
 
+void AFPSGameMode::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
 	if (!NewPlayer)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[FPSGameMode] HandleStartingNewPlayer: NewPlayer is NULL"));
 		return;
 	}
 
-	// Assign team
+	UE_LOG(LogTemp, Log, TEXT("[FPSGameMode] HandleStartingNewPlayer BEGIN - Controller: %s"), *NewPlayer->GetName());
+
+	// Assign team BEFORE Super spawns the pawn, so ChoosePlayerStart can use it
 	AFPSPlayerState* PS = Cast<AFPSPlayerState>(NewPlayer->PlayerState);
-	if (PS)
+	if (!PS)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[FPSGameMode] HandleStartingNewPlayer: PlayerState is NULL or not AFPSPlayerState"));
+	}
+	else if (PS->GetTeam() == EFPSTeam::None)
 	{
 		EFPSTeam AssignedTeam = ChooseTeamForPlayer(NewPlayer);
 		PS->ServerSetTeam(AssignedTeam);
-
-		UE_LOG(LogTemp, Log, TEXT("Player %s assigned to %s"),
+		UE_LOG(LogTemp, Log, TEXT("[FPSGameMode] Player %s assigned to %s"),
 			*PS->GetPlayerName(),
 			*UFPSTeamStatics::GetTeamDisplayName(AssignedTeam).ToString());
 	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[FPSGameMode] Player %s already has team %s, skipping assignment"),
+			*PS->GetPlayerName(),
+			*UFPSTeamStatics::GetTeamDisplayName(PS->GetTeam()).ToString());
+	}
+
+	// Don't call Super here: Super checks IsMatchInProgress() via PlayerCanRestart(),
+	// which returns false when waiting for enough players, leaving the player as spectator.
+	// We always want to spawn the pawn immediately on join.
+	RestartPlayer(NewPlayer);
+
+	APawn* Pawn = NewPlayer->GetPawn();
+	UE_LOG(LogTemp, Log, TEXT("[FPSGameMode] HandleStartingNewPlayer END - Pawn: %s"),
+		Pawn ? *Pawn->GetClass()->GetName() : TEXT("NULL (spawn failed)"));
 }
 
 void AFPSGameMode::Logout(AController* Exiting)
@@ -267,7 +291,7 @@ void AFPSGameMode::RespawnPlayer(AController* Controller)
 
 	// Don't respawn if match is over
 	AFPSGameState* GS = GetFPSGameState();
-	if (GS && GS->GetMatchState() == EFPSMatchState::GameOver)
+	if (GS && GS->GetFPSMatchState() == EFPSMatchState::GameOver)
 	{
 		return;
 	}
@@ -335,7 +359,7 @@ AActor* AFPSGameMode::ChoosePlayerStart_Implementation(AController* Player)
 void AFPSGameMode::CheckWinCondition()
 {
 	AFPSGameState* GS = GetFPSGameState();
-	if (!GS || GS->GetMatchState() != EFPSMatchState::InProgress)
+	if (!GS || GS->GetFPSMatchState() != EFPSMatchState::InProgress)
 	{
 		return;
 	}

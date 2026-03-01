@@ -60,7 +60,7 @@ float UFPSScoreboardWidget::GetMatchTimeRemaining() const
 EFPSMatchState UFPSScoreboardWidget::GetMatchState() const
 {
 	AFPSGameState* GS = GetFPSGameState();
-	return GS ? GS->GetMatchState() : EFPSMatchState::WaitingForPlayers;
+	return GS ? GS->GetFPSMatchState() : EFPSMatchState::WaitingForPlayers;
 }
 
 FString UFPSScoreboardWidget::GetFormattedTimeRemaining() const

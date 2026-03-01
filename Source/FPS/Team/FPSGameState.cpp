@@ -4,13 +4,13 @@
 #include "Net/UnrealNetwork.h"
 
 AFPSGameState::AFPSGameState()
-	: MatchState(EFPSMatchState::WaitingForPlayers)
+	: FPSMatchState(EFPSMatchState::WaitingForPlayers)
 	, TeamAScore(0)
 	, TeamBScore(0)
 	, MatchTimeRemaining(0.0f)
 	, ScoreToWin(30)
 	, MatchTimeLimitSeconds(600)
-	, PreviousMatchState(EFPSMatchState::WaitingForPlayers)
+	, PreviousFPSMatchState(EFPSMatchState::WaitingForPlayers)
 {
 }
 
@@ -18,7 +18,7 @@ void AFPSGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AFPSGameState, MatchState);
+	DOREPLIFETIME(AFPSGameState, FPSMatchState);
 	DOREPLIFETIME(AFPSGameState, TeamAScore);
 	DOREPLIFETIME(AFPSGameState, TeamBScore);
 	DOREPLIFETIME(AFPSGameState, MatchTimeRemaining);
@@ -33,10 +33,10 @@ void AFPSGameState::SetMatchState(EFPSMatchState NewState)
 		return;
 	}
 
-	if (MatchState != NewState)
+	if (FPSMatchState != NewState)
 	{
-		EFPSMatchState OldState = MatchState;
-		MatchState = NewState;
+		EFPSMatchState OldState = FPSMatchState;
+		FPSMatchState = NewState;
 		OnMatchStateChanged.Broadcast(OldState, NewState);
 	}
 }
@@ -105,10 +105,10 @@ FString AFPSGameState::GetFormattedTimeRemaining() const
 	return FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
 }
 
-void AFPSGameState::OnRep_MatchState()
+void AFPSGameState::OnRep_FPSMatchState()
 {
-	OnMatchStateChanged.Broadcast(PreviousMatchState, MatchState);
-	PreviousMatchState = MatchState;
+	OnMatchStateChanged.Broadcast(PreviousFPSMatchState, FPSMatchState);
+	PreviousFPSMatchState = FPSMatchState;
 }
 
 void AFPSGameState::OnRep_TeamAScore()
