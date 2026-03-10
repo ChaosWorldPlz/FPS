@@ -1,0 +1,571 @@
+2026-03-10 20:36:50,475 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-10 20:36:50,475 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-10 20:36:50,475 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-10 20:36:50,475 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-10 20:36:50,475 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-10 20:36:50,476 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-10 20:36:50,476 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-10 20:36:50,476 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-10 20:36:50,552 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-10 20:36:50,555 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-10 20:36:50,558 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-10 20:36:50,558 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-10 20:36:50,566 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-10 20:39:51,670 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-10 20:39:51,670 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-10 20:39:51,671 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-10 20:39:51,671 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-10 20:39:51,671 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-10 20:39:51,671 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-10 20:39:51,671 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-10 20:39:51,671 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-10 20:39:51,821 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-10 20:39:51,826 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-10 20:39:51,830 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-10 20:39:51,830 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-10 20:39:51,840 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-10 20:39:51,842 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64D6D50>
+2026-03-10 20:39:51,842 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-10 20:39:51,842 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-10 20:39:51,844 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 20:39:51,846 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64D6AD0>
+2026-03-10 20:39:51,847 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-10 20:39:51,847 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-10 20:39:51,847 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64AD6E0>
+2026-03-10 20:39:51,848 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-10 20:39:51,848 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-10 20:39:51,848 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-10 20:39:51,848 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 20:39:51,849 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 20:40:53,089 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64AD0F0>
+2026-03-10 20:40:53,089 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 20:40:53,089 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 20:40:53,090 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:416] - Creating new UnrealConnection instance
+2026-03-10 20:40:53,090 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 20:40:55,127 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-10 20:40:55,127 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-10 20:40:55,627 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-10 20:40:57,651 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-10 20:40:57,651 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-10 20:40:58,652 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-10 20:41:00,681 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-10 20:41:00,681 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-10 20:41:02,681 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-10 20:41:04,701 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-10 20:41:04,701 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:04,701 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:04,701 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-10 20:41:04,701 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-10 20:41:05,202 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 20:41:07,233 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-10 20:41:07,233 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-10 20:41:07,733 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-10 20:41:09,768 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-10 20:41:09,768 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-10 20:41:10,768 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-10 20:41:12,792 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-10 20:41:12,792 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-10 20:41:14,793 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-10 20:41:16,811 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-10 20:41:16,811 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:16,811 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:16,811 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-10 20:41:16,811 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-10 20:41:17,811 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 20:41:19,833 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-10 20:41:19,833 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-10 20:41:20,334 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-10 20:41:22,377 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-10 20:41:22,377 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-10 20:41:23,377 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-10 20:41:25,400 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-10 20:41:25,401 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-10 20:41:27,401 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-10 20:41:29,438 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-10 20:41:29,438 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:29,438 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:29,439 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-10 20:41:29,439 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-10 20:41:31,439 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 20:41:33,455 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-10 20:41:33,455 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-10 20:41:33,955 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-10 20:41:35,985 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-10 20:41:35,985 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-10 20:41:36,986 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-10 20:41:39,007 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-10 20:41:39,007 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-10 20:41:41,008 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-10 20:41:43,057 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-10 20:41:43,057 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:43,058 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-10 20:41:43,058 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-10 20:41:43,062 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 20:48:52,509 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B666A450>
+2026-03-10 20:48:52,509 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 20:48:52,509 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 20:48:52,509 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 20:48:52,510 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 20:48:52,510 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): get_actors_in_level
+2026-03-10 20:48:52,510 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "get_actors_in_level", "params": {}}...
+2026-03-10 20:48:52,603 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (13094 bytes) for get_actors_in_level
+2026-03-10 20:48:52,604 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command get_actors_in_level completed successfully
+2026-03-10 20:48:52,607 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:18:31,229 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66379B0>
+2026-03-10 21:18:31,231 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:18:31,231 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:18:31,235 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-10 21:18:31,235 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:18:31,261 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:18:31,261 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): read_blueprint_content
+2026-03-10 21:18:31,261 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "read_blueprint_content", "params": {"blueprint_path": "/Game/FPS/Migrate/BP_ThirdPersonCharacter", "include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true}}...
+2026-03-10 21:19:01,274 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Timeout after 30.0s waiting for response to read_blueprint_content (received 0 bytes)
+2026-03-10 21:19:01,275 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-10 21:19:01,275 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-10 21:19:01,775 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:19:01,775 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:19:01,775 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 2): read_blueprint_content
+2026-03-10 21:19:01,775 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "read_blueprint_content", "params": {"blueprint_path": "/Game/FPS/Migrate/BP_ThirdPersonCharacter", "include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true}}...
+2026-03-10 21:19:02,092 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (5600 bytes) for read_blueprint_content
+2026-03-10 21:19:02,092 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command read_blueprint_content completed successfully
+2026-03-10 21:19:02,096 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:20:41,152 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6637570>
+2026-03-10 21:20:41,152 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:20:41,152 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:20:41,154 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:818] - Getting Blueprint function details: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-10 21:20:41,155 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:820] -   - Specific function: ShootingDetecter
+2026-03-10 21:20:41,155 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:20:41,155 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:20:41,155 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): get_blueprint_function_details
+2026-03-10 21:20:41,155 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "get_blueprint_function_details", "params": {"blueprint_path": "/Game/FPS/Migrate/BP_ThirdPersonCharacter", "function_name": "ShootingDetecter", "include_graph": true}}...
+2026-03-10 21:20:41,450 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (8979 bytes) for get_blueprint_function_details
+2026-03-10 21:20:41,450 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command get_blueprint_function_details completed successfully
+2026-03-10 21:20:41,454 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:20:59,758 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64A2C50>
+2026-03-10 21:20:59,758 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:20:59,759 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:20:59,760 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:734] - Analyzing Blueprint graph: /Game/FPS/Migrate/BP_ThirdPersonCharacter -> Shooting Logic
+2026-03-10 21:20:59,760 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:20:59,760 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:20:59,760 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): analyze_blueprint_graph
+2026-03-10 21:20:59,760 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "analyze_blueprint_graph", "params": {"blueprint_path": "/Game/FPS/Migrate/BP_ThirdPersonCharacter", "graph_name": "Shooting Logic", "include_node_details": true, "include_pin_connections": true, "trace_execution_flow": true}}...
+2026-03-10 21:21:00,121 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (70 bytes) for analyze_blueprint_graph
+2026-03-10 21:21:00,122 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command analyze_blueprint_graph completed successfully
+2026-03-10 21:21:00,122 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Graph not found: Shooting Logic
+2026-03-10 21:21:00,124 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:21:06,117 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64A3A50>
+2026-03-10 21:21:06,117 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:21:06,117 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:21:06,118 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:734] - Analyzing Blueprint graph: /Game/FPS/Migrate/BP_ThirdPersonCharacter -> EventGraph
+2026-03-10 21:21:06,118 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:21:06,119 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:21:06,119 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): analyze_blueprint_graph
+2026-03-10 21:21:06,119 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "analyze_blueprint_graph", "params": {"blueprint_path": "/Game/FPS/Migrate/BP_ThirdPersonCharacter", "graph_name": "EventGraph", "include_node_details": true, "include_pin_connections": true, "trace_execution_flow": true}}...
+2026-03-10 21:21:06,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (1792 bytes) for analyze_blueprint_graph
+2026-03-10 21:21:06,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command analyze_blueprint_graph completed successfully
+2026-03-10 21:21:06,462 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:21:08,148 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B665F5C0>
+2026-03-10 21:21:08,148 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:21:08,148 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:21:08,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:818] - Getting Blueprint function details: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-10 21:21:08,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:820] -   - Specific function: DecreaseConcentration
+2026-03-10 21:21:08,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:21:08,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:21:08,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): get_blueprint_function_details
+2026-03-10 21:21:08,148 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "get_blueprint_function_details", "params": {"blueprint_path": "/Game/FPS/Migrate/BP_ThirdPersonCharacter", "function_name": "DecreaseConcentration", "include_graph": true}}...
+2026-03-10 21:21:08,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (1168 bytes) for get_blueprint_function_details
+2026-03-10 21:21:08,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command get_blueprint_function_details completed successfully
+2026-03-10 21:21:08,460 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:21:08,467 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B665E210>
+2026-03-10 21:21:08,467 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:21:08,467 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:21:08,467 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:818] - Getting Blueprint function details: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-10 21:21:08,467 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:820] -   - Specific function: GetDelay
+2026-03-10 21:21:08,467 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:21:08,468 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:21:08,468 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): get_blueprint_function_details
+2026-03-10 21:21:08,468 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "get_blueprint_function_details", "params": {"blueprint_path": "/Game/FPS/Migrate/BP_ThirdPersonCharacter", "function_name": "GetDelay", "include_graph": true}}...
+2026-03-10 21:21:08,797 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (1108 bytes) for get_blueprint_function_details
+2026-03-10 21:21:08,797 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command get_blueprint_function_details completed successfully
+2026-03-10 21:21:08,799 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:25:42,734 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66AE350>
+2026-03-10 21:25:42,735 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:25:42,735 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:25:42,738 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:25:42,739 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:25:42,739 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_blueprint
+2026-03-10 21:25:42,739 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_blueprint", "params": {"name": "BP_FPSPlayer", "parent_class": "/Script/FPS.FPSCharacter"}}...
+2026-03-10 21:25:42,889 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (117 bytes) for create_blueprint
+2026-03-10 21:25:42,889 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_blueprint completed successfully
+2026-03-10 21:25:42,893 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:25:50,590 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66ADD30>
+2026-03-10 21:25:50,590 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:25:50,590 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:25:50,595 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:25:50,595 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:25:50,595 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_variable
+2026-03-10 21:25:50,595 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_variable", "params": {"blueprint_name": "BP_FPSPlayer", "variable_name": "Concentration", "variable_type": "int", "default_value": 5, "is_public": true, "tooltip": "\u5b50\u5f39\u65f6\u95f4\u84c4\u529b\u503c\uff0c\u5f52\u96f6\u65f6\u9000\u51faTimeStop", "category": "TimeStop"}}...
+2026-03-10 21:25:51,069 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (190 bytes) for create_variable
+2026-03-10 21:25:51,069 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_variable completed successfully
+2026-03-10 21:25:51,070 - BlueprintGraph.VariableManager - ERROR - [variable_manager.py:79] - Failed to create variable: Unknown error
+2026-03-10 21:25:51,074 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:25:51,077 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B65F2B60>
+2026-03-10 21:25:51,078 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:25:51,078 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:25:51,078 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:25:51,078 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:25:51,078 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_variable
+2026-03-10 21:25:51,078 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_variable", "params": {"blueprint_name": "BP_FPSPlayer", "variable_name": "IsTimeStop", "variable_type": "bool", "default_value": false, "category": "TimeStop"}}...
+2026-03-10 21:25:51,350 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (189 bytes) for create_variable
+2026-03-10 21:25:51,350 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_variable completed successfully
+2026-03-10 21:25:51,351 - BlueprintGraph.VariableManager - ERROR - [variable_manager.py:79] - Failed to create variable: Unknown error
+2026-03-10 21:25:51,352 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:25:51,378 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B630B4D0>
+2026-03-10 21:25:51,378 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:25:51,378 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:25:51,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:25:51,379 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:25:51,379 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_variable
+2026-03-10 21:25:51,379 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_variable", "params": {"blueprint_name": "BP_FPSPlayer", "variable_name": "DPI", "variable_type": "float", "default_value": 0.5, "is_public": true, "tooltip": "\u9f20\u6807\u7075\u654f\u5ea6", "category": "Settings"}}...
+2026-03-10 21:25:51,693 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (182 bytes) for create_variable
+2026-03-10 21:25:51,693 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_variable completed successfully
+2026-03-10 21:25:51,693 - BlueprintGraph.VariableManager - ERROR - [variable_manager.py:79] - Failed to create variable: Unknown error
+2026-03-10 21:25:51,695 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:25:51,700 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6670890>
+2026-03-10 21:25:51,700 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:25:51,700 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:25:51,700 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:25:51,701 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:25:51,701 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_variable
+2026-03-10 21:25:51,701 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_variable", "params": {"blueprint_name": "BP_FPSPlayer", "variable_name": "PostProcessEnabled", "variable_type": "bool", "default_value": true, "is_public": true, "category": "Settings"}}...
+2026-03-10 21:25:52,001 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (196 bytes) for create_variable
+2026-03-10 21:25:52,001 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_variable completed successfully
+2026-03-10 21:25:52,001 - BlueprintGraph.VariableManager - ERROR - [variable_manager.py:79] - Failed to create variable: Unknown error
+2026-03-10 21:25:52,002 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:25:52,009 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64D1390>
+2026-03-10 21:25:52,010 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:25:52,010 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:25:52,010 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:25:52,011 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:25:52,011 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_variable
+2026-03-10 21:25:52,011 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_variable", "params": {"blueprint_name": "BP_FPSPlayer", "variable_name": "PitchMultiplier", "variable_type": "float", "default_value": 1, "category": "Audio"}}...
+2026-03-10 21:25:52,355 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (192 bytes) for create_variable
+2026-03-10 21:25:52,355 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_variable completed successfully
+2026-03-10 21:25:52,355 - BlueprintGraph.VariableManager - ERROR - [variable_manager.py:79] - Failed to create variable: Unknown error
+2026-03-10 21:25:52,356 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:07,999 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B64D10D0>
+2026-03-10 21:26:08,000 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:08,000 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:08,003 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:08,003 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:08,003 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:08,003 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "BP_FPSPlayer", "function_name": "TryFireWeapon", "return_type": "void"}}...
+2026-03-10 21:26:08,222 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (72 bytes) for create_function
+2026-03-10 21:26:08,222 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:08,223 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Blueprint not found: BP_FPSPlayer
+2026-03-10 21:26:08,225 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:08,228 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691130>
+2026-03-10 21:26:08,229 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:08,229 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:08,229 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:08,229 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:08,229 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:08,229 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "BP_FPSPlayer", "function_name": "IncreaseConcentration", "return_type": "void"}}...
+2026-03-10 21:26:08,554 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (72 bytes) for create_function
+2026-03-10 21:26:08,554 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:08,554 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Blueprint not found: BP_FPSPlayer
+2026-03-10 21:26:08,556 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:08,560 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66919F0>
+2026-03-10 21:26:08,560 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:08,560 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:08,560 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:08,560 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:08,561 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:08,561 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "BP_FPSPlayer", "function_name": "DecreaseConcentration", "return_type": "void"}}...
+2026-03-10 21:26:08,886 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (72 bytes) for create_function
+2026-03-10 21:26:08,886 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:08,886 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Blueprint not found: BP_FPSPlayer
+2026-03-10 21:26:08,887 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:16,838 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691130>
+2026-03-10 21:26:16,838 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:16,838 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:16,841 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:16,842 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:16,842 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): compile_blueprint
+2026-03-10 21:26:16,842 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "compile_blueprint", "params": {"blueprint_name": "BP_FPSPlayer"}}...
+2026-03-10 21:26:17,246 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (94 bytes) for compile_blueprint
+2026-03-10 21:26:17,246 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command compile_blueprint completed successfully
+2026-03-10 21:26:17,248 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:20,850 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691950>
+2026-03-10 21:26:20,850 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:20,850 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:20,851 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:20,864 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:20,864 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:20,864 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "BP_FPSPlayer", "function_name": "TryFireWeapon", "return_type": "void"}}...
+2026-03-10 21:26:20,892 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (72 bytes) for create_function
+2026-03-10 21:26:20,892 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:20,892 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Blueprint not found: BP_FPSPlayer
+2026-03-10 21:26:20,894 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:22,259 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66919F0>
+2026-03-10 21:26:22,260 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:22,260 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:22,260 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:22,260 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:22,260 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:22,260 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "BP_FPSPlayer", "function_name": "IncreaseConcentration", "return_type": "void"}}...
+2026-03-10 21:26:22,554 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (72 bytes) for create_function
+2026-03-10 21:26:22,554 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:22,554 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Blueprint not found: BP_FPSPlayer
+2026-03-10 21:26:22,556 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:25,412 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691950>
+2026-03-10 21:26:25,412 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:25,412 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:25,412 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:25,413 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:25,413 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:25,413 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "BP_FPSPlayer", "function_name": "DecreaseConcentration", "return_type": "void"}}...
+2026-03-10 21:26:25,474 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (72 bytes) for create_function
+2026-03-10 21:26:25,474 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:25,474 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Blueprint not found: BP_FPSPlayer
+2026-03-10 21:26:25,477 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:29,889 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66911D0>
+2026-03-10 21:26:29,889 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:29,889 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:29,889 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:29,890 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:29,890 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:29,890 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "TryFireWeapon", "return_type": "void"}}...
+2026-03-10 21:26:30,013 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (135 bytes) for create_function
+2026-03-10 21:26:30,013 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:30,014 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:34,394 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66918B0>
+2026-03-10 21:26:34,394 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:34,394 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:34,394 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:34,395 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:34,395 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:34,395 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "IncreaseConcentration", "return_type": "void"}}...
+2026-03-10 21:26:34,532 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (151 bytes) for create_function
+2026-03-10 21:26:34,532 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:34,533 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:34,900 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691950>
+2026-03-10 21:26:34,900 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:34,900 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:34,901 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:34,901 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:34,901 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:34,901 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "DecreaseConcentration", "return_type": "void"}}...
+2026-03-10 21:26:35,027 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (151 bytes) for create_function
+2026-03-10 21:26:35,027 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:35,029 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:35,673 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66911D0>
+2026-03-10 21:26:35,673 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:35,673 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:35,674 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:35,674 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:35,674 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_function
+2026-03-10 21:26:35,674 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "OnHealthChanged", "return_type": "void"}}...
+2026-03-10 21:26:35,840 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (139 bytes) for create_function
+2026-03-10 21:26:35,840 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_function completed successfully
+2026-03-10 21:26:35,841 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:49,016 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66918B0>
+2026-03-10 21:26:49,017 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:49,017 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:49,021 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:49,022 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:49,022 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:26:49,022 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "CallFunction", "node_params": {"pos_x": 200.0, "pos_y": 0.0, "event_type": "BeginPlay", "target_function": "GetCurrentWeapon", "target_blueprint": "/Script/FPS.FPSCharacter", "function_name": "TryFireWeapon"}}}...
+2026-03-10 21:26:49,406 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (73 bytes) for add_blueprint_node
+2026-03-10 21:26:49,407 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:26:49,407 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Failed to create CallFunction node
+2026-03-10 21:26:49,407 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Failed to create CallFunction node
+2026-03-10 21:26:49,409 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:26:56,436 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691590>
+2026-03-10 21:26:56,436 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:26:56,436 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:26:56,436 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:26:56,437 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:26:56,437 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:26:56,437 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "CallFunction", "node_params": {"pos_x": 200.0, "pos_y": 0.0, "event_type": "BeginPlay", "target_function": "GetCurrentWeapon", "function_name": "TryFireWeapon"}}}...
+2026-03-10 21:26:56,743 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (73 bytes) for add_blueprint_node
+2026-03-10 21:26:56,743 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:26:56,743 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Failed to create CallFunction node
+2026-03-10 21:26:56,743 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Failed to create CallFunction node
+2026-03-10 21:26:56,744 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:16,090 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691130>
+2026-03-10 21:27:16,091 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:16,091 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:16,091 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:16,091 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:16,091 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:27:16,091 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "VariableGet", "node_params": {"pos_x": 200.0, "pos_y": 0.0, "event_type": "BeginPlay", "variable_name": "Concentration", "function_name": "DecreaseConcentration"}}}...
+2026-03-10 21:27:16,417 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (167 bytes) for add_blueprint_node
+2026-03-10 21:27:16,417 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:27:16,417 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Unknown error
+2026-03-10 21:27:16,418 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:17,025 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66911D0>
+2026-03-10 21:27:17,025 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:17,025 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:17,025 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:17,025 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:17,025 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:27:17,025 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "VariableGet", "node_params": {"pos_x": 200.0, "pos_y": 0.0, "event_type": "BeginPlay", "variable_name": "Concentration", "function_name": "IncreaseConcentration"}}}...
+2026-03-10 21:27:17,422 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (167 bytes) for add_blueprint_node
+2026-03-10 21:27:17,422 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:27:17,422 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Unknown error
+2026-03-10 21:27:17,424 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:25,059 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66919F0>
+2026-03-10 21:27:25,060 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:25,060 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:25,060 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:25,060 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:25,060 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:27:25,060 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "Comparison", "node_params": {"pos_x": 400.0, "pos_y": 0.0, "event_type": "BeginPlay", "function_name": "DecreaseConcentration"}}}...
+2026-03-10 21:27:25,419 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (173 bytes) for add_blueprint_node
+2026-03-10 21:27:25,419 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:27:25,419 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Unknown error
+2026-03-10 21:27:25,420 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:25,682 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66913B0>
+2026-03-10 21:27:25,682 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:25,682 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:25,682 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:25,683 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:25,683 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:27:25,683 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "VariableSet", "node_params": {"pos_x": 400.0, "pos_y": 150.0, "event_type": "BeginPlay", "variable_name": "Concentration", "function_name": "DecreaseConcentration"}}}...
+2026-03-10 21:27:25,758 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (169 bytes) for add_blueprint_node
+2026-03-10 21:27:25,758 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:27:25,758 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Unknown error
+2026-03-10 21:27:25,760 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:26,193 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691B30>
+2026-03-10 21:27:26,193 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:26,193 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:26,193 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:26,213 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:26,213 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:27:26,213 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "Branch", "node_params": {"pos_x": 650.0, "pos_y": 0.0, "event_type": "BeginPlay", "function_name": "DecreaseConcentration"}}}...
+2026-03-10 21:27:26,422 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (161 bytes) for add_blueprint_node
+2026-03-10 21:27:26,422 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:27:26,423 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Unknown error
+2026-03-10 21:27:26,424 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:26,537 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691810>
+2026-03-10 21:27:26,537 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:26,537 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:26,537 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:26,538 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:26,538 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): add_blueprint_node
+2026-03-10 21:27:26,538 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "add_blueprint_node", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_type": "VariableSet", "node_params": {"pos_x": 850.0, "pos_y": 0.0, "event_type": "BeginPlay", "variable_name": "IsTimeStop", "function_name": "DecreaseConcentration"}}}...
+2026-03-10 21:27:26,755 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (167 bytes) for add_blueprint_node
+2026-03-10 21:27:26,755 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command add_blueprint_node completed successfully
+2026-03-10 21:27:26,755 - BlueprintGraph.NodeManager - ERROR - [node_manager.py:71] - Failed to add node: Unknown error
+2026-03-10 21:27:26,758 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:46,708 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66911D0>
+2026-03-10 21:27:46,708 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:46,708 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:46,708 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:734] - Analyzing Blueprint graph: /Game/Blueprints/BP_FPSPlayer -> DecreaseConcentration
+2026-03-10 21:27:46,708 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:46,708 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:46,709 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): analyze_blueprint_graph
+2026-03-10 21:27:46,709 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "analyze_blueprint_graph", "params": {"blueprint_path": "/Game/Blueprints/BP_FPSPlayer", "graph_name": "DecreaseConcentration", "include_node_details": true, "include_pin_connections": true, "trace_execution_flow": true}}...
+2026-03-10 21:27:47,095 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (4056 bytes) for analyze_blueprint_graph
+2026-03-10 21:27:47,095 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command analyze_blueprint_graph completed successfully
+2026-03-10 21:27:47,098 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:27:47,453 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66913B0>
+2026-03-10 21:27:47,453 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:27:47,453 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:27:47,454 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:734] - Analyzing Blueprint graph: /Game/Blueprints/BP_FPSPlayer -> IncreaseConcentration
+2026-03-10 21:27:47,454 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:27:47,479 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:27:47,479 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): analyze_blueprint_graph
+2026-03-10 21:27:47,479 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "analyze_blueprint_graph", "params": {"blueprint_path": "/Game/Blueprints/BP_FPSPlayer", "graph_name": "IncreaseConcentration", "include_node_details": true, "include_pin_connections": true, "trace_execution_flow": true}}...
+2026-03-10 21:27:47,757 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (1076 bytes) for analyze_blueprint_graph
+2026-03-10 21:27:47,757 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command analyze_blueprint_graph completed successfully
+2026-03-10 21:27:47,761 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:28:09,296 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691810>
+2026-03-10 21:28:09,296 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:28:09,296 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:28:09,300 - BlueprintGraph.NodeProperties - DEBUG - [node_properties.py:332] - Performing semantic action 'set_function_call' on node 'K2Node_PromotableOperator_0' in /Game/Blueprints/BP_FPSPlayer
+2026-03-10 21:28:09,300 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:28:09,301 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:28:09,301 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): set_node_property
+2026-03-10 21:28:09,301 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "set_node_property", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "node_id": "K2Node_PromotableOperator_0", "action": "set_function_call", "target_function": "Subtract_IntInt", "function_name": "DecreaseConcentration"}}...
+2026-03-10 21:28:09,445 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (72 bytes) for set_node_property
+2026-03-10 21:28:09,445 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command set_node_property completed successfully
+2026-03-10 21:28:09,445 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Unknown action: set_function_call
+2026-03-10 21:28:09,445 - BlueprintGraph.NodeProperties - ERROR - [node_properties.py:358] - Failed to modify node: Unknown action: set_function_call
+2026-03-10 21:28:09,446 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:29:55,419 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66913B0>
+2026-03-10 21:29:55,419 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:29:55,419 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:29:55,419 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:29:55,419 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:29:55,419 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): delete_function
+2026-03-10 21:29:55,419 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "delete_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "TryFireWeapon"}}...
+2026-03-10 21:29:55,823 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (103 bytes) for delete_function
+2026-03-10 21:29:55,823 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command delete_function completed successfully
+2026-03-10 21:29:55,824 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:29:55,828 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66916D0>
+2026-03-10 21:29:55,828 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:29:55,828 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:29:55,828 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:29:55,829 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:29:55,829 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): delete_function
+2026-03-10 21:29:55,829 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "delete_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "IncreaseConcentration"}}...
+2026-03-10 21:29:56,152 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (111 bytes) for delete_function
+2026-03-10 21:29:56,152 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command delete_function completed successfully
+2026-03-10 21:29:56,154 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:29:56,156 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691810>
+2026-03-10 21:29:56,156 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:29:56,156 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:29:56,157 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:29:56,157 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:29:56,157 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): delete_function
+2026-03-10 21:29:56,157 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "delete_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "DecreaseConcentration"}}...
+2026-03-10 21:29:56,486 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (111 bytes) for delete_function
+2026-03-10 21:29:56,486 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command delete_function completed successfully
+2026-03-10 21:29:56,487 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:29:56,490 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691130>
+2026-03-10 21:29:56,490 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:29:56,490 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:29:56,490 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:29:56,506 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:29:56,506 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): delete_function
+2026-03-10 21:29:56,506 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "delete_function", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer", "function_name": "OnHealthChanged"}}...
+2026-03-10 21:29:56,824 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (105 bytes) for delete_function
+2026-03-10 21:29:56,824 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command delete_function completed successfully
+2026-03-10 21:29:56,826 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:30:02,329 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691B30>
+2026-03-10 21:30:02,329 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:30:02,329 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:30:02,329 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:30:02,329 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:30:02,329 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): compile_blueprint
+2026-03-10 21:30:02,329 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "compile_blueprint", "params": {"blueprint_name": "/Game/Blueprints/BP_FPSPlayer"}}...
+2026-03-10 21:30:02,579 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (111 bytes) for compile_blueprint
+2026-03-10 21:30:02,579 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command compile_blueprint completed successfully
+2026-03-10 21:30:02,580 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:31:09,366 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691130>
+2026-03-10 21:31:09,366 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:31:09,366 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:31:09,374 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:43:41,532 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B6691810>
+2026-03-10 21:43:41,533 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:43:41,533 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:43:41,533 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:43:41,533 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:43:41,534 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): create_blueprint
+2026-03-10 21:43:41,534 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "create_blueprint", "params": {"name": "BP_FPSPlayerController", "parent_class": "/Script/FPS.AFPSPlayerController"}}...
+2026-03-10 21:43:41,543 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (87 bytes) for create_blueprint
+2026-03-10 21:43:41,543 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command create_blueprint completed successfully
+2026-03-10 21:43:41,543 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Blueprint already exists: BP_FPSPlayerController
+2026-03-10 21:43:41,546 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-10 21:43:45,181 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B6B66913B0>
+2026-03-10 21:43:45,181 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-10 21:43:45,181 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-10 21:43:45,181 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-10 21:43:45,183 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-10 21:43:45,183 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): compile_blueprint
+2026-03-10 21:43:45,183 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "compile_blueprint", "params": {"blueprint_name": "BP_FPSPlayerController"}}...
+2026-03-10 21:43:45,298 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:264] - Received complete response (104 bytes) for compile_blueprint
+2026-03-10 21:43:45,298 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:380] - Command compile_blueprint completed successfully
+2026-03-10 21:43:45,300 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent

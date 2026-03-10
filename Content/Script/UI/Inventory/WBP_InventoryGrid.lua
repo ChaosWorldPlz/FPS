@@ -591,6 +591,118 @@ end
 ============================================================================
 --]]
 
+--[[
+============================================================================
+                        武器装备 / 改装快捷操作
+============================================================================
+--]]
+
+-- 将背包内武器装备到指定槽位
+-- @param ItemWidget: 被右键点击的武器 ItemIconWidget
+-- @param Slot: EFPSWeaponSlot 枚举值 (1=Primary1, 2=Primary2, 3=Pistol)
+function WBP_InventoryGrid:EquipWeaponToSlot(ItemWidget, Slot)
+    if not ItemWidget then return end
+
+    local ItemData = ItemWidget:GetItemData()
+    if not ItemData then return end
+
+    local Pawn = self:GetOwningPlayerPawn()
+    if not Pawn then
+        print("[WBP_InventoryGrid] EquipWeaponToSlot: Pawn is nil")
+        return
+    end
+
+    local SlotComp = Pawn:FindComponentByClass(UE.UFPSWeaponSlotComponent)
+    if not SlotComp then
+        print("[WBP_InventoryGrid] EquipWeaponToSlot: WeaponSlotComponent not found")
+        return
+    end
+
+    -- 获取对应的武器 Actor 类（通过 ItemDataManager 或武器注册表）
+    local WeaponClass = self:GetWeaponClassFromItemDefID(ItemData.ItemDefID)
+    if not WeaponClass then
+        print(string.format("[WBP_InventoryGrid] EquipWeaponToSlot: No WeaponClass for %s",
+            tostring(ItemData.ItemDefID)))
+        return
+    end
+
+    -- 请求服务器执行槽位设置
+    local Character = UE.UGameplayStatics.GetPlayerCharacter(self, 0)
+    if Character and Character.ServerSwitchWeaponSlot then
+        -- 先设置武器到槽（需要 C++ 暴露 SetWeaponInSlot 的 Lua 可调版本，或通过 RPC）
+        local Ok = SlotComp:SetWeaponInSlot(Slot, ItemData, WeaponClass)
+        if Ok then
+            -- 从背包移除武器物品
+            if self.InventoryComponent then
+                self.InventoryComponent:RemoveItem(ItemData.InstanceID)
+            end
+            print(string.format("[WBP_InventoryGrid] Equipped weapon %s to slot %d",
+                tostring(ItemData.ItemDefID), Slot))
+        else
+            print("[WBP_InventoryGrid] EquipWeaponToSlot: SetWeaponInSlot failed")
+        end
+    end
+end
+
+-- 打开武器改装界面
+-- @param ItemWidget: 被右键点击的武器 ItemIconWidget
+function WBP_InventoryGrid:OpenWeaponModify(ItemWidget)
+    if not ItemWidget then return end
+
+    local ItemData = ItemWidget:GetItemData()
+    if not ItemData then return end
+
+    local Pawn = self:GetOwningPlayerPawn()
+    if not Pawn then return end
+
+    local SlotComp = Pawn:FindComponentByClass(UE.UFPSWeaponSlotComponent)
+    if not SlotComp then return end
+
+    -- 找到当前槽位中对应该 ItemDefID 的武器 Actor
+    local TargetWeapon = nil
+    for _, Slot in ipairs({1, 2, 3}) do
+        local WeaponActor = SlotComp:GetWeaponInSlot(Slot)
+        if WeaponActor then
+            local SlotItem = SlotComp.SlotInventoryItems:Get(Slot)
+            if SlotItem and SlotItem.ItemDefID == ItemData.ItemDefID then
+                TargetWeapon = WeaponActor
+                break
+            end
+        end
+    end
+
+    if not TargetWeapon then
+        print("[WBP_InventoryGrid] OpenWeaponModify: weapon not in any slot")
+        return
+    end
+
+    -- 创建并打开改装界面
+    if not self.WeaponModifyWidget then
+        if not self.WeaponModifyWidgetClass then
+            print("[WBP_InventoryGrid] WeaponModifyWidgetClass not set!")
+            return
+        end
+        self.WeaponModifyWidget = UE.UWidgetBlueprintLibrary.Create(
+            self, self.WeaponModifyWidgetClass, nil)
+        if self.WeaponModifyWidget then
+            self.WeaponModifyWidget:AddToViewport(101)
+        end
+    end
+
+    if self.WeaponModifyWidget then
+        self.WeaponModifyWidget:OpenForWeapon(TargetWeapon, self.InventoryComponent)
+    end
+end
+
+-- 根据 ItemDefID 获取对应的武器 Blueprint 类
+-- 约定：在蓝图中设置 WeaponClassMap（TMap<FName, TSubclassOf<AFPSWeaponBase>>）
+function WBP_InventoryGrid:GetWeaponClassFromItemDefID(ItemDefID)
+    if self.WeaponClassMap then
+        return self.WeaponClassMap[ItemDefID]
+    end
+    return nil
+end
+
 -- 显示右键菜单
 -- @param ItemWidget: 被右键点击的 ItemIconWidget
 function WBP_InventoryGrid:ShowContextMenu(ItemWidget)
@@ -645,8 +757,34 @@ function WBP_InventoryGrid:ShowContextMenu(ItemWidget)
     -- 设置菜单位置（使用 SetPositionInViewport）
     self.ContextMenuWidget:SetPositionInViewport(ScreenPos, false)
 
-    -- 显示菜单
-    self.ContextMenuWidget:ShowAtPosition(ScreenPos, ItemWidget, self)
+    -- 传入额外武器装备回调（供 WBP_ContextMenu 调用）
+    local ItemData = ItemWidget:GetItemData()
+    local WeaponCallbacks = nil
+    if ItemData then
+        local GameInstance = UE.UGameplayStatics.GetGameInstance(self)
+        local DataManager = GameInstance and GameInstance:GetSubsystem(UE.UItemDataManager)
+        local ItemDef = DataManager and DataManager:GetItemDefinition(ItemData.ItemDefID)
+        -- EItemType::Weapon == 0
+        if ItemDef and ItemDef.ItemType == 0 then
+            WeaponCallbacks = {
+                EquipPrimary1 = function()
+                    self:EquipWeaponToSlot(ItemWidget, 1)
+                end,
+                EquipPrimary2 = function()
+                    self:EquipWeaponToSlot(ItemWidget, 2)
+                end,
+                EquipPistol = function()
+                    self:EquipWeaponToSlot(ItemWidget, 3)
+                end,
+                OpenModify = function()
+                    self:OpenWeaponModify(ItemWidget)
+                end,
+            }
+        end
+    end
+
+    -- 显示菜单（WeaponCallbacks 可选，WBP_ContextMenu 负责显示对应按钮）
+    self.ContextMenuWidget:ShowAtPosition(ScreenPos, ItemWidget, self, WeaponCallbacks)
 
     print(string.format("[WBP_InventoryGrid] ShowContextMenu at (%.0f, %.0f)", MouseX, MouseY))
 end

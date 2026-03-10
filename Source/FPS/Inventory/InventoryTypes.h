@@ -22,6 +22,7 @@ enum class EItemType : uint8
 	Consumable  UMETA(DisplayName = "消耗品"),
 	Quest       UMETA(DisplayName = "任务物品"),
 	Collectables UMETA(DisplayName = "收藏品"),
+	Attachment  UMETA(DisplayName = "配件"),
 	Misc        UMETA(DisplayName = "杂项")
 };
 

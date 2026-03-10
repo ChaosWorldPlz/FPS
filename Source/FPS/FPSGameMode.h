@@ -121,6 +121,7 @@ protected:
 	virtual void HandleMatchHasStarted() override;
 	virtual void HandleMatchHasEnded() override;
 	virtual bool ReadyToStartMatch_Implementation() override;
+	virtual bool PlayerCanRestart_Implementation(APlayerController* Player) override;
 
 	/** Start the countdown phase */
 	void StartCountdown();

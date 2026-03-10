@@ -15,6 +15,7 @@
 #include "GAS/FPSGameplayAbility.h"
 #include "GAS/FPSCombatAttributeSet.h"
 #include "Weapon/FPSWeaponBase.h"
+#include "Weapon/FPSWeaponSlotComponent.h"
 #include "Team/FPSPlayerState.h"
 #include "FPSGameMode.h"
 #include "GAS/FPSGameplayTags.h"
@@ -28,6 +29,7 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 AFPSCharacter::AFPSCharacter()
 	: bAbilitiesInitialized(false)
 	, bDead(false)
+	, WeaponSlotComp(nullptr)
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
@@ -60,13 +62,15 @@ AFPSCharacter::AFPSCharacter()
 
 	// Create the Combat Attribute Set (automatically registered with ASC)
 	CombatAttributeSet = CreateDefaultSubobject<UFPSCombatAttributeSet>(TEXT("CombatAttributeSet"));
+
+	// Create the weapon slot component (manages 3 carry slots)
+	WeaponSlotComp = CreateDefaultSubobject<UFPSWeaponSlotComponent>(TEXT("WeaponSlotComp"));
 }
 
 void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AFPSCharacter, CurrentWeapon);
 	DOREPLIFETIME(AFPSCharacter, bDead);
 	DOREPLIFETIME(AFPSCharacter, bIsSprinting);
 }
@@ -284,6 +288,31 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AFPSCharacter::StartSprint);
 			EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AFPSCharacter::StopSprint);
 		}
+
+		// Fire
+		if (FireAction)
+		{
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSCharacter::HandleFire);
+		}
+
+		// Aim (ADS)
+		if (AimAction)
+		{
+			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AFPSCharacter::HandleAimStart);
+			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AFPSCharacter::HandleAimStop);
+		}
+
+		// Crouch
+		if (CrouchToggleAction)
+		{
+			EnhancedInputComponent->BindAction(CrouchToggleAction, ETriggerEvent::Started, this, &AFPSCharacter::HandleCrouchToggle);
+		}
+
+		// Reload
+		if (ReloadAction)
+		{
+			EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Started, this, &AFPSCharacter::HandleReload);
+		}
 	}
 	else
 	{
@@ -318,39 +347,25 @@ void AFPSCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
-void AFPSCharacter::EquipWeapon(AFPSWeaponBase* NewWeapon)
+AFPSWeaponBase* AFPSCharacter::GetCurrentWeapon() const
 {
-	if (!NewWeapon || NewWeapon == CurrentWeapon)
-	{
-		return;
-	}
-
-	// Unequip current weapon
-	UnequipWeapon();
-
-	// Equip new weapon
-	CurrentWeapon = NewWeapon;
-	CurrentWeapon->OnEquip(this);
-
-	// Attach weapon to character
-	if (Mesh1P)
-	{
-		CurrentWeapon->AttachToComponent(Mesh1P, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("GripPoint"));
-	}
-
-	UE_LOG(LogTemplateCharacter, Log, TEXT("%s equipped weapon: %s"), *GetName(), *NewWeapon->GetName());
+	return WeaponSlotComp ? WeaponSlotComp->GetActiveWeapon() : nullptr;
 }
 
-void AFPSCharacter::UnequipWeapon()
+void AFPSCharacter::ServerSwitchWeaponSlot_Implementation(EFPSWeaponSlot Slot)
 {
-	if (!CurrentWeapon)
+	if (WeaponSlotComp)
 	{
-		return;
+		WeaponSlotComp->SwitchToSlot(Slot);
 	}
+}
 
-	CurrentWeapon->OnUnequip();
-	CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	CurrentWeapon = nullptr;
+void AFPSCharacter::ServerCycleWeapon_Implementation()
+{
+	if (WeaponSlotComp)
+	{
+		WeaponSlotComp->CycleToNextSlot();
+	}
 }
 
 //-------------------------------------------------------------------
@@ -461,6 +476,73 @@ void AFPSCharacter::UpdateStamina(float DeltaTime)
 			AbilitySystemComponent->SetNumericAttributeBase(
 				UFPSCombatAttributeSet::GetStaminaAttribute(), NewStamina);
 		}
+	}
+}
+
+//-------------------------------------------------------------------
+// Combat Input Handlers
+//-------------------------------------------------------------------
+
+void AFPSCharacter::HandleFire()
+{
+	if (bDead)
+	{
+		return;
+	}
+
+	if (AFPSWeaponBase* Weapon = GetCurrentWeapon())
+	{
+		Weapon->TryFire();
+	}
+}
+
+void AFPSCharacter::HandleAimStart()
+{
+	if (bDead || !AbilitySystemComponent)
+	{
+		return;
+	}
+
+	AbilitySystemComponent->AddLooseGameplayTag(FFPSGameplayTags::Get().State_Aiming);
+}
+
+void AFPSCharacter::HandleAimStop()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	AbilitySystemComponent->RemoveLooseGameplayTag(FFPSGameplayTags::Get().State_Aiming);
+}
+
+void AFPSCharacter::HandleCrouchToggle()
+{
+	if (bDead)
+	{
+		return;
+	}
+
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
+}
+
+void AFPSCharacter::HandleReload()
+{
+	if (bDead)
+	{
+		return;
+	}
+
+	if (AFPSWeaponBase* Weapon = GetCurrentWeapon())
+	{
+		Weapon->TryReload();
 	}
 }
 

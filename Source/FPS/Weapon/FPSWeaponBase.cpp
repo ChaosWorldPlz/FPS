@@ -2,6 +2,7 @@
 
 #include "FPSWeaponBase.h"
 #include "FPSWeaponDataAsset.h"
+#include "FPSWeaponAttachmentData.h"
 #include "FPS/FPSCharacter.h"
 #include "AbilitySystemComponent.h"
 #include "FPS/GAS/FPSAbilitySystemComponent.h"
@@ -11,6 +12,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "GenericTeamAgentInterface.h"
+#include "Net/UnrealNetwork.h"
 
 const FName AFPSWeaponBase::MuzzleSocketName = TEXT("Muzzle");
 
@@ -25,6 +27,13 @@ AFPSWeaponBase::AFPSWeaponBase()
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
+void AFPSWeaponBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSWeaponBase, InstalledAttachmentIDs);
+}
+
 void AFPSWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -33,8 +42,19 @@ void AFPSWeaponBase::BeginPlay()
 	if (WeaponData)
 	{
 		AmmoInfo = WeaponData->GetDefaultAmmoInfo();
-		CurrentSpread = WeaponData->BaseSpread;
+		// Use effective magazine size (accounts for pre-installed attachments)
+		AmmoInfo.MaxMagazine = GetEffectiveMagazineSize();
+		AmmoInfo.CurrentMagazine = AmmoInfo.MaxMagazine;
+		CurrentSpread = GetEffectiveSpread();
 	}
+}
+
+void AFPSWeaponBase::OnRep_InstalledAttachments()
+{
+	// Rebuild CachedAttachmentData from InstalledAttachmentIDs
+	// (data assets must be looked up via primary asset manager on clients)
+	// For now clear the cache; GetAttachment() can lazily reload from ID if needed.
+	CachedAttachmentData.Empty();
 }
 
 void AFPSWeaponBase::Tick(float DeltaTime)
@@ -153,7 +173,7 @@ void AFPSWeaponBase::Fire()
 	{
 		FVector MuzzleLoc = GetMuzzleLocation();
 		FVector FireDir = GetFireDirectionWithSpread();
-		FVector EndPoint = MuzzleLoc + (FireDir * WeaponData->MaxRange);
+		FVector EndPoint = MuzzleLoc + (FireDir * GetEffectiveRange());
 
 		FHitResult HitResult = PerformLineTrace(MuzzleLoc, EndPoint);
 
@@ -230,7 +250,7 @@ void AFPSWeaponBase::ServerFire_Implementation(FVector MuzzleLocation, FVector F
 			SpreadDir = SpreadDir.GetSafeNormal();
 		}
 
-		FVector EndPoint = MuzzleLocation + (SpreadDir * WeaponData->MaxRange);
+		FVector EndPoint = MuzzleLocation + (SpreadDir * GetEffectiveRange());
 		FHitResult HitResult = PerformLineTrace(MuzzleLocation, EndPoint);
 
 		if (HitResult.bBlockingHit)
@@ -292,12 +312,12 @@ void AFPSWeaponBase::Reload()
 		UGameplayStatics::PlaySoundAtLocation(this, WeaponData->ReloadStartSound.LoadSynchronous(), GetActorLocation());
 	}
 
-	// Set reload timer
+	// Set reload timer (uses effective reload time including attachment modifiers)
 	GetWorldTimerManager().SetTimer(
 		ReloadTimerHandle,
 		this,
 		&AFPSWeaponBase::FinishReload,
-		WeaponData->ReloadTime,
+		GetEffectiveReloadTime(),
 		false
 	);
 }
@@ -380,7 +400,7 @@ int32 AFPSWeaponBase::AddAmmo(int32 Amount)
 
 int32 AFPSWeaponBase::GetMagazineCapacity() const
 {
-	return WeaponData ? WeaponData->MagazineSize : 0;
+	return GetEffectiveMagazineSize();
 }
 
 FVector AFPSWeaponBase::GetMuzzleLocation() const
@@ -466,11 +486,13 @@ void AFPSWeaponBase::UpdateSpread(float DeltaTime)
 		return;
 	}
 
-	// Recover spread over time
-	if (CurrentSpread > WeaponData->BaseSpread)
+	const float BaseSpread = GetEffectiveSpread();
+
+	// Recover spread over time toward the (potentially attachment-adjusted) base
+	if (CurrentSpread > BaseSpread)
 	{
 		CurrentSpread -= WeaponData->SpreadRecoveryRate * DeltaTime;
-		CurrentSpread = FMath::Max(CurrentSpread, WeaponData->BaseSpread);
+		CurrentSpread = FMath::Max(CurrentSpread, BaseSpread);
 	}
 }
 
@@ -541,9 +563,13 @@ void AFPSWeaponBase::ApplyDamage(const FHitResult& HitResult)
 		return;
 	}
 
-	// Calculate damage based on range
+	// Calculate damage based on range (using attachment-adjusted base damage)
 	float Distance = FVector::Dist(GetMuzzleLocation(), HitResult.ImpactPoint);
-	float Damage = WeaponData->GetDamageAtRange(Distance);
+	// Scale effective damage by the same range falloff curve as the base weapon
+	const float BaseDamageFraction = (WeaponData->BaseDamage > 0.f)
+		? (WeaponData->GetDamageAtRange(Distance) / WeaponData->BaseDamage)
+		: 1.f;
+	float Damage = GetEffectiveDamage() * BaseDamageFraction;
 
 	// Check for headshot
 	bLastHitWasHeadshot = (HitResult.BoneName == TEXT("head"));
@@ -641,4 +667,158 @@ void AFPSWeaponBase::RemoveAbilities()
 void AFPSWeaponBase::ResetFireCooldown()
 {
 	bCanFireAgain = true;
+}
+
+//-------------------------------------------------------------------
+// Attachment System
+//-------------------------------------------------------------------
+
+bool AFPSWeaponBase::InstallAttachment(EFPSAttachmentSlotType Slot, UFPSWeaponAttachmentData* AttData)
+{
+	if (!AttData || Slot == EFPSAttachmentSlotType::None)
+	{
+		return false;
+	}
+
+	// Verify the slot is supported by this weapon
+	if (!CanInstallAttachment(Slot))
+	{
+		return false;
+	}
+
+	// Verify the attachment is for the correct slot
+	if (AttData->SlotType != Slot)
+	{
+		return false;
+	}
+
+	// Install (replaces any existing attachment in the slot silently)
+	InstalledAttachmentIDs.RemoveAll([Slot](const FFPSInstalledAttachment& E){ return E.Slot == Slot; });
+	FFPSInstalledAttachment Entry;
+	Entry.Slot = Slot;
+	Entry.AttachmentID = AttData->AttachmentID;
+	InstalledAttachmentIDs.Add(Entry);
+	CachedAttachmentData.Add(Slot, AttData);
+
+	return true;
+}
+
+bool AFPSWeaponBase::RemoveAttachment(EFPSAttachmentSlotType Slot, UFPSWeaponAttachmentData*& OutData)
+{
+	OutData = nullptr;
+
+	UFPSWeaponAttachmentData** Found = CachedAttachmentData.Find(Slot);
+	if (!Found || !(*Found))
+	{
+		return false;
+	}
+
+	OutData = *Found;
+	CachedAttachmentData.Remove(Slot);
+	InstalledAttachmentIDs.RemoveAll([Slot](const FFPSInstalledAttachment& E){ return E.Slot == Slot; });
+	return true;
+}
+
+bool AFPSWeaponBase::CanInstallAttachment(EFPSAttachmentSlotType Slot) const
+{
+	if (!WeaponData || Slot == EFPSAttachmentSlotType::None)
+	{
+		return false;
+	}
+	return WeaponData->SupportedAttachmentSlots.Contains(Slot);
+}
+
+UFPSWeaponAttachmentData* AFPSWeaponBase::GetAttachment(EFPSAttachmentSlotType Slot) const
+{
+	UFPSWeaponAttachmentData* const* Found = CachedAttachmentData.Find(Slot);
+	return Found ? *Found : nullptr;
+}
+
+//-------------------------------------------------------------------
+// Effective Stat Queries
+//-------------------------------------------------------------------
+
+float AFPSWeaponBase::GetEffectiveDamage() const
+{
+	if (!WeaponData)
+	{
+		return 0.f;
+	}
+	float Total = WeaponData->BaseDamage;
+	for (const auto& Pair : CachedAttachmentData)
+	{
+		if (Pair.Value)
+		{
+			Total += Pair.Value->StatModifiers.DamageDelta;
+		}
+	}
+	return FMath::Max(0.f, Total);
+}
+
+float AFPSWeaponBase::GetEffectiveSpread() const
+{
+	if (!WeaponData)
+	{
+		return 0.f;
+	}
+	float Total = WeaponData->BaseSpread;
+	for (const auto& Pair : CachedAttachmentData)
+	{
+		if (Pair.Value)
+		{
+			Total += Pair.Value->StatModifiers.SpreadDelta;
+		}
+	}
+	return FMath::Max(0.f, Total);
+}
+
+float AFPSWeaponBase::GetEffectiveReloadTime() const
+{
+	if (!WeaponData)
+	{
+		return 2.f;
+	}
+	float Total = WeaponData->ReloadTime;
+	for (const auto& Pair : CachedAttachmentData)
+	{
+		if (Pair.Value)
+		{
+			Total += Pair.Value->StatModifiers.ReloadTimeDelta;
+		}
+	}
+	return FMath::Max(0.1f, Total); // Minimum 0.1s to avoid timer issues
+}
+
+int32 AFPSWeaponBase::GetEffectiveMagazineSize() const
+{
+	if (!WeaponData)
+	{
+		return 1;
+	}
+	float Total = static_cast<float>(WeaponData->MagazineSize);
+	for (const auto& Pair : CachedAttachmentData)
+	{
+		if (Pair.Value)
+		{
+			Total += Pair.Value->StatModifiers.MagazineSizeDelta;
+		}
+	}
+	return FMath::Max(1, FMath::RoundToInt(Total));
+}
+
+float AFPSWeaponBase::GetEffectiveRange() const
+{
+	if (!WeaponData)
+	{
+		return 5000.f;
+	}
+	float Total = WeaponData->MaxRange;
+	for (const auto& Pair : CachedAttachmentData)
+	{
+		if (Pair.Value)
+		{
+			Total += Pair.Value->StatModifiers.RangeDelta;
+		}
+	}
+	return FMath::Max(100.f, Total);
 }

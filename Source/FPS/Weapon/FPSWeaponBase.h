@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "FPSWeaponTypes.h"
+#include "FPSAttachmentTypes.h"
 #include "GameplayTagContainer.h"
 #include "Abilities/GameplayAbility.h"
 #include "FPSWeaponBase.generated.h"
 
 class UFPSWeaponDataAsset;
+class UFPSWeaponAttachmentData;
 class USkeletalMeshComponent;
 class AFPSCharacter;
 class UAbilitySystemComponent;
@@ -203,9 +205,72 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon|GAS")
 	UAbilitySystemComponent* GetOwnerASC() const;
 
+	//-------------------------------------------------------------------
+	// Attachment System
+	//-------------------------------------------------------------------
+
+	/**
+	 * Installed attachments: slot type → attachment ID.
+	 * Replicated so clients see the mod state (for visual attachment meshes).
+	 */
+	UPROPERTY(ReplicatedUsing = OnRep_InstalledAttachments, BlueprintReadOnly, Category = "Weapon|Attachments")
+	TArray<FFPSInstalledAttachment> InstalledAttachmentIDs;
+
+	/** Runtime cache: slot type → attachment data asset (rebuilt on rep-notify on clients) */
+	UPROPERTY()
+	TMap<EFPSAttachmentSlotType, UFPSWeaponAttachmentData*> CachedAttachmentData;
+
+	/**
+	 * Install an attachment into the given slot.
+	 * If a different attachment is already installed, it is replaced.
+	 * @return true on success.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	bool InstallAttachment(EFPSAttachmentSlotType Slot, UFPSWeaponAttachmentData* AttData);
+
+	/**
+	 * Remove the attachment from the given slot.
+	 * OutData receives the removed attachment data (nullptr if slot was empty).
+	 * @return true if an attachment was present.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	bool RemoveAttachment(EFPSAttachmentSlotType Slot, UFPSWeaponAttachmentData*& OutData);
+
+	/** Check whether this weapon's data asset supports the given slot type */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	bool CanInstallAttachment(EFPSAttachmentSlotType Slot) const;
+
+	/** Get the attachment data asset currently installed in a slot (nullptr if empty) */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	UFPSWeaponAttachmentData* GetAttachment(EFPSAttachmentSlotType Slot) const;
+
+	/** Effective damage = WeaponData->BaseDamage + sum of all installed DamageDelta */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	float GetEffectiveDamage() const;
+
+	/** Effective base spread (degrees) with attachment modifiers applied */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	float GetEffectiveSpread() const;
+
+	/** Effective reload time (seconds) with attachment modifiers applied */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	float GetEffectiveReloadTime() const;
+
+	/** Effective magazine size (rounds) with attachment modifiers applied */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	int32 GetEffectiveMagazineSize() const;
+
+	/** Effective max range (Unreal units) with attachment modifiers applied */
+	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
+	float GetEffectiveRange() const;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_InstalledAttachments();
 
 	/** Set weapon state and broadcast change */
 	void SetWeaponState(EFPSWeaponState NewState);

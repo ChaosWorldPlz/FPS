@@ -9,6 +9,7 @@
 #include "GameplayTagContainer.h"
 #include "Logging/LogMacros.h"
 #include "Team/FPSTeamTypes.h"
+#include "Weapon/FPSAttachmentTypes.h"
 #include "FPSCharacter.generated.h"
 
 class UInputComponent;
@@ -20,6 +21,7 @@ struct FInputActionValue;
 class UFPSAbilitySystemComponent;
 class UFPSAttributeSetBase;
 class UFPSCombatAttributeSet;
+class UFPSWeaponSlotComponent;
 class UGameplayEffect;
 class UGameplayAbility;
 class AFPSWeaponBase;
@@ -63,6 +65,22 @@ class AFPSCharacter : public ACharacter, public IAbilitySystemInterface, public 
 	/** Sprint Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* SprintAction;
+
+	/** Fire Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* FireAction;
+
+	/** Aim (ADS) Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* AimAction;
+
+	/** Crouch Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* CrouchToggleAction;
+
+	/** Reload Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* ReloadAction;
 
 public:
 	AFPSCharacter();
@@ -169,21 +187,21 @@ public:
 	// Weapon System
 	//-------------------------------------------------------------------
 
-	/** Currently equipped weapon */
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Weapon")
-	AFPSWeaponBase* CurrentWeapon;
+	/** Manages the three weapon carry slots (Primary1, Primary2, Pistol) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UFPSWeaponSlotComponent* WeaponSlotComp;
 
-	/** Equip a weapon */
+	/** Get the currently equipped weapon (forwards to WeaponSlotComp) */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(AFPSWeaponBase* NewWeapon);
+	AFPSWeaponBase* GetCurrentWeapon() const;
 
-	/** Unequip current weapon */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void UnequipWeapon();
+	/** Server RPC: switch to a specific carry slot */
+	UFUNCTION(Server, Reliable)
+	void ServerSwitchWeaponSlot(EFPSWeaponSlot Slot);
 
-	/** Get the currently equipped weapon */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AFPSWeaponBase* GetCurrentWeapon() const { return CurrentWeapon; }
+	/** Server RPC: cycle to next occupied slot */
+	UFUNCTION(Server, Reliable)
+	void ServerCycleWeapon();
 
 protected:
 	/** Called for movement input */
@@ -191,6 +209,19 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	/** Fire: forwards to current weapon's TryFire() */
+	void HandleFire();
+
+	/** Aim start/stop: adds/removes FPS.State.Aiming GameplayTag */
+	void HandleAimStart();
+	void HandleAimStop();
+
+	/** Crouch toggle */
+	void HandleCrouchToggle();
+
+	/** Reload: forwards to current weapon's TryReload() */
+	void HandleReload();
 
 protected:
 	// APawn interface

@@ -1,6 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "FPSPlayerController.h"
+#include "FPSCharacter.h"
+#include "Weapon/FPSWeaponSlotComponent.h"
+#include "Level/FPSWorldWeapon.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
@@ -47,10 +50,100 @@ void AFPSPlayerController::SetupInputBindings()
 {
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent))
 	{
-		// Bind pause menu action
+		// Pause menu
 		if (PauseMenuAction)
 		{
 			EnhancedInputComponent->BindAction(PauseMenuAction, ETriggerEvent::Started, this, &AFPSPlayerController::HandlePauseMenuInput);
+		}
+
+		// Weapon slot switching
+		if (SwitchToSlot1Action)
+		{
+			EnhancedInputComponent->BindAction(SwitchToSlot1Action, ETriggerEvent::Started, this, &AFPSPlayerController::HandleSwitchToSlot1);
+		}
+		if (SwitchToSlot2Action)
+		{
+			EnhancedInputComponent->BindAction(SwitchToSlot2Action, ETriggerEvent::Started, this, &AFPSPlayerController::HandleSwitchToSlot2);
+		}
+		if (SwitchToSlot3Action)
+		{
+			EnhancedInputComponent->BindAction(SwitchToSlot3Action, ETriggerEvent::Started, this, &AFPSPlayerController::HandleSwitchToSlot3);
+		}
+		if (CycleWeaponAction)
+		{
+			EnhancedInputComponent->BindAction(CycleWeaponAction, ETriggerEvent::Started, this, &AFPSPlayerController::HandleCycleWeapon);
+		}
+
+		// Interact
+		if (InteractAction)
+		{
+			EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AFPSPlayerController::HandleInteract);
+		}
+	}
+}
+
+//-------------------------------------------------------------------
+// Weapon Slot Inputs
+//-------------------------------------------------------------------
+
+void AFPSPlayerController::HandleSwitchToSlot1()
+{
+	if (AFPSCharacter* FPSChar = Cast<AFPSCharacter>(GetPawn()))
+	{
+		FPSChar->ServerSwitchWeaponSlot(EFPSWeaponSlot::Primary1);
+	}
+}
+
+void AFPSPlayerController::HandleSwitchToSlot2()
+{
+	if (AFPSCharacter* FPSChar = Cast<AFPSCharacter>(GetPawn()))
+	{
+		FPSChar->ServerSwitchWeaponSlot(EFPSWeaponSlot::Primary2);
+	}
+}
+
+void AFPSPlayerController::HandleSwitchToSlot3()
+{
+	if (AFPSCharacter* FPSChar = Cast<AFPSCharacter>(GetPawn()))
+	{
+		FPSChar->ServerSwitchWeaponSlot(EFPSWeaponSlot::Pistol);
+	}
+}
+
+void AFPSPlayerController::HandleCycleWeapon()
+{
+	if (AFPSCharacter* FPSChar = Cast<AFPSCharacter>(GetPawn()))
+	{
+		FPSChar->ServerCycleWeapon();
+	}
+}
+
+//-------------------------------------------------------------------
+// Interact Input
+//-------------------------------------------------------------------
+
+void AFPSPlayerController::HandleInteract()
+{
+	APawn* ControlledPawn = GetPawn();
+	if (!ControlledPawn)
+	{
+		return;
+	}
+
+	// Find overlapping AFPSWorldWeapon actors (proximity detected via sphere collision)
+	TArray<AActor*> OverlappingActors;
+	ControlledPawn->GetOverlappingActors(OverlappingActors, AFPSWorldWeapon::StaticClass());
+
+	for (AActor* Actor : OverlappingActors)
+	{
+		if (AFPSWorldWeapon* WorldWeapon = Cast<AFPSWorldWeapon>(Actor))
+		{
+			if (WorldWeapon->CanInteract())
+			{
+				AFPSCharacter* FPSChar = Cast<AFPSCharacter>(ControlledPawn);
+				WorldWeapon->ServerInteract(FPSChar);
+				break; // Pick up one weapon at a time
+			}
 		}
 	}
 }

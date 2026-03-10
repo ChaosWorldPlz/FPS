@@ -28,6 +28,10 @@
 		{
 			"Name": "GamePlay",
 			"Enabled": true
+		},
+		{
+			"Name": "UnrealMCP",
+			"Enabled": true
 		}
 	]
 }

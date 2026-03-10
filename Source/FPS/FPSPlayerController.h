@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Team/FPSTeamTypes.h"
 #include "Weapon/FPSWeaponTypes.h"
+#include "Weapon/FPSAttachmentTypes.h"
 #include "FPSPlayerController.generated.h"
 
 class UInputMappingContext;
@@ -117,11 +118,40 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* PauseMenuAction;
 
+	/** Weapon slot 1 (Primary1) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Weapon")
+	UInputAction* SwitchToSlot1Action;
+
+	/** Weapon slot 2 (Primary2) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Weapon")
+	UInputAction* SwitchToSlot2Action;
+
+	/** Weapon slot 3 (Pistol) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Weapon")
+	UInputAction* SwitchToSlot3Action;
+
+	/** Cycle weapon (Q / mouse wheel) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Weapon")
+	UInputAction* CycleWeaponAction;
+
+	/** Interact (E key — pick up world weapons, open doors, etc.) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Weapon")
+	UInputAction* InteractAction;
+
 	/** Setup input bindings */
 	void SetupInputBindings();
 
 	/** Handle pause menu input */
 	void HandlePauseMenuInput();
+
+	/** Handle weapon slot switch inputs */
+	void HandleSwitchToSlot1();
+	void HandleSwitchToSlot2();
+	void HandleSwitchToSlot3();
+	void HandleCycleWeapon();
+
+	/** Handle interact input (pick up nearby AFPSWorldWeapon) */
+	void HandleInteract();
 
 	//-------------------------------------------------------------------
 	// Lifecycle

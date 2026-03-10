@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "FPSWeaponTypes.h"
+#include "FPSAttachmentTypes.h"
 #include "GameplayTagContainer.h"
 #include "NiagaraSystem.h"
 #include "FPSWeaponDataAsset.generated.h"
@@ -249,4 +250,16 @@ public:
 
 	// UPrimaryDataAsset interface
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
+
+	//-------------------------------------------------------------------
+	// Attachments
+	//-------------------------------------------------------------------
+
+	/** Attachment slot types this weapon supports (checked by InstallAttachment) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Attachments")
+	TSet<EFPSAttachmentSlotType> SupportedAttachmentSlots;
+
+	/** True for pistols — restricts this weapon to the Pistol carry slot */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Info")
+	bool bIsPistol = false;
 };

@@ -21,7 +21,7 @@ AFPSGameMode::AFPSGameMode()
 	, RespawnDelay(5.0f)
 	, KillScore(1)
 	, CountdownDuration(5.0f)
-	, MinPlayersToStart(2)
+	, MinPlayersToStart(1)
 {
 	// Set default classes
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnClassFinder(TEXT("/Game/FirstPerson/Blueprints/BP_FirstPersonCharacter"));
@@ -431,6 +431,17 @@ bool AFPSGameMode::ReadyToStartMatch_Implementation()
 {
 	// Need minimum players
 	return NumPlayers >= MinPlayersToStart;
+}
+
+bool AFPSGameMode::PlayerCanRestart_Implementation(APlayerController* Player)
+{
+	// Always allow respawn regardless of match state,
+	// so players are never left as spectators on join or after death.
+	if (!Player || Player->IsPendingKillPending())
+	{
+		return false;
+	}
+	return true;
 }
 
 void AFPSGameMode::StartCountdown()

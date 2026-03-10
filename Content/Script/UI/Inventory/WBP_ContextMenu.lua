@@ -15,6 +15,7 @@ function WBP_ContextMenu:Construct()
     -- 初始化状态
     self.TargetItemWidget = nil
     self.OwningGrid = nil
+    self.WeaponCallbacks = nil  -- 武器专属回调（从 WBP_InventoryGrid 传入）
 
     -- 绑定按钮点击事件
     self:BindButtonEvents()
@@ -24,6 +25,7 @@ function WBP_ContextMenu:Destruct()
     print("[WBP_ContextMenu] Destruct")
     self.TargetItemWidget = nil
     self.OwningGrid = nil
+    self.WeaponCallbacks = nil
 end
 
 --[[
@@ -38,7 +40,7 @@ function WBP_ContextMenu:BindButtonEvents()
         self.w_btn_Use.OnClicked:Add(self, self.OnUseClicked)
     end
 
-    -- 装备按钮
+    -- 装备按钮（通用）
     if self.w_btn_Equip then
         self.w_btn_Equip.OnClicked:Add(self, self.OnEquipClicked)
     end
@@ -62,6 +64,26 @@ function WBP_ContextMenu:BindButtonEvents()
     if self.w_btn_Cancel then
         self.w_btn_Cancel.OnClicked:Add(self, self.OnCancelClicked)
     end
+
+    -- 武器专属：装备到主武器槽1
+    if self.w_btn_EquipPrimary1 then
+        self.w_btn_EquipPrimary1.OnClicked:Add(self, self.OnEquipPrimary1Clicked)
+    end
+
+    -- 武器专属：装备到主武器槽2
+    if self.w_btn_EquipPrimary2 then
+        self.w_btn_EquipPrimary2.OnClicked:Add(self, self.OnEquipPrimary2Clicked)
+    end
+
+    -- 武器专属：装备到手枪槽
+    if self.w_btn_EquipPistol then
+        self.w_btn_EquipPistol.OnClicked:Add(self, self.OnEquipPistolClicked)
+    end
+
+    -- 武器专属：打开改装界面
+    if self.w_btn_WeaponModify then
+        self.w_btn_WeaponModify.OnClicked:Add(self, self.OnWeaponModifyClicked)
+    end
 end
 
 --[[
@@ -71,10 +93,11 @@ end
 --]]
 
 -- 在指定位置显示菜单
--- @param ScreenPos: 屏幕坐标 (FVector2D)
--- @param ItemWidget: 目标 ItemIconWidget
--- @param OwningGrid: 所属的 InventoryGridWidget
-function WBP_ContextMenu:ShowAtPosition(ScreenPos, ItemWidget, OwningGrid)
+-- @param ScreenPos:       屏幕坐标 (FVector2D)
+-- @param ItemWidget:      目标 ItemIconWidget
+-- @param OwningGrid:      所属的 InventoryGridWidget
+-- @param WeaponCallbacks: (可选) 武器专属回调表 { EquipPrimary1, EquipPrimary2, EquipPistol, OpenModify }
+function WBP_ContextMenu:ShowAtPosition(ScreenPos, ItemWidget, OwningGrid, WeaponCallbacks)
     if not ItemWidget then
         print("[WBP_ContextMenu] ShowAtPosition: ItemWidget is nil")
         return
@@ -82,6 +105,7 @@ function WBP_ContextMenu:ShowAtPosition(ScreenPos, ItemWidget, OwningGrid)
 
     self.TargetItemWidget = ItemWidget
     self.OwningGrid = OwningGrid
+    self.WeaponCallbacks = WeaponCallbacks
 
     -- 获取物品数据
     local ItemData = ItemWidget:GetItemData()
@@ -121,8 +145,29 @@ function WBP_ContextMenu:UpdateButtonStates(ItemData)
         self.w_btn_Split:SetIsEnabled(CanSplit)
     end
 
-    -- TODO: 根据物品类型判断是否可以使用/装备
-    -- 例如：武器可以装备，药品可以使用
+    -- 武器专属按钮：装备槽 / 改装（有 WeaponCallbacks 时可见）
+    local IsWeapon = (self.WeaponCallbacks ~= nil)
+
+    if self.w_btn_EquipPrimary1 then
+        self.w_btn_EquipPrimary1:SetVisibility(IsWeapon
+            and UE.ESlateVisibility.Visible
+            or  UE.ESlateVisibility.Collapsed)
+    end
+    if self.w_btn_EquipPrimary2 then
+        self.w_btn_EquipPrimary2:SetVisibility(IsWeapon
+            and UE.ESlateVisibility.Visible
+            or  UE.ESlateVisibility.Collapsed)
+    end
+    if self.w_btn_EquipPistol then
+        self.w_btn_EquipPistol:SetVisibility(IsWeapon
+            and UE.ESlateVisibility.Visible
+            or  UE.ESlateVisibility.Collapsed)
+    end
+    if self.w_btn_WeaponModify then
+        self.w_btn_WeaponModify:SetVisibility(IsWeapon
+            and UE.ESlateVisibility.Visible
+            or  UE.ESlateVisibility.Collapsed)
+    end
 end
 
 --[[
@@ -218,6 +263,42 @@ end
 -- 取消
 function WBP_ContextMenu:OnCancelClicked()
     print("[WBP_ContextMenu] OnCancelClicked")
+    self:Hide()
+end
+
+-- 装备到主武器槽1
+function WBP_ContextMenu:OnEquipPrimary1Clicked()
+    print("[WBP_ContextMenu] OnEquipPrimary1Clicked")
+    if self.WeaponCallbacks and self.WeaponCallbacks.EquipPrimary1 then
+        self.WeaponCallbacks.EquipPrimary1()
+    end
+    self:Hide()
+end
+
+-- 装备到主武器槽2
+function WBP_ContextMenu:OnEquipPrimary2Clicked()
+    print("[WBP_ContextMenu] OnEquipPrimary2Clicked")
+    if self.WeaponCallbacks and self.WeaponCallbacks.EquipPrimary2 then
+        self.WeaponCallbacks.EquipPrimary2()
+    end
+    self:Hide()
+end
+
+-- 装备到手枪槽
+function WBP_ContextMenu:OnEquipPistolClicked()
+    print("[WBP_ContextMenu] OnEquipPistolClicked")
+    if self.WeaponCallbacks and self.WeaponCallbacks.EquipPistol then
+        self.WeaponCallbacks.EquipPistol()
+    end
+    self:Hide()
+end
+
+-- 打开改装界面
+function WBP_ContextMenu:OnWeaponModifyClicked()
+    print("[WBP_ContextMenu] OnWeaponModifyClicked")
+    if self.WeaponCallbacks and self.WeaponCallbacks.OpenModify then
+        self.WeaponCallbacks.OpenModify()
+    end
     self:Hide()
 end
 
