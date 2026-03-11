@@ -2,6 +2,7 @@
 
 #include "GA_WeaponFire.h"
 #include "AbilitySystemComponent.h"
+#include "GameplayCueManager.h"
 #include "FPS/Weapon/FPSWeaponBase.h"
 #include "FPS/Weapon/FPSWeaponDataAsset.h"
 #include "FPS/GAS/FPSGameplayTags.h"
@@ -10,6 +11,9 @@ UGA_WeaponFire::UGA_WeaponFire()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	ActivationPolicy = EFPSAbilityActivationPolicy::OnInputTriggered;
+
+	// LocalPredicted: fires immediately on client, server validates via ServerFire RPC
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 
 	// Set ability tags
 	AbilityTags.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Fire);
@@ -25,7 +29,7 @@ void UGA_WeaponFire::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	AFPSWeaponBase* Weapon = GetWeapon();
+	AFPSWeaponBase* Weapon = GetWeapon(Handle, ActorInfo);
 	if (!Weapon)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -98,25 +102,34 @@ bool UGA_WeaponFire::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] CanActivateAbility failed at Super."));
 		return false;
 	}
 
-	AFPSWeaponBase* Weapon = GetWeapon();
-	return Weapon && Weapon->CanFire();
+	AFPSWeaponBase* Weapon = GetWeapon(Handle, ActorInfo);
+	if (!Weapon)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] CanActivateAbility failed: Weapon is null"));
+		return false;
+	}
+	
+	if (!Weapon->CanFire())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] CanActivateAbility failed: Weapon->CanFire() returned false. State: %d, Ammo: %d"), (int)Weapon->CurrentState, Weapon->AmmoInfo.CurrentMagazine);
+		return false;
+	}
+
+	return true;
 }
 
-AFPSWeaponBase* UGA_WeaponFire::GetWeapon() const
+AFPSWeaponBase* UGA_WeaponFire::GetWeapon(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const
 {
-	// Get weapon from the ability spec's source object
-	if (CurrentSpecHandle.IsValid())
+	FGameplayAbilitySpecHandle SpecHandle = Handle.IsValid() ? Handle : CurrentSpecHandle;
+	UAbilitySystemComponent* ASC = ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : GetAbilitySystemComponentFromActorInfo();
+
+	if (SpecHandle.IsValid() && ASC)
 	{
-		UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-		if (!ASC)
-		{
-			return nullptr;
-		}
-		
-		if (const FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(CurrentSpecHandle))
+		if (const FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(SpecHandle))
 		{
 			return Cast<AFPSWeaponBase>(Spec->SourceObject.Get());
 		}
@@ -126,10 +139,22 @@ AFPSWeaponBase* UGA_WeaponFire::GetWeapon() const
 
 void UGA_WeaponFire::FireWeapon()
 {
-	AFPSWeaponBase* Weapon = GetWeapon();
+	AFPSWeaponBase* Weapon = GetWeapon(CurrentSpecHandle, CurrentActorInfo);
 	if (Weapon && Weapon->CanFire())
 	{
 		Weapon->Fire();
+
+		// 触发 GameplayCue 播放开火音效和特效（仅本地客户端，避免重复）
+		if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+		{
+			FGameplayCueParameters CueParams;
+			CueParams.SourceObject = Weapon;
+			CueParams.Location = Weapon->GetMuzzleLocation();
+			CueParams.Normal = Weapon->GetMuzzleRotation().Vector();
+			ASC->ExecuteGameplayCue(
+				FGameplayTag::RequestGameplayTag(TEXT("GameplayCue.Weapon.Fire")),
+				CueParams);
+		}
 	}
 	else if (bAutoFiring)
 	{

@@ -19,4 +19,5 @@ C:\Users\DearMe\Documents\Unreal Projects\FPS\Plugins\UnLua\Source\UnLuaDefaultP
 C:\Users\DearMe\Documents\Unreal Projects\FPS\Plugins\UnLua\Source\UnLuaDefaultParamCollectorUbtPlugin\obj\Development\UnLuaDefaultParamCollectorUbtPlugin.dll
 C:\Users\DearMe\Documents\Unreal Projects\FPS\Plugins\UnLua\Source\UnLuaDefaultParamCollectorUbtPlugin\obj\Development\refint\UnLuaDefaultParamCollectorUbtPlugin.dll
 C:\Users\DearMe\Documents\Unreal Projects\FPS\Plugins\UnLua\Source\UnLuaDefaultParamCollectorUbtPlugin\obj\Development\UnLuaDefaultParamCollectorUbtPlugin.pdb
-C:\Users\DearMe\Documents\Unreal Projects\FPS\Plugins\UnLua\Source\UnLuaDefaultParamCollectorUbtPlugin\obj\Development\UnLuaDefaultParamCollectorUbtPlugin.ubtplugin.csproj.CopyComplete
+c:\Users\DearMe\Documents\Unreal Projects\FPS\Plugins\UnLua\Source\UnLuaDefaultParamCollectorUbtPlugin\obj\Development\UnLuaDefaultParamCollectorUbtPlugin.ubtplugin.sourcelink.json
+c:\Users\DearMe\Documents\Unreal Projects\FPS\Plugins\UnLua\Source\UnLuaDefaultParamCollectorUbtPlugin\obj\Development\UnLuaDef.FD857114.Up2Date

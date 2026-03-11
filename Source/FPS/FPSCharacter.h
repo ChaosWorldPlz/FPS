@@ -14,7 +14,6 @@
 
 class UInputComponent;
 class USkeletalMeshComponent;
-class UCameraComponent;
 class UInputAction;
 class UInputMappingContext;
 struct FInputActionValue;
@@ -34,24 +33,12 @@ class AFPSCharacter : public ACharacter, public IAbilitySystemInterface, public 
 {
 	GENERATED_BODY()
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Mesh, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Mesh1P;
-
-	/** Third person mesh (seen by others) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Mesh, meta = (AllowPrivateAccess = "true"))
-	USkeletalMeshComponent* Mesh3P;
-
-	/** First person camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FirstPersonCameraComponent;
-
-	/** Ability System Component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
+	/** Ability System Component (Cached from PlayerState) */
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "GAS", meta = (AllowPrivateAccess = "true"))
 	UFPSAbilitySystemComponent* AbilitySystemComponent;
 
-	/** Combat Attribute Set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
+	/** Combat Attribute Set (Cached from PlayerState) */
+	UPROPERTY(BlueprintReadOnly, Transient, Category = "GAS", meta = (AllowPrivateAccess = "true"))
 	UFPSCombatAttributeSet* CombatAttributeSet;
 
 	/** Jump Input Action */
@@ -96,11 +83,11 @@ public:
 
 	/** Get the FPS-specific ability system component */
 	UFUNCTION(BlueprintCallable, Category = "FPS|GAS")
-	UFPSAbilitySystemComponent* GetFPSAbilitySystemComponent() const { return AbilitySystemComponent; }
+	UFPSAbilitySystemComponent* GetFPSAbilitySystemComponent() const;
 
 	/** Get the combat attribute set */
 	UFUNCTION(BlueprintCallable, Category = "FPS|GAS")
-	UFPSCombatAttributeSet* GetCombatAttributeSet() const { return CombatAttributeSet; }
+	UFPSCombatAttributeSet* GetCombatAttributeSet() const;
 
 	/** Check if the character is dead */
 	UFUNCTION(BlueprintCallable, Category = "FPS|Combat")
@@ -191,6 +178,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	UFPSWeaponSlotComponent* WeaponSlotComp;
 
+	/** 出生时自动装备的武器类（最多3个，按 Primary1/Primary2/Pistol 顺序） */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TArray<TSubclassOf<AFPSWeaponBase>> DefaultWeaponClasses;
+
 	/** Get the currently equipped weapon (forwards to WeaponSlotComp) */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	AFPSWeaponBase* GetCurrentWeapon() const;
@@ -210,8 +201,11 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
-	/** Fire: forwards to current weapon's TryFire() */
+	/** Fire pressed: activates the weapon's fire GA */
 	void HandleFire();
+
+	/** Fire released: cancels auto-fire GA */
+	void HandleFireReleased();
 
 	/** Aim start/stop: adds/removes FPS.State.Aiming GameplayTag */
 	void HandleAimStart();
@@ -259,11 +253,4 @@ protected:
 	void OnDeath(AActor* Killer);
 
 public:
-	/** Returns Mesh1P subobject **/
-	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns Mesh3P subobject **/
-	USkeletalMeshComponent* GetMesh3P() const { return Mesh3P; }
-	/** Returns FirstPersonCameraComponent subobject **/
-	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
 };

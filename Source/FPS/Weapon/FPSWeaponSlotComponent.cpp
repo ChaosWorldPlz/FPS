@@ -304,12 +304,12 @@ void UFPSWeaponSlotComponent::PerformSwitchToSlot(EFPSWeaponSlot NewSlot)
 	if (OwnerChar)
 	{
 		NewWeapon->OnEquip(OwnerChar);
-		if (USkeletalMeshComponent* Mesh1P = OwnerChar->GetMesh1P())
+		if (USkeletalMeshComponent* BodyMesh = OwnerChar->GetMesh())
 		{
 			NewWeapon->AttachToComponent(
-				Mesh1P,
+				BodyMesh,
 				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-				TEXT("GripPoint"));
+				TEXT("hand_r"));
 		}
 	}
 

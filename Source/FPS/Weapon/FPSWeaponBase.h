@@ -16,6 +16,7 @@ class USkeletalMeshComponent;
 class AFPSCharacter;
 class UAbilitySystemComponent;
 class UGameplayAbility;
+class UFPSGameplayAbility;
 struct FGameplayAbilitySpecHandle;
 
 // Delegate for ammo changes
@@ -50,7 +51,7 @@ public:
 	//-------------------------------------------------------------------
 
 	/** Weapon data asset */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon")
 	UFPSWeaponDataAsset* WeaponData;
 
 	//-------------------------------------------------------------------
@@ -197,9 +198,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	FRotator GetMuzzleRotation() const;
 
-	/** Get fire direction with spread applied */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	FVector GetFireDirectionWithSpread() const;
+	/** Get fire direction with spread applied — Lua overrides this to apply recoil pattern */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Weapon")
+	FVector GetFireDirectionWithSpread();
+	virtual FVector GetFireDirectionWithSpread_Implementation();
+
+	/** Called after each shot fires — Lua overrides to advance pattern index */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Weapon")
+	void OnShotFired();
+	virtual void OnShotFired_Implementation();
+
+	/** Current position in the recoil pattern sequence, read/written by Lua */
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon|Ballistics")
+	int32 CurrentPatternIndex = 0;
 
 	/** Get the owner's ability system component */
 	UFUNCTION(BlueprintCallable, Category = "Weapon|GAS")
@@ -294,14 +305,22 @@ protected:
 	// GAS Integration
 	//-------------------------------------------------------------------
 
-	/** Granted ability handles */
+	/**
+	 * Per-weapon ability list — configure in each child Blueprint.
+	 * These are granted to the owning character's ASC on equip and
+	 * revoked on unequip, in addition to the abilities declared in WeaponData.
+	 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|GAS")
+	TArray<TSubclassOf<UFPSGameplayAbility>> WeaponAbilities;
+
+	/** Granted ability handles (runtime, not replicated) */
 	UPROPERTY()
 	TArray<FGameplayAbilitySpecHandle> GrantedAbilityHandles;
 
-	/** Grant weapon abilities to owner */
+	/** Grant weapon abilities to owner (server only) */
 	virtual void GrantAbilities();
 
-	/** Remove weapon abilities from owner */
+	/** Remove weapon abilities from owner (server only) */
 	virtual void RemoveAbilities();
 
 	//-------------------------------------------------------------------

@@ -2,6 +2,8 @@
 
 #include "FPSPlayerState.h"
 #include "Net/UnrealNetwork.h"
+#include "FPS/GAS/FPSAbilitySystemComponent.h"
+#include "FPS/GAS/FPSCombatAttributeSet.h"
 
 AFPSPlayerState::AFPSPlayerState()
 	: Team(EFPSTeam::None)
@@ -12,6 +14,21 @@ AFPSPlayerState::AFPSPlayerState()
 	, DamageDealt(0.0f)
 	, DamageTaken(0.0f)
 {
+	// Create the Ability System Component
+	AbilitySystemComponent = CreateDefaultSubobject<UFPSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+
+	// Create the Combat Attribute Set
+	CombatAttributeSet = CreateDefaultSubobject<UFPSCombatAttributeSet>(TEXT("CombatAttributeSet"));
+
+	// Set NetUpdateFrequency higher for faster responsive state
+	NetUpdateFrequency = 100.0f;
+}
+
+UAbilitySystemComponent* AFPSPlayerState::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }
 
 void AFPSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

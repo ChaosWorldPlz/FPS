@@ -45,7 +45,7 @@ public:
 
 protected:
 	/** Get the weapon from the source object */
-	AFPSWeaponBase* GetWeapon() const;
+	AFPSWeaponBase* GetWeapon(const FGameplayAbilitySpecHandle Handle = FGameplayAbilitySpecHandle(), const FGameplayAbilityActorInfo* ActorInfo = nullptr) const;
 
 	/** Fire the weapon once */
 	void FireWeapon();

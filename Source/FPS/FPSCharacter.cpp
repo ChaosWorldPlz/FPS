@@ -3,7 +3,6 @@
 #include "FPSCharacter.h"
 #include "FPSProjectile.h"
 #include "Animation/AnimInstance.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
@@ -28,40 +27,15 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AFPSCharacter::AFPSCharacter()
 	: bAbilitiesInitialized(false)
-	, bDead(false)
 	, WeaponSlotComp(nullptr)
+	, bDead(false)
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
-	// Create a CameraComponent
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
-	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
-	Mesh1P->bCastDynamicShadow = false;
-	Mesh1P->CastShadow = false;
-	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
-
-	// Create third person mesh (visible to other players)
-	Mesh3P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh3P"));
-	Mesh3P->SetupAttachment(GetCapsuleComponent());
-	Mesh3P->SetOwnerNoSee(true);
-	Mesh3P->bCastDynamicShadow = true;
-	Mesh3P->CastShadow = true;
-
-	// Create the Ability System Component
-	AbilitySystemComponent = CreateDefaultSubobject<UFPSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
-
-	// Create the Combat Attribute Set (automatically registered with ASC)
-	CombatAttributeSet = CreateDefaultSubobject<UFPSCombatAttributeSet>(TEXT("CombatAttributeSet"));
+	// ASC and AttributeSet are now on the PlayerState
+	AbilitySystemComponent = nullptr;
+	CombatAttributeSet = nullptr;
 
 	// Create the weapon slot component (manages 3 carry slots)
 	WeaponSlotComp = CreateDefaultSubobject<UFPSWeaponSlotComponent>(TEXT("WeaponSlotComp"));
@@ -77,7 +51,36 @@ void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 
 UAbilitySystemComponent* AFPSCharacter::GetAbilitySystemComponent() const
 {
-	return AbilitySystemComponent;
+	if (AbilitySystemComponent)
+	{
+		return AbilitySystemComponent;
+	}
+	// Fallback to PlayerState if not cached yet
+	AFPSPlayerState* PS = GetPlayerState<AFPSPlayerState>();
+	if (PS)
+	{
+		return PS->GetAbilitySystemComponent();
+	}
+	return nullptr;
+}
+
+UFPSCombatAttributeSet* AFPSCharacter::GetCombatAttributeSet() const
+{
+	if (CombatAttributeSet)
+	{
+		return CombatAttributeSet;
+	}
+	AFPSPlayerState* PS = GetPlayerState<AFPSPlayerState>();
+	if (PS)
+	{
+		return PS->GetCombatAttributeSet();
+	}
+	return nullptr;
+}
+
+UFPSAbilitySystemComponent* AFPSCharacter::GetFPSAbilitySystemComponent() const
+{
+	return Cast<UFPSAbilitySystemComponent>(GetAbilitySystemComponent());
 }
 
 //-------------------------------------------------------------------
@@ -137,15 +140,19 @@ AFPSPlayerState* AFPSCharacter::GetFPSPlayerState() const
 // Lifecycle
 //-------------------------------------------------------------------
 
+
 void AFPSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 
 	// Cache base walk speed for sprint calculations
 	if (GetCharacterMovement())
 	{
 		BaseWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 	}
+
+	// 默认武器由游戏流程（Raid开局/装备配置）决定，不在此处自动生成
 }
 
 void AFPSCharacter::Tick(float DeltaTime)
@@ -187,28 +194,40 @@ void AFPSCharacter::OnRep_PlayerState()
 
 void AFPSCharacter::InitializeAbilitySystem()
 {
-	if (AbilitySystemComponent && !bAbilitiesInitialized)
+	if (bAbilitiesInitialized)
 	{
-		// For multiplayer: Owner = PlayerState (for replication), Avatar = this character
-		AActor* OwnerActor = GetPlayerState() ? Cast<AActor>(GetPlayerState()) : this;
-		AbilitySystemComponent->InitAbilityActorInfo(OwnerActor, this);
+		return;
+	}
 
-		// Bind death delegate
-		if (CombatAttributeSet)
+	AFPSPlayerState* PS = GetPlayerState<AFPSPlayerState>();
+	if (PS)
+	{
+		// Cache ASC and AttributeSet from PlayerState
+		AbilitySystemComponent = Cast<UFPSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
+		CombatAttributeSet = PS->GetCombatAttributeSet();
+
+		if (AbilitySystemComponent)
 		{
-			CombatAttributeSet->OnDeath.AddDynamic(this, &AFPSCharacter::OnDeath);
+			// PlayerState is Owner, Character is Avatar
+			AbilitySystemComponent->InitAbilityActorInfo(PS, this);
+
+			// Bind death delegate
+			if (CombatAttributeSet)
+			{
+				CombatAttributeSet->OnDeath.AddDynamic(this, &AFPSCharacter::OnDeath);
+			}
+
+			// Only grant abilities on server
+			if (HasAuthority())
+			{
+				GrantDefaultAbilities();
+				ApplyDefaultEffects();
+			}
+
+			bAbilitiesInitialized = true;
+
+			UE_LOG(LogTemplateCharacter, Log, TEXT("Ability System initialized from PlayerState for %s"), *GetName());
 		}
-
-		// Only grant abilities on server
-		if (HasAuthority())
-		{
-			GrantDefaultAbilities();
-			ApplyDefaultEffects();
-		}
-
-		bAbilitiesInitialized = true;
-
-		UE_LOG(LogTemplateCharacter, Log, TEXT("Ability System initialized for %s"), *GetName());
 	}
 }
 
@@ -293,6 +312,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		if (FireAction)
 		{
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSCharacter::HandleFire);
+			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AFPSCharacter::HandleFireReleased);
 		}
 
 		// Aim (ADS)
@@ -485,15 +505,35 @@ void AFPSCharacter::UpdateStamina(float DeltaTime)
 
 void AFPSCharacter::HandleFire()
 {
-	if (bDead)
+	if (bDead || !AbilitySystemComponent)
 	{
 		return;
 	}
 
-	if (AFPSWeaponBase* Weapon = GetCurrentWeapon())
+	UE_LOG(LogTemp, Warning, TEXT("[FPSCharacter] HandleFire triggered. Trying to activate ability by tag..."));
+
+	// Route through GAS so the weapon's granted GA handles fire logic.
+	// The GA (GA_WeaponFire) was granted by the weapon on equip with itself as SourceObject.
+	bool bSuccess = AbilitySystemComponent->TryActivateAbilitiesByTag(
+		FGameplayTagContainer(FFPSGameplayTags::Get().Ability_Weapon_Fire));
+		
+	if (!bSuccess)
 	{
-		Weapon->TryFire();
+		UE_LOG(LogTemp, Warning, TEXT("[FPSCharacter] HandleFire failed to activate any ability with tag: Ability_Weapon_Fire"));
 	}
+}
+
+void AFPSCharacter::HandleFireReleased()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	// Stop auto-fire: cancel any active fire ability so GA's EndAbility clears its timer
+	FGameplayTagContainer FireTags;
+	FireTags.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Fire);
+	AbilitySystemComponent->CancelAbilities(&FireTags);
 }
 
 void AFPSCharacter::HandleAimStart()
@@ -535,15 +575,13 @@ void AFPSCharacter::HandleCrouchToggle()
 
 void AFPSCharacter::HandleReload()
 {
-	if (bDead)
+	if (bDead || !AbilitySystemComponent)
 	{
 		return;
 	}
 
-	if (AFPSWeaponBase* Weapon = GetCurrentWeapon())
-	{
-		Weapon->TryReload();
-	}
+	AbilitySystemComponent->TryActivateAbilitiesByTag(
+		FGameplayTagContainer(FFPSGameplayTags::Get().Ability_Weapon_Reload));
 }
 
 void AFPSCharacter::OnDeath(AActor* Killer)

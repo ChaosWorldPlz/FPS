@@ -4,17 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "AbilitySystemInterface.h"
 #include "FPSTeamTypes.h"
 #include "FPSPlayerState.generated.h"
+
+class UFPSAbilitySystemComponent;
+class UFPSCombatAttributeSet;
 
 /**
  * AFPSPlayerState
  *
  * Replicated player state for PVP matches.
  * Tracks team assignment, kills, deaths, score, and damage stats.
+ * Serves as the central authority for the Gameplay Ability System.
  */
 UCLASS()
-class FPS_API AFPSPlayerState : public APlayerState
+class FPS_API AFPSPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -22,6 +27,14 @@ public:
 	AFPSPlayerState();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	//~ Begin IAbilitySystemInterface
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	//~ End IAbilitySystemInterface
+
+	/** Get the Combat Attribute Set */
+	UFUNCTION(BlueprintCallable, Category = "FPS|GAS")
+	UFPSCombatAttributeSet* GetCombatAttributeSet() const { return CombatAttributeSet; }
 
 	//-------------------------------------------------------------------
 	// Team
@@ -91,6 +104,14 @@ public:
 	FOnKillsChanged OnKillsChanged;
 
 protected:
+	/** Ability System Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
+	UFPSAbilitySystemComponent* AbilitySystemComponent;
+
+	/** Combat Attribute Set */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS", meta = (AllowPrivateAccess = "true"))
+	UFPSCombatAttributeSet* CombatAttributeSet;
+
 	UPROPERTY(ReplicatedUsing = OnRep_Team)
 	EFPSTeam Team;
 

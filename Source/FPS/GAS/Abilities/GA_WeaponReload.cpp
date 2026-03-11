@@ -10,6 +10,7 @@ UGA_WeaponReload::UGA_WeaponReload()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	ActivationPolicy = EFPSAbilityActivationPolicy::OnInputTriggered;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 
 	// Set ability tags
 	AbilityTags.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Reload);
@@ -28,7 +29,7 @@ void UGA_WeaponReload::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	AFPSWeaponBase* Weapon = GetWeapon();
+	AFPSWeaponBase* Weapon = GetWeapon(Handle, ActorInfo);
 	if (!Weapon || !Weapon->WeaponData)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -38,8 +39,8 @@ void UGA_WeaponReload::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	// Start reload on weapon
 	Weapon->Reload();
 
-	// Set timer for reload completion
-	float ReloadTime = Weapon->WeaponData->ReloadTime;
+	// Use effective reload time (accounts for attachment modifiers)
+	float ReloadTime = Weapon->GetEffectiveReloadTime();
 
 	if (UWorld* World = GetWorld())
 	{
@@ -80,7 +81,7 @@ void UGA_WeaponReload::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	// If cancelled, cancel the weapon reload
 	if (bWasCancelled)
 	{
-		AFPSWeaponBase* Weapon = GetWeapon();
+		AFPSWeaponBase* Weapon = GetWeapon(Handle, ActorInfo);
 		if (Weapon)
 		{
 			Weapon->CancelReload();
@@ -101,16 +102,19 @@ bool UGA_WeaponReload::CanActivateAbility(const FGameplayAbilitySpecHandle Handl
 		return false;
 	}
 
-	AFPSWeaponBase* Weapon = GetWeapon();
+	AFPSWeaponBase* Weapon = GetWeapon(Handle, ActorInfo);
 	return Weapon && Weapon->CanReload();
 }
 
-AFPSWeaponBase* UGA_WeaponReload::GetWeapon() const
+AFPSWeaponBase* UGA_WeaponReload::GetWeapon(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo) const
 {
+	FGameplayAbilitySpecHandle SpecHandle = Handle.IsValid() ? Handle : CurrentSpecHandle;
+	UAbilitySystemComponent* ASC = ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : GetAbilitySystemComponentFromActorInfo();
+
 	// Get weapon from the ability spec's source object
-	if (CurrentSpecHandle.IsValid())
+	if (SpecHandle.IsValid() && ASC)
 	{
-		if (const FGameplayAbilitySpec* Spec = GetAbilitySystemComponentFromActorInfo()->FindAbilitySpecFromHandle(CurrentSpecHandle))
+		if (const FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(SpecHandle))
 		{
 			return Cast<AFPSWeaponBase>(Spec->SourceObject.Get());
 		}

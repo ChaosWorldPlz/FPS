@@ -6,7 +6,9 @@
 #include "FPS/FPSCharacter.h"
 #include "AbilitySystemComponent.h"
 #include "FPS/GAS/FPSAbilitySystemComponent.h"
+#include "FPS/GAS/FPSGameplayAbility.h"
 #include "FPS/GAS/FPSCombatAttributeSet.h"
+#include "AbilitySystemGlobals.h"
 #include "FPS/Team/FPSPlayerState.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,9 +23,13 @@ AFPSWeaponBase::AFPSWeaponBase()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
+	// Root scene component so WeaponMesh can be freely transformed in Blueprint
+	USceneComponent* SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
+	RootComponent = SceneRoot;
+
 	// Create weapon mesh
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
-	RootComponent = WeaponMesh;
+	WeaponMesh->SetupAttachment(RootComponent);
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
@@ -430,7 +436,7 @@ FRotator AFPSWeaponBase::GetMuzzleRotation() const
 	return GetActorRotation();
 }
 
-FVector AFPSWeaponBase::GetFireDirectionWithSpread() const
+FVector AFPSWeaponBase::GetFireDirectionWithSpread_Implementation()
 {
 	FVector BaseDirection = FVector::ZeroVector;
 
@@ -505,6 +511,16 @@ void AFPSWeaponBase::IncreaseSpread()
 
 	CurrentSpread += WeaponData->SpreadIncreasePerShot;
 	CurrentSpread = FMath::Min(CurrentSpread, WeaponData->MaxSpread);
+
+	// Notify Lua (or Blueprint) that a shot was fired — used to advance recoil pattern
+	OnShotFired();
+}
+
+void AFPSWeaponBase::OnShotFired_Implementation()
+{
+	// Default C++ implementation: advance pattern index.
+	// Lua overrides this to also track time for pattern reset.
+	CurrentPatternIndex++;
 }
 
 FHitResult AFPSWeaponBase::PerformLineTrace(const FVector& Start, const FVector& End) const
@@ -579,7 +595,7 @@ void AFPSWeaponBase::ApplyDamage(const FHitResult& HitResult)
 	}
 
 	// Apply damage via GAS if target has ASC
-	if (UAbilitySystemComponent* TargetASC = HitResult.GetActor()->FindComponentByClass<UAbilitySystemComponent>())
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitResult.GetActor()))
 	{
 		// Create damage effect
 		if (WeaponData->DamageEffectClass)
@@ -618,42 +634,63 @@ void AFPSWeaponBase::ApplyDamage(const FHitResult& HitResult)
 
 void AFPSWeaponBase::GrantAbilities()
 {
-	UAbilitySystemComponent* ASC = GetOwnerASC();
-	if (!ASC || !WeaponData)
+	if (!HasAuthority())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] 跳过：无 Authority"));
 		return;
 	}
 
-	// Grant fire ability
-	if (WeaponData->FireAbilityClass)
+	UAbilitySystemComponent* ASC = GetOwnerASC();
+	if (!ASC)
 	{
-		FGameplayAbilitySpec AbilitySpec(WeaponData->FireAbilityClass, 1, INDEX_NONE, this);
-		FGameplayAbilitySpecHandle Handle = ASC->GiveAbility(AbilitySpec);
-		GrantedAbilityHandles.Add(Handle);
+		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] 跳过：ASC 为空，OwningCharacter=%s"),
+			OwningCharacter.IsValid() ? *OwningCharacter->GetName() : TEXT("null"));
+		return;
 	}
 
-	// Grant reload ability
-	if (WeaponData->ReloadAbilityClass)
+	auto GrantOne = [&](TSubclassOf<UGameplayAbility> AbilityClass)
 	{
-		FGameplayAbilitySpec AbilitySpec(WeaponData->ReloadAbilityClass, 1, INDEX_NONE, this);
-		FGameplayAbilitySpecHandle Handle = ASC->GiveAbility(AbilitySpec);
-		GrantedAbilityHandles.Add(Handle);
+		if (AbilityClass)
+		{
+			FGameplayAbilitySpec Spec(AbilityClass, 1, INDEX_NONE, this);
+			GrantedAbilityHandles.Add(ASC->GiveAbility(Spec));
+			UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] 授予 %s"), *AbilityClass->GetName());
+		}
+	};
+
+	if (WeaponData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] WeaponData=%s Fire=%s Reload=%s"),
+			*WeaponData->GetName(),
+			WeaponData->FireAbilityClass ? *WeaponData->FireAbilityClass->GetName() : TEXT("null"),
+			WeaponData->ReloadAbilityClass ? *WeaponData->ReloadAbilityClass->GetName() : TEXT("null"));
+		GrantOne(WeaponData->FireAbilityClass);
+		GrantOne(WeaponData->ReloadAbilityClass);
+		GrantOne(WeaponData->MeleeAbilityClass);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] WeaponData 为空！"));
 	}
 
-	// Grant melee ability
-	if (WeaponData->MeleeAbilityClass)
+	for (const TSubclassOf<UFPSGameplayAbility>& AbilityClass : WeaponAbilities)
 	{
-		FGameplayAbilitySpec AbilitySpec(WeaponData->MeleeAbilityClass, 1, INDEX_NONE, this);
-		FGameplayAbilitySpecHandle Handle = ASC->GiveAbility(AbilitySpec);
-		GrantedAbilityHandles.Add(Handle);
+		GrantOne(AbilityClass);
 	}
 }
 
 void AFPSWeaponBase::RemoveAbilities()
 {
+	// Only the server can remove abilities
+	if (!HasAuthority())
+	{
+		return;
+	}
+
 	UAbilitySystemComponent* ASC = GetOwnerASC();
 	if (!ASC)
 	{
+		GrantedAbilityHandles.Empty();
 		return;
 	}
 

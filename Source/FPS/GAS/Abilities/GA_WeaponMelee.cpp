@@ -6,6 +6,7 @@
 #include "FPS/GAS/FPSGameplayTags.h"
 #include "AbilitySystemComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "AbilitySystemGlobals.h"
 
 UGA_WeaponMelee::UGA_WeaponMelee()
 {
@@ -153,7 +154,7 @@ void UGA_WeaponMelee::PerformMeleeAttack()
 		DamagedActors.Add(HitActor);
 
 		// Apply damage via GAS if target has ASC
-		UAbilitySystemComponent* TargetASC = HitActor->FindComponentByClass<UAbilitySystemComponent>();
+		UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitActor);
 		if (TargetASC && SourceASC && MeleeDamageEffect)
 		{
 			FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
