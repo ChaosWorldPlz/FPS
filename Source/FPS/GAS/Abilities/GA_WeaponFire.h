@@ -58,4 +58,10 @@ protected:
 
 	/** Timer handle for auto fire */
 	FTimerHandle AutoFireTimerHandle;
+
+	/** Play fire montage on the character mesh; returns montage duration (0 if none) */
+	float PlayFireMontage();
+
+	/** Stop fire montage if currently playing */
+	void StopFireMontage();
 };

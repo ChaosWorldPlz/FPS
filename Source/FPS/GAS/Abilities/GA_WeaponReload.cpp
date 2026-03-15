@@ -2,6 +2,7 @@
 
 #include "GA_WeaponReload.h"
 #include "AbilitySystemComponent.h"
+#include "FPS/FPSCharacter.h"
 #include "FPS/Weapon/FPSWeaponBase.h"
 #include "FPS/Weapon/FPSWeaponDataAsset.h"
 #include "FPS/GAS/FPSGameplayTags.h"
@@ -12,14 +13,14 @@ UGA_WeaponReload::UGA_WeaponReload()
 	ActivationPolicy = EFPSAbilityActivationPolicy::OnInputTriggered;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 
-	// Set ability tags
-	AbilityTags.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Reload);
+	// Set ability tags — use RequestGameplayTag to avoid CDO-before-InitializeNativeTags timing issue
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Reload"), false));
 
 	// Cancelled by firing
-	CancelAbilitiesWithTag.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Reload);
+	CancelAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Reload"), false));
 
 	// Blocked while reloading
-	ActivationBlockedTags.AddTag(FFPSGameplayTags::Get().State_Reloading);
+	ActivationBlockedTags.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.State.Reloading"), false));
 }
 
 void UGA_WeaponReload::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -53,10 +54,11 @@ void UGA_WeaponReload::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		);
 	}
 	
-	// Add reloading tag
+	// Add reloading tag — 用 static const 避免依赖 FFPSGameplayTags 单例初始化时序
+	static const FGameplayTag ReloadingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Reloading"));
 	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
 	{
-		ASC->AddLooseGameplayTag(FFPSGameplayTags::Get().State_Reloading);
+		ASC->AddLooseGameplayTag(ReloadingTag);
 	}
 }
 
@@ -73,9 +75,10 @@ void UGA_WeaponReload::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 
 	// Remove reloading tag
+	static const FGameplayTag ReloadingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Reloading"));
 	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
 	{
-		ASC->RemoveLooseGameplayTag(FFPSGameplayTags::Get().State_Reloading);
+		ASC->RemoveLooseGameplayTag(ReloadingTag);
 	}
 
 	// If cancelled, cancel the weapon reload
@@ -111,13 +114,21 @@ AFPSWeaponBase* UGA_WeaponReload::GetWeapon(const FGameplayAbilitySpecHandle Han
 	FGameplayAbilitySpecHandle SpecHandle = Handle.IsValid() ? Handle : CurrentSpecHandle;
 	UAbilitySystemComponent* ASC = ActorInfo ? ActorInfo->AbilitySystemComponent.Get() : GetAbilitySystemComponentFromActorInfo();
 
-	// Get weapon from the ability spec's source object
 	if (SpecHandle.IsValid() && ASC)
 	{
 		if (const FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(SpecHandle))
 		{
-			return Cast<AFPSWeaponBase>(Spec->SourceObject.Get());
+			if (AFPSWeaponBase* Weapon = Cast<AFPSWeaponBase>(Spec->SourceObject.Get()))
+			{
+				return Weapon;
+			}
 		}
+	}
+
+	const AActor* Avatar = ActorInfo ? ActorInfo->AvatarActor.Get() : GetAvatarActorFromActorInfo();
+	if (const AFPSCharacter* Char = Cast<const AFPSCharacter>(Avatar))
+	{
+		return Char->GetCurrentWeapon();
 	}
 	return nullptr;
 }

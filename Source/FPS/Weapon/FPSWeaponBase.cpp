@@ -15,6 +15,7 @@
 #include "DrawDebugHelpers.h"
 #include "GenericTeamAgentInterface.h"
 #include "Net/UnrealNetwork.h"
+#include "Particles/ParticleSystemComponent.h"
 
 const FName AFPSWeaponBase::MuzzleSocketName = TEXT("Muzzle");
 
@@ -165,16 +166,18 @@ void AFPSWeaponBase::Fire()
 	);
 	LastFireTime = GetWorld()->GetTimeSeconds();
 
-	// In multiplayer, clients should send fire request to server
+	// Client: play effects locally (prediction) then RPC to server for authoritative hit detection
 	if (OwningCharacter.IsValid() && OwningCharacter->IsLocallyControlled() && !HasAuthority())
 	{
 		FVector MuzzleLoc = GetMuzzleLocation();
 		FVector FireDir = OwningCharacter->GetControlRotation().Vector();
+		FHitResult PredictedHit = PerformLineTrace(MuzzleLoc, MuzzleLoc + FireDir * GetEffectiveRange());
+		PlayFireEffectsLocally(MuzzleLoc, PredictedHit);
 		ServerFire(MuzzleLoc, FireDir);
 		return;
 	}
 
-	// Server or standalone: perform hit scan
+	// Server or standalone: authoritative hit scan
 	for (int32 i = 0; i < WeaponData->PelletsPerShot; i++)
 	{
 		FVector MuzzleLoc = GetMuzzleLocation();
@@ -188,14 +191,9 @@ void AFPSWeaponBase::Fire()
 			ApplyDamage(HitResult);
 		}
 
-		// Broadcast effects to all clients
+		// Play locally for listen-server player, broadcast to remote clients
+		PlayFireEffectsLocally(MuzzleLoc, HitResult);
 		MulticastFireEffects(MuzzleLoc, HitResult);
-	}
-
-	// Play fire sound (on server, multicast handles clients)
-	if (WeaponData->FireSound.IsValid())
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, WeaponData->FireSound.LoadSynchronous(), GetMuzzleLocation());
 	}
 }
 
@@ -278,17 +276,77 @@ void AFPSWeaponBase::MulticastFireEffects_Implementation(FVector MuzzleLocation,
 		return;
 	}
 
-	// Play fire sound
-	if (WeaponData && WeaponData->FireSound.IsValid())
+	PlayFireEffectsLocally(MuzzleLocation, HitResult);
+}
+
+void AFPSWeaponBase::PlayFireEffectsLocally(FVector MuzzleLocation, const FHitResult& HitResult)
+{
+	if (!WeaponData)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, WeaponData->FireSound.LoadSynchronous(), MuzzleLocation);
+		return;
 	}
 
-	// Impact effects at hit location
-	if (HitResult.bBlockingHit && WeaponData && WeaponData->ImpactEffect.IsValid())
+	// 1. 枪口火焰特效（优先 Attach 到 Muzzle 插槽，跟随武器移动）
+	if (WeaponData->MuzzleFlashEffect.IsValid())
 	{
-		// Spawn impact effect via Niagara or particle system
-		// This is left for Lua/Blueprint to handle specific effects
+		UParticleSystem* MuzzleVFX = WeaponData->MuzzleFlashEffect.LoadSynchronous();
+		if (MuzzleVFX)
+		{
+			if (WeaponMesh && WeaponMesh->DoesSocketExist(MuzzleSocketName))
+			{
+				UGameplayStatics::SpawnEmitterAttached(
+					MuzzleVFX,
+					WeaponMesh,
+					MuzzleSocketName,
+					FVector::ZeroVector,
+					FRotator::ZeroRotator,
+					EAttachLocation::SnapToTarget
+				);
+			}
+			else
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(this, MuzzleVFX, MuzzleLocation, GetMuzzleRotation());
+			}
+		}
+	}
+
+	// 2. 弹道曳光线特效（从枪口到命中点/最远射程，通过 BeamEnd 参数传递终点）
+	if (WeaponData->TracerEffect.IsValid())
+	{
+		UParticleSystem* TracerVFX = WeaponData->TracerEffect.LoadSynchronous();
+		if (TracerVFX)
+		{
+			FVector TraceEnd = HitResult.bBlockingHit
+				? FVector(HitResult.ImpactPoint)
+				: (MuzzleLocation + GetMuzzleRotation().Vector() * GetEffectiveRange());
+
+			UParticleSystemComponent* TracerComp = UGameplayStatics::SpawnEmitterAtLocation(
+				this, TracerVFX, MuzzleLocation, (TraceEnd - MuzzleLocation).Rotation()
+			);
+			// Cascade 曳光粒子通常用 BeamEnd 参数指定光束终点
+			if (TracerComp)
+			{
+				TracerComp->SetVectorParameter(FName("BeamEnd"), TraceEnd);
+			}
+		}
+	}
+
+	// 3. 命中点特效
+	if (HitResult.bBlockingHit && WeaponData->ImpactEffect.IsValid())
+	{
+		UParticleSystem* ImpactVFX = WeaponData->ImpactEffect.LoadSynchronous();
+		if (ImpactVFX)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(
+				this, ImpactVFX, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation()
+			);
+		}
+	}
+
+	// 4. 开火音效
+	if (WeaponData->FireSound.IsValid())
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, WeaponData->FireSound.LoadSynchronous(), MuzzleLocation);
 	}
 }
 
@@ -636,15 +694,12 @@ void AFPSWeaponBase::GrantAbilities()
 {
 	if (!HasAuthority())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] 跳过：无 Authority"));
 		return;
 	}
 
 	UAbilitySystemComponent* ASC = GetOwnerASC();
 	if (!ASC)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] 跳过：ASC 为空，OwningCharacter=%s"),
-			OwningCharacter.IsValid() ? *OwningCharacter->GetName() : TEXT("null"));
 		return;
 	}
 
@@ -654,23 +709,14 @@ void AFPSWeaponBase::GrantAbilities()
 		{
 			FGameplayAbilitySpec Spec(AbilityClass, 1, INDEX_NONE, this);
 			GrantedAbilityHandles.Add(ASC->GiveAbility(Spec));
-			UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] 授予 %s"), *AbilityClass->GetName());
 		}
 	};
 
 	if (WeaponData)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] WeaponData=%s Fire=%s Reload=%s"),
-			*WeaponData->GetName(),
-			WeaponData->FireAbilityClass ? *WeaponData->FireAbilityClass->GetName() : TEXT("null"),
-			WeaponData->ReloadAbilityClass ? *WeaponData->ReloadAbilityClass->GetName() : TEXT("null"));
 		GrantOne(WeaponData->FireAbilityClass);
 		GrantOne(WeaponData->ReloadAbilityClass);
 		GrantOne(WeaponData->MeleeAbilityClass);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[GrantAbilities] WeaponData 为空！"));
 	}
 
 	for (const TSubclassOf<UFPSGameplayAbility>& AbilityClass : WeaponAbilities)

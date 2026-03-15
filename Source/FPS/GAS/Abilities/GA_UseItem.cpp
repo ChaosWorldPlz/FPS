@@ -12,8 +12,8 @@ UGA_UseItem::UGA_UseItem()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	ActivationPolicy = EFPSAbilityActivationPolicy::OnInputTriggered;
 
-	// Set ability tags
-	AbilityTags.AddTag(FFPSGameplayTags::Get().Ability_Item_Use);
+	// Set ability tags — use RequestGameplayTag to avoid CDO-before-InitializeNativeTags timing issue
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Item.Use"), false));
 }
 
 void UGA_UseItem::SetItemEffectData(UFPSItemEffectData* InEffectData)

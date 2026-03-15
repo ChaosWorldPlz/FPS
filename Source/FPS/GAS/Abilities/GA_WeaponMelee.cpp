@@ -13,12 +13,12 @@ UGA_WeaponMelee::UGA_WeaponMelee()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	ActivationPolicy = EFPSAbilityActivationPolicy::OnInputTriggered;
 
-	// Set ability tags
-	AbilityTags.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Melee);
+	// Set ability tags — use RequestGameplayTag to avoid CDO-before-InitializeNativeTags timing issue
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Melee"), false));
 
 	// Block other actions during melee
-	BlockAbilitiesWithTag.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Fire);
-	BlockAbilitiesWithTag.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Reload);
+	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Fire"), false));
+	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Reload"), false));
 }
 
 bool UGA_WeaponMelee::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,

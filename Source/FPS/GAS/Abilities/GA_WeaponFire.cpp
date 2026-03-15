@@ -3,6 +3,8 @@
 #include "GA_WeaponFire.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayCueManager.h"
+#include "Animation/AnimMontage.h"
+#include "FPS/FPSCharacter.h"
 #include "FPS/Weapon/FPSWeaponBase.h"
 #include "FPS/Weapon/FPSWeaponDataAsset.h"
 #include "FPS/GAS/FPSGameplayTags.h"
@@ -15,11 +17,11 @@ UGA_WeaponFire::UGA_WeaponFire()
 	// LocalPredicted: fires immediately on client, server validates via ServerFire RPC
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 
-	// Set ability tags
-	AbilityTags.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Fire);
+	// Set ability tags — use RequestGameplayTag to avoid CDO-before-InitializeNativeTags timing issue
+	AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Fire"), false));
 
 	// Block other weapon abilities while firing
-	BlockAbilitiesWithTag.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Reload);
+	BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Reload"), false));
 }
 
 void UGA_WeaponFire::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -38,6 +40,7 @@ void UGA_WeaponFire::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 
 	// Fire once immediately
 	FireWeapon();
+	PlayFireMontage();
 
 	// Check for automatic fire mode
 	UFPSWeaponDataAsset* WeaponData = Weapon->WeaponData;
@@ -78,6 +81,8 @@ void UGA_WeaponFire::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 	bAutoFiring = false;
 
+	StopFireMontage();
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
@@ -102,20 +107,12 @@ bool UGA_WeaponFire::CanActivateAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	if (!Super::CanActivateAbility(Handle, ActorInfo, SourceTags, TargetTags, OptionalRelevantTags))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] CanActivateAbility failed at Super."));
 		return false;
 	}
 
 	AFPSWeaponBase* Weapon = GetWeapon(Handle, ActorInfo);
-	if (!Weapon)
+	if (!Weapon || !Weapon->CanFire())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] CanActivateAbility failed: Weapon is null"));
-		return false;
-	}
-	
-	if (!Weapon->CanFire())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] CanActivateAbility failed: Weapon->CanFire() returned false. State: %d, Ammo: %d"), (int)Weapon->CurrentState, Weapon->AmmoInfo.CurrentMagazine);
 		return false;
 	}
 
@@ -131,8 +128,18 @@ AFPSWeaponBase* UGA_WeaponFire::GetWeapon(const FGameplayAbilitySpecHandle Handl
 	{
 		if (const FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(SpecHandle))
 		{
-			return Cast<AFPSWeaponBase>(Spec->SourceObject.Get());
+			if (AFPSWeaponBase* Weapon = Cast<AFPSWeaponBase>(Spec->SourceObject.Get()))
+			{
+				return Weapon;
+			}
 		}
+	}
+
+	// Fallback：SourceObject 未设置时（如 DefaultAbilities 直接授予），取角色当前武器
+	const AActor* Avatar = ActorInfo ? ActorInfo->AvatarActor.Get() : GetAvatarActorFromActorInfo();
+	if (const AFPSCharacter* Char = Cast<const AFPSCharacter>(Avatar))
+	{
+		return Char->GetCurrentWeapon();
 	}
 	return nullptr;
 }
@@ -156,9 +163,9 @@ void UGA_WeaponFire::FireWeapon()
 				CueParams);
 		}
 	}
-	else if (bAutoFiring)
+	else if (bAutoFiring && Weapon && Weapon->AmmoInfo.IsMagazineEmpty())
 	{
-		// Can't fire anymore (out of ammo), stop auto fire
+		// Out of ammo, stop auto fire
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 	}
 }
@@ -166,4 +173,54 @@ void UGA_WeaponFire::FireWeapon()
 void UGA_WeaponFire::AutoFireTick()
 {
 	FireWeapon();
+	PlayFireMontage();
+}
+
+float UGA_WeaponFire::PlayFireMontage()
+{
+	AFPSWeaponBase* Weapon = GetWeapon(CurrentSpecHandle, CurrentActorInfo);
+	if (!Weapon || !Weapon->WeaponData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] PlayFireMontage: Weapon=%s WeaponData=%s"),
+			*GetNameSafe(Weapon), Weapon ? *GetNameSafe(Weapon->WeaponData) : TEXT("N/A"));
+		return 0.0f;
+	}
+
+	UAnimMontage* Montage = Weapon->WeaponData->FireMontage.LoadSynchronous();
+	if (!Montage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] PlayFireMontage: FireMontage is NULL in DataAsset '%s'. Please assign it in the editor."),
+			*GetNameSafe(Weapon->WeaponData));
+		return 0.0f;
+	}
+
+	ACharacter* Character = Cast<ACharacter>(GetAvatarActorFromActorInfo());
+	if (!Character)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[GA_WeaponFire] PlayFireMontage: AvatarActor is not a Character."));
+		return 0.0f;
+	}
+
+	return Character->PlayAnimMontage(Montage);
+}
+
+void UGA_WeaponFire::StopFireMontage()
+{
+	AFPSWeaponBase* Weapon = GetWeapon(CurrentSpecHandle, CurrentActorInfo);
+	if (!Weapon || !Weapon->WeaponData)
+	{
+		return;
+	}
+
+	UAnimMontage* Montage = Weapon->WeaponData->FireMontage.Get();
+	if (!Montage)
+	{
+		return;
+	}
+
+	ACharacter* Character = Cast<ACharacter>(GetAvatarActorFromActorInfo());
+	if (Character)
+	{
+		Character->StopAnimMontage(Montage);
+	}
 }

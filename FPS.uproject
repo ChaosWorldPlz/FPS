@@ -31,7 +31,22 @@
 		},
 		{
 			"Name": "UnrealMCP",
+			"Enabled": false
+		},
+		{
+			"Name": "EnhancedInput",
 			"Enabled": true
+		},
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
+		},
+		{
+			"Name": "UEEditorMCP",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
 		}
 	]
 }

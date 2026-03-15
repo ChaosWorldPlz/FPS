@@ -411,9 +411,10 @@ void AFPSCharacter::StartSprint()
 		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed * SprintSpeedMultiplier;
 	}
 
+	static const FGameplayTag SprintingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Sprinting"));
 	if (AbilitySystemComponent)
 	{
-		AbilitySystemComponent->AddLooseGameplayTag(FFPSGameplayTags::Get().State_Sprinting);
+		AbilitySystemComponent->AddLooseGameplayTag(SprintingTag);
 	}
 }
 
@@ -431,9 +432,10 @@ void AFPSCharacter::StopSprint()
 		GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	}
 
+	static const FGameplayTag SprintingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Sprinting"));
 	if (AbilitySystemComponent)
 	{
-		AbilitySystemComponent->RemoveLooseGameplayTag(FFPSGameplayTags::Get().State_Sprinting);
+		AbilitySystemComponent->RemoveLooseGameplayTag(SprintingTag);
 	}
 }
 
@@ -510,17 +512,9 @@ void AFPSCharacter::HandleFire()
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("[FPSCharacter] HandleFire triggered. Trying to activate ability by tag..."));
-
-	// Route through GAS so the weapon's granted GA handles fire logic.
-	// The GA (GA_WeaponFire) was granted by the weapon on equip with itself as SourceObject.
-	bool bSuccess = AbilitySystemComponent->TryActivateAbilitiesByTag(
-		FGameplayTagContainer(FFPSGameplayTags::Get().Ability_Weapon_Fire));
-		
-	if (!bSuccess)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("[FPSCharacter] HandleFire failed to activate any ability with tag: Ability_Weapon_Fire"));
-	}
+	// Use RequestGameplayTag directly to avoid FFPSGameplayTags singleton initialization timing issues
+	static const FGameplayTag FireTag = FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Fire"));
+	bool bSuccess = AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(FireTag));
 }
 
 void AFPSCharacter::HandleFireReleased()
@@ -530,9 +524,8 @@ void AFPSCharacter::HandleFireReleased()
 		return;
 	}
 
-	// Stop auto-fire: cancel any active fire ability so GA's EndAbility clears its timer
-	FGameplayTagContainer FireTags;
-	FireTags.AddTag(FFPSGameplayTags::Get().Ability_Weapon_Fire);
+	static const FGameplayTag FireTag = FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Fire"));
+	FGameplayTagContainer FireTags(FireTag);
 	AbilitySystemComponent->CancelAbilities(&FireTags);
 }
 
@@ -543,7 +536,8 @@ void AFPSCharacter::HandleAimStart()
 		return;
 	}
 
-	AbilitySystemComponent->AddLooseGameplayTag(FFPSGameplayTags::Get().State_Aiming);
+	static const FGameplayTag AimingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Aiming"));
+	AbilitySystemComponent->AddLooseGameplayTag(AimingTag);
 }
 
 void AFPSCharacter::HandleAimStop()
@@ -553,7 +547,8 @@ void AFPSCharacter::HandleAimStop()
 		return;
 	}
 
-	AbilitySystemComponent->RemoveLooseGameplayTag(FFPSGameplayTags::Get().State_Aiming);
+	static const FGameplayTag AimingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Aiming"));
+	AbilitySystemComponent->RemoveLooseGameplayTag(AimingTag);
 }
 
 void AFPSCharacter::HandleCrouchToggle()
@@ -580,8 +575,8 @@ void AFPSCharacter::HandleReload()
 		return;
 	}
 
-	AbilitySystemComponent->TryActivateAbilitiesByTag(
-		FGameplayTagContainer(FFPSGameplayTags::Get().Ability_Weapon_Reload));
+	static const FGameplayTag ReloadTag = FGameplayTag::RequestGameplayTag(FName("FPS.Ability.Weapon.Reload"));
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(ReloadTag));
 }
 
 void AFPSCharacter::OnDeath(AActor* Killer)

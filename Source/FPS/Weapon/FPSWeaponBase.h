@@ -142,6 +142,9 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastFireEffects(FVector MuzzleLocation, FHitResult HitResult);
 
+	/** Play fire effects locally (muzzle flash, tracer, impact, sound). Called on client as prediction and on server for listen-server player. */
+	void PlayFireEffectsLocally(FVector MuzzleLocation, const FHitResult& HitResult);
+
 	//-------------------------------------------------------------------
 	// State Queries
 	//-------------------------------------------------------------------

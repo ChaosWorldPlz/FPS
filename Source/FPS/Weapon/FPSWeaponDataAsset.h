@@ -7,14 +7,13 @@
 #include "FPSWeaponTypes.h"
 #include "FPSAttachmentTypes.h"
 #include "GameplayTagContainer.h"
-#include "NiagaraSystem.h"
 #include "FPSWeaponDataAsset.generated.h"
 
 class UGameplayAbility;
 class UGameplayEffect;
 class UAnimMontage;
 class USoundBase;
-class UNiagaraSystem;
+class UParticleSystem;
 class USkeletalMesh;
 class UStaticMesh;
 
@@ -158,15 +157,15 @@ public:
 
 	/** Muzzle flash effect */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Visuals")
-	TSoftObjectPtr<UNiagaraSystem> MuzzleFlashEffect;
+	TSoftObjectPtr<UParticleSystem> MuzzleFlashEffect;
 
 	/** Impact effect */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Visuals")
-	TSoftObjectPtr<UNiagaraSystem> ImpactEffect;
+	TSoftObjectPtr<UParticleSystem> ImpactEffect;
 
 	/** Tracer effect */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Visuals")
-	TSoftObjectPtr<UNiagaraSystem> TracerEffect;
+	TSoftObjectPtr<UParticleSystem> TracerEffect;
 
 	//-------------------------------------------------------------------
 	// Audio Assets
@@ -216,19 +215,19 @@ public:
 	// GAS Integration
 	//-------------------------------------------------------------------
 
-	/** Fire ability class */
+	/** 开火能力类（支持 Blueprint 子类，装备时由武器 GrantAbilities 授予） */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|GAS")
 	TSubclassOf<UGameplayAbility> FireAbilityClass;
 
-	/** Reload ability class */
+	/** 换弹能力类 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|GAS")
 	TSubclassOf<UGameplayAbility> ReloadAbilityClass;
 
-	/** Melee ability class */
+	/** 近战能力类 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|GAS")
 	TSubclassOf<UGameplayAbility> MeleeAbilityClass;
 
-	/** Damage effect class */
+	/** 伤害效果类 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|GAS")
 	TSubclassOf<UGameplayEffect> DamageEffectClass;
 

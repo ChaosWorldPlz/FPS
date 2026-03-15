@@ -2549,3 +2549,1171 @@
 2026-03-12 01:32:10,874 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:385] - Unreal returned error: Failed to set property 'Node.EffectorTransformSpace' on node (property not supported or invalid value)
 2026-03-12 01:32:10,874 - BlueprintGraph.NodeProperties - ERROR - [node_properties.py:358] - Failed to modify node: Failed to set property 'Node.EffectorTransformSpace' on node (property not supported or invalid value)
 2026-03-12 01:32:10,875 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 02:39:19,881 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 02:39:19,882 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 02:39:19,882 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 02:39:19,882 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 02:39:19,882 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 02:39:19,882 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 02:39:19,882 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 02:39:19,882 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 02:39:19,965 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 02:39:19,975 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 02:39:19,982 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 02:39:19,982 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 02:39:19,995 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 02:39:19,996 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000019FA80C6D50>
+2026-03-15 02:39:19,997 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 02:39:19,997 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 02:39:19,998 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 02:39:20,000 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000019FA80C6AD0>
+2026-03-15 02:39:20,000 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 02:39:20,000 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 02:39:20,001 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000019FA80996E0>
+2026-03-15 02:39:20,002 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 02:39:20,002 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 02:39:20,002 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 02:39:20,002 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 02:39:20,003 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 02:45:53,743 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 02:45:53,744 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 02:45:53,748 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 02:45:53,748 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 02:45:53,748 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 02:45:53,748 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 02:45:53,748 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 02:45:53,748 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 02:45:53,920 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 02:45:53,925 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 02:45:53,933 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 02:45:53,933 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 02:45:53,944 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 02:45:53,946 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C7CA926D50>
+2026-03-15 02:45:53,946 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 02:45:53,946 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 02:45:53,948 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 02:45:53,948 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C7CA926AD0>
+2026-03-15 02:45:53,949 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 02:45:53,949 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 02:45:53,950 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C7CA8FD6E0>
+2026-03-15 02:45:53,950 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 02:45:53,950 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 02:45:53,950 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 02:45:53,950 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 02:45:53,951 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 02:46:27,412 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C7CA8FD0F0>
+2026-03-15 02:46:27,413 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 02:46:27,413 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 02:46:27,413 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:416] - Creating new UnrealConnection instance
+2026-03-15 02:46:27,413 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 02:46:29,452 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 02:46:29,452 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 02:46:29,953 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 02:46:31,984 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 02:46:31,984 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 02:46:32,984 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 02:46:35,243 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 02:46:35,243 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 02:46:37,243 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 02:46:39,268 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 02:46:39,269 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:46:39,293 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:46:39,293 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 02:46:39,293 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 02:46:39,793 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 02:46:41,816 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 02:46:41,816 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 02:46:42,317 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 02:46:44,333 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 02:46:44,333 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 02:46:45,334 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 02:46:47,349 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 02:46:47,350 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 02:46:49,350 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 02:46:51,390 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 02:46:51,390 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:46:51,390 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:46:51,391 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 02:46:51,391 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 02:46:52,391 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 02:46:54,408 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 02:46:54,409 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 02:46:54,909 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 02:46:56,943 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 02:46:56,943 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 02:46:57,943 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 02:46:59,972 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 02:46:59,973 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 02:47:01,973 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 02:47:04,014 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 02:47:04,014 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:47:04,014 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:47:04,015 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 02:47:04,015 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 02:47:06,017 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 02:47:08,206 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 02:47:08,206 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 02:47:08,707 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 02:47:10,731 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 02:47:10,731 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 02:47:11,731 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 02:47:13,753 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 02:47:13,753 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 02:47:15,760 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 02:47:17,782 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 02:47:17,782 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:47:17,782 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 02:47:17,782 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 02:47:17,786 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 03:49:12,334 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C7CAABA450>
+2026-03-15 03:49:12,337 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 03:49:12,338 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 03:49:12,341 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 03:49:12,341 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:49:14,378 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:49:14,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:49:14,879 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:49:16,895 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:49:16,895 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:49:17,895 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:49:19,923 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:49:19,923 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:49:21,924 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:49:23,950 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:49:23,951 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:49:23,951 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:49:23,951 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:49:23,951 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 03:49:24,451 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:49:26,494 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:49:26,494 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:49:26,994 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:49:29,037 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:49:29,037 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:49:30,037 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:49:32,065 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:49:32,065 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:49:34,066 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:49:36,094 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:49:36,094 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:49:36,094 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:49:36,094 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:49:36,094 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 03:49:37,095 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:49:39,139 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:49:39,139 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:49:39,640 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:49:41,681 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:49:41,681 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:49:42,682 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:49:44,720 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:49:44,720 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:49:46,721 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:49:48,751 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:49:48,752 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:49:48,752 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:49:48,752 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:49:48,752 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 03:49:50,752 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:49:52,778 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:49:52,778 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:49:53,279 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:49:55,314 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:49:55,314 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:49:56,314 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:49:58,348 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:49:58,348 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:50:00,349 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:50:02,398 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:50:02,398 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:50:02,398 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:50:02,398 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:50:02,404 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 03:54:16,790 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C7CAA87AC0>
+2026-03-15 03:54:16,790 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 03:54:16,790 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 03:54:16,790 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 03:54:16,790 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:54:18,832 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:54:18,832 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:54:19,333 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:54:21,367 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:54:21,367 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:54:22,368 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:54:24,402 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:54:24,402 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:54:26,403 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:54:28,441 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:54:28,441 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:54:28,442 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:54:28,442 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:54:28,442 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 03:54:28,942 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:54:30,975 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:54:30,975 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:54:31,475 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:54:33,495 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:54:33,495 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:54:34,496 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:54:36,539 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:54:36,539 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:54:38,539 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:54:40,575 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:54:40,575 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:54:40,576 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:54:40,576 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:54:40,576 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 03:54:41,576 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:54:43,607 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:54:43,607 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:54:44,108 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:54:46,145 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:54:46,145 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:54:47,145 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:54:49,174 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:54:49,174 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:54:51,175 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:54:53,216 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:54:53,217 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:54:53,217 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:54:53,217 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:54:53,217 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 03:54:55,218 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 03:54:57,253 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 03:54:57,253 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 03:54:57,754 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 03:54:59,799 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 03:54:59,800 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 03:55:00,800 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 03:55:02,845 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 03:55:02,845 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 03:55:04,846 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 03:55:06,897 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 03:55:06,897 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:55:06,897 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 03:55:06,897 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 03:55:06,900 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 03:56:58,746 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 03:56:58,747 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 03:56:58,747 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 03:56:58,747 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 03:56:58,748 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 03:56:58,748 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 03:56:58,748 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 03:56:58,748 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 03:56:58,840 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 03:56:58,847 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 03:56:58,851 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 03:56:58,851 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 03:56:58,860 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 03:56:58,861 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024E72896D50>
+2026-03-15 03:56:58,862 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 03:56:58,862 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 03:56:58,863 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 03:56:58,865 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024E72896AD0>
+2026-03-15 03:56:58,865 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 03:56:58,865 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 03:56:58,866 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024E7286D6E0>
+2026-03-15 03:56:58,866 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 03:56:58,866 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 03:56:58,866 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 03:56:58,867 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 03:56:58,867 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:02:12,649 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024E7286D0F0>
+2026-03-15 04:02:12,650 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:02:12,650 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:02:12,650 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:416] - Creating new UnrealConnection instance
+2026-03-15 04:02:12,650 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 04:02:12,650 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:02:14,676 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:02:14,676 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:02:15,177 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:02:17,206 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:02:17,206 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:02:18,206 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:02:20,246 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:02:20,246 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:02:22,246 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:02:24,287 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:02:24,287 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:02:24,288 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:02:24,289 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:02:24,289 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:02:24,789 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:02:26,835 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:02:26,835 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:02:27,335 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:02:29,367 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:02:29,367 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:02:30,367 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:02:32,394 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:02:32,394 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:02:34,394 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:02:36,437 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:02:36,437 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:02:36,437 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:02:36,437 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:02:36,437 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:02:37,438 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:02:39,481 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:02:39,481 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:02:39,981 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:02:42,016 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:02:42,016 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:02:43,017 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:02:45,045 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:02:45,045 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:02:47,046 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:02:49,084 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:02:49,084 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:02:49,084 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:02:49,084 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:02:49,084 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:02:51,084 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:02:53,125 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:02:53,125 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:02:53,626 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:02:55,646 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:02:55,647 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:02:56,647 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:02:58,673 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:02:58,674 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:03:00,674 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:03:02,712 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:03:02,712 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:03:02,712 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:03:02,712 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:03:02,715 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:04:08,144 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:04:08,144 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:04:08,144 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:04:08,144 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:04:08,145 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:04:08,145 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:04:08,145 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:04:08,145 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:04:08,217 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:04:08,221 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 04:04:08,224 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 04:04:08,224 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 04:04:08,228 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:04:08,228 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000014A69D96D50>
+2026-03-15 04:04:08,228 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 04:04:08,229 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 04:04:08,229 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:04:08,230 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000014A69D96AD0>
+2026-03-15 04:04:08,230 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 04:04:08,231 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 04:04:08,231 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000014A69D6D6E0>
+2026-03-15 04:04:08,231 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 04:04:08,231 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 04:04:08,231 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 04:04:08,232 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:04:08,232 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:04:31,311 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000014A69D6D0F0>
+2026-03-15 04:04:31,312 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:04:31,312 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:04:31,312 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:416] - Creating new UnrealConnection instance
+2026-03-15 04:04:31,312 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 04:04:31,312 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:04:33,357 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:04:33,357 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:04:33,857 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:04:35,891 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:04:35,891 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:04:36,891 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:04:38,927 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:04:38,927 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:04:40,927 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:04:42,960 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:04:42,960 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:04:42,961 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:04:42,961 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:04:42,961 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:04:43,461 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:04:45,504 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:04:45,504 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:04:46,004 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:04:48,047 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:04:48,047 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:04:49,048 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:04:51,094 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:04:51,094 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:04:53,094 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:04:55,144 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:04:55,144 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:04:55,144 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:04:55,144 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:04:55,144 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:04:56,145 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:04:58,174 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:04:58,174 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:04:58,674 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:05:00,705 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:05:00,706 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:05:01,706 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:05:03,744 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:05:03,744 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:05:05,744 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:05:07,793 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:05:07,793 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:05:07,793 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:05:07,793 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:05:07,793 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:05:09,794 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:05:11,834 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:05:11,834 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:05:12,335 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:05:14,375 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:05:14,375 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:05:15,375 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:05:17,422 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:05:17,423 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:05:19,423 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:05:21,461 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:05:21,461 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:05:21,461 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:05:21,461 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:05:21,462 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:22:14,131 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000014A69F2A450>
+2026-03-15 04:22:14,131 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:22:14,132 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:22:14,132 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 04:22:14,132 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:22:16,175 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:22:16,175 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:22:16,675 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:22:18,716 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:22:18,716 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:22:19,716 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:22:21,752 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:22:21,752 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:22:23,753 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:22:25,791 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:22:25,791 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:22:25,791 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:22:25,791 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:22:25,791 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:22:26,291 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:22:28,338 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:22:28,339 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:22:28,839 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:22:30,876 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:22:30,876 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:22:31,877 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:22:33,921 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:22:33,921 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:22:35,922 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:22:37,955 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:22:37,956 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:22:37,956 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:22:37,956 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:22:37,956 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:22:38,956 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:22:40,994 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:22:40,994 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:22:41,495 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:22:43,530 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:22:43,530 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:22:44,530 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:22:46,564 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:22:46,564 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:22:48,565 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:22:50,602 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:22:50,602 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:22:50,602 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:22:50,602 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:22:50,602 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:22:52,602 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:22:54,635 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:22:54,636 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:22:55,136 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:22:57,168 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:22:57,168 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:22:58,169 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:23:00,197 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:23:00,198 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:23:02,198 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:23:04,225 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:23:04,225 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:23:04,225 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:23:04,225 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:23:04,228 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:24:10,018 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000014A69EF39B0>
+2026-03-15 04:24:10,019 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:24:10,019 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:24:10,019 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:734] - Analyzing Blueprint graph: /Game/FPS/Migrate/BP_ThirdPersonCharacter -> EventGraph
+2026-03-15 04:24:10,020 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:24:12,055 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:24:12,055 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:24:12,555 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:24:14,593 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:24:14,593 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:24:15,593 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:24:17,639 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:24:17,639 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:24:19,639 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:24:21,678 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:24:21,679 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:24:21,679 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:24:21,679 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:24:21,679 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:24:22,179 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:24:24,223 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:24:24,223 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:24:24,724 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:24:26,745 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:24:26,745 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:24:27,746 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:24:29,792 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:24:29,792 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:24:31,793 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:24:33,841 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:24:33,841 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:24:33,841 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:24:33,841 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:24:33,841 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:24:34,842 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:24:36,877 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:24:36,877 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:24:37,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:24:39,411 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:24:39,411 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:24:40,411 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:24:42,439 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:24:42,439 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:24:44,439 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:24:46,475 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:24:46,475 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:24:46,475 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:24:46,475 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:24:46,475 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:24:48,475 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:24:50,493 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:24:50,493 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:24:50,993 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:24:53,029 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:24:53,029 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:24:54,029 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:24:56,065 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:24:56,065 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:24:58,065 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:25:00,088 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:25:00,088 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:25:00,088 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:25:00,088 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:25:00,089 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:29:20,932 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:29:21,004 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:29:21,008 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 04:29:21,011 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 04:29:21,011 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 04:29:21,015 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:29:21,016 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000016C9F916D50>
+2026-03-15 04:29:21,016 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 04:29:21,016 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 04:29:21,017 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:29:21,018 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000016C9F916AD0>
+2026-03-15 04:29:21,018 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 04:29:21,018 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 04:29:21,019 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000016C9F8ED6E0>
+2026-03-15 04:29:21,019 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 04:29:21,019 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 04:29:21,019 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 04:29:21,019 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:29:21,020 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:29:57,180 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000016C9F8ED0F0>
+2026-03-15 04:29:57,181 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:29:57,181 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:29:57,181 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:416] - Creating new UnrealConnection instance
+2026-03-15 04:29:57,181 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/Blueprints/BP_FPSPlayer
+2026-03-15 04:29:57,181 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:29:59,225 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:29:59,225 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:29:59,725 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:30:01,779 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:30:01,779 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:30:02,779 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:30:04,809 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:30:04,810 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:30:06,810 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:30:08,850 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:30:08,851 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:08,851 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:08,851 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:30:08,851 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:30:09,351 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:30:11,392 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:30:11,392 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:30:11,893 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:30:13,932 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:30:13,932 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:30:14,933 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:30:16,967 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:30:16,967 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:30:18,967 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:30:21,015 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:30:21,015 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:21,015 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:21,015 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:30:21,015 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:30:22,016 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:30:24,055 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:30:24,055 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:30:24,556 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:30:26,587 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:30:26,587 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:30:27,588 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:30:29,622 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:30:29,622 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:30:31,622 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:30:33,650 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:30:33,650 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:33,650 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:33,650 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:30:33,650 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:30:35,651 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:30:37,693 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:30:37,693 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:30:38,193 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:30:40,236 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:30:40,237 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:30:41,237 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:30:43,271 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:30:43,271 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:30:45,271 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:30:47,315 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:30:47,315 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:47,315 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:30:47,315 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:30:47,316 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:33:05,636 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000016C9FAAA450>
+2026-03-15 04:33:05,636 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:33:05,636 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:33:05,636 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/Blueprints/BP_FPSPlayer
+2026-03-15 04:33:05,636 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:33:07,658 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:33:07,658 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:33:08,159 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:33:10,197 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:33:10,197 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:33:11,197 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:33:13,219 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:33:13,220 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:33:15,220 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:33:17,250 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:33:17,250 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:17,251 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:17,251 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:33:17,251 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:33:17,751 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:33:19,793 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:33:19,793 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:33:20,293 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:33:22,320 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:33:22,320 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:33:23,321 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:33:25,345 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:33:25,345 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:33:27,345 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:33:29,363 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:33:29,363 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:29,363 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:29,363 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:33:29,363 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:33:30,364 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:33:32,384 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:33:32,384 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:33:32,885 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:33:34,923 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:33:34,923 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:33:35,923 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:33:37,940 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:33:37,940 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:33:39,940 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:33:41,987 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:33:41,987 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:41,987 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:41,987 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:33:41,987 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:33:43,987 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:33:46,026 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:33:46,026 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:33:46,527 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:33:48,562 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:33:48,562 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:33:49,563 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:33:51,603 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:33:51,604 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:33:53,604 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:33:55,638 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:33:55,638 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:55,638 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:33:55,638 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:33:55,639 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:36:25,488 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:36:25,488 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:36:25,488 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:36:25,488 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:36:25,489 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:36:25,489 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:36:25,489 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:36:25,489 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:36:25,561 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:36:25,564 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 04:36:25,568 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 04:36:25,568 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 04:36:25,573 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:36:25,574 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024B184D6D50>
+2026-03-15 04:36:25,575 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 04:36:25,575 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 04:36:25,576 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:36:25,577 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024B184D6AD0>
+2026-03-15 04:36:25,578 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 04:36:25,578 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 04:36:25,579 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024B184AD6E0>
+2026-03-15 04:36:25,579 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 04:36:25,579 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 04:36:25,579 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 04:36:25,580 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:36:25,580 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:36:40,733 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x0000024B184AD0F0>
+2026-03-15 04:36:40,734 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:36:40,734 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:36:40,734 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:416] - Creating new UnrealConnection instance
+2026-03-15 04:36:40,734 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/Blueprints/BP_FPSPlayer
+2026-03-15 04:36:40,734 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:36:42,778 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:36:42,778 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:36:43,279 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:36:45,324 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:36:45,324 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:36:46,324 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:36:48,362 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:36:48,362 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:36:50,363 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:36:52,393 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:36:52,393 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:36:52,393 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:36:52,393 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:36:52,393 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:36:52,894 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:36:54,919 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:36:54,920 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:36:55,420 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:36:57,450 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:36:57,451 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:36:58,451 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:37:00,480 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:37:00,480 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:37:02,481 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:37:04,500 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:37:04,500 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:37:04,500 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:37:04,500 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:37:04,500 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:37:05,501 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:37:07,545 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:37:07,545 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:37:08,046 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:37:10,077 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:37:10,077 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:37:11,078 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:37:13,112 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:37:13,113 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:37:15,113 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:37:17,140 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:37:17,140 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:37:17,140 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:37:17,140 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:37:17,140 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:37:19,141 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 1/4)...
+2026-03-15 04:37:21,170 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 1)
+2026-03-15 04:37:21,170 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 0.5s...
+2026-03-15 04:37:21,671 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 2/4)...
+2026-03-15 04:37:23,710 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 2)
+2026-03-15 04:37:23,710 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 1.0s...
+2026-03-15 04:37:24,710 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 3/4)...
+2026-03-15 04:37:26,746 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 3)
+2026-03-15 04:37:26,746 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:176] - Retrying connection in 2.0s...
+2026-03-15 04:37:28,747 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55557 (attempt 4/4)...
+2026-03-15 04:37:30,784 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:162] - Connection refused - is Unreal Engine running? (attempt 4)
+2026-03-15 04:37:30,784 - UnrealMCP_Advanced - ERROR - [unreal_mcp_server_advanced.py:179] - Failed to connect after 4 attempts. Last error: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:37:30,784 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): Failed to connect to Unreal Engine: Connection refused: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-03-15 04:37:30,784 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:37:30,787 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:38:23,221 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:38:23,222 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:38:23,222 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:38:23,222 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:38:23,222 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:38:23,222 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:38:23,222 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:38:23,222 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:38:23,281 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:38:23,284 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 04:38:23,286 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 04:38:23,286 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 04:38:23,291 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:41:28,366 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:41:28,366 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:41:28,366 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:41:28,366 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:41:28,366 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:41:28,366 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:41:28,367 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:41:28,367 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:41:28,447 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2795] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:41:28,450 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 04:41:28,452 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:434] - UnrealMCP Advanced server starting up
+2026-03-15 04:41:28,453 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:435] - Connection will be established lazily on first tool call
+2026-03-15 04:41:28,456 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:41:28,456 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001FD0E366D50>
+2026-03-15 04:41:28,457 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 04:41:28,457 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 04:41:28,459 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:41:28,460 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001FD0E366AD0>
+2026-03-15 04:41:28,460 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 04:41:28,460 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 04:41:28,461 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001FD0E33D6E0>
+2026-03-15 04:41:28,461 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 04:41:28,461 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 04:41:28,461 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 04:41:28,462 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:41:28,462 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:41:41,271 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001FD0E33D0F0>
+2026-03-15 04:41:41,271 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:41:41,271 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:41:41,272 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:416] - Creating new UnrealConnection instance
+2026-03-15 04:41:41,272 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:679] - Reading Blueprint content for: /Game/Blueprints/BP_FPSPlayer
+2026-03-15 04:41:41,272 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 04:41:41,272 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 04:41:41,272 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 1): read_blueprint_content
+2026-03-15 04:41:41,272 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "read_blueprint_content", "params": {"blueprint_path": "/Game/Blueprints/BP_FPSPlayer", "include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true}}...
+2026-03-15 04:41:41,776 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 1/4): [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+2026-03-15 04:41:41,778 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:41:41,779 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 0.5s...
+2026-03-15 04:41:42,279 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 04:41:42,279 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 04:41:42,279 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 2): read_blueprint_content
+2026-03-15 04:41:42,279 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "read_blueprint_content", "params": {"blueprint_path": "/Game/Blueprints/BP_FPSPlayer", "include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true}}...
+2026-03-15 04:41:42,780 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 2/4): [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+2026-03-15 04:41:42,780 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:41:42,780 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 1.0s...
+2026-03-15 04:41:43,781 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 04:41:43,781 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 04:41:43,781 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 3): read_blueprint_content
+2026-03-15 04:41:43,782 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "read_blueprint_content", "params": {"blueprint_path": "/Game/Blueprints/BP_FPSPlayer", "include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true}}...
+2026-03-15 04:41:44,283 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 3/4): [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+2026-03-15 04:41:44,283 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:41:44,283 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:321] - Retrying command in 2.0s...
+2026-03-15 04:41:46,283 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 04:41:46,284 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 04:41:46,284 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:362] - Sending command (attempt 4): read_blueprint_content
+2026-03-15 04:41:46,284 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:363] - Command payload: {"type": "read_blueprint_content", "params": {"blueprint_path": "/Game/Blueprints/BP_FPSPlayer", "include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true}}...
+2026-03-15 04:41:46,287 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:314] - Command failed (attempt 4/4): [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+2026-03-15 04:41:46,287 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:200] - Disconnected from Unreal Engine
+2026-03-15 04:41:46,288 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:43:49,418 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:43:49,418 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:43:49,418 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:43:49,418 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:43:49,419 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:43:49,419 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:43:49,419 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:43:49,419 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:43:49,486 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2737] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:43:49,489 - asyncio - DEBUG - [proactor_events.py:631] - Using proactor: IocpProactor
+2026-03-15 04:43:49,494 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-03-15 04:43:49,494 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-03-15 04:43:49,498 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:43:49,499 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001DBF10C6D50>
+2026-03-15 04:43:49,499 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 04:43:49,499 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 04:43:49,500 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:43:49,501 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001DBF10C6AD0>
+2026-03-15 04:43:49,501 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 04:43:49,501 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 04:43:49,502 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001DBF1065810>
+2026-03-15 04:43:49,502 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 04:43:49,502 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 04:43:49,502 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 04:43:49,502 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:43:49,502 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:44:03,457 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001DBF1065220>
+2026-03-15 04:44:03,457 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:44:03,458 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:44:03,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:358] - Creating new UnrealConnection instance
+2026-03-15 04:44:03,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/Blueprints/BP_FPSPlayer
+2026-03-15 04:44:03,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 04:44:03,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 04:44:03,458 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): read_blueprint_content
+2026-03-15 04:44:03,458 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "read_blueprint_content", "params": {"blueprint_path": "/Game/Blueprints/BP_FPSPlayer", "include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true}}...
+2026-03-15 04:44:03,514 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (138 bytes) for read_blueprint_content
+2026-03-15 04:44:03,514 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command read_blueprint_content completed successfully
+2026-03-15 04:44:03,514 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:327] - Unreal returned error: Unknown command type: read_blueprint_content
+2026-03-15 04:44:03,517 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:44:42,138 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001DBF1256450>
+2026-03-15 04:44:42,138 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:44:42,138 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:44:42,138 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 04:44:42,138 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 04:44:42,138 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): get_actors_in_level
+2026-03-15 04:44:42,138 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "get_actors_in_level", "params": {}}...
+2026-03-15 04:44:42,186 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (12404 bytes) for get_actors_in_level
+2026-03-15 04:44:42,187 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command get_actors_in_level completed successfully
+2026-03-15 04:44:42,189 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:49:55,307 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:49:55,307 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:49:55,309 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:49:55,309 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:49:55,309 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:49:55,309 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:49:55,309 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:49:55,309 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:49:55,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2737] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:49:55,382 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-03-15 04:49:55,385 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-03-15 04:49:55,385 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-03-15 04:49:55,390 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:49:55,391 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000002735256B090>
+2026-03-15 04:49:55,391 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 04:49:55,392 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 04:49:55,392 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:49:55,393 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000273524DC1D0>
+2026-03-15 04:49:55,393 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 04:49:55,393 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 04:49:55,394 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000273526805D0>
+2026-03-15 04:49:55,394 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 04:49:55,394 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 04:49:55,394 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 04:49:55,394 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:49:55,395 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 04:55:55,273 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 04:55:55,345 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-03-15 04:55:55,347 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-03-15 04:55:55,349 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-03-15 04:55:55,349 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-03-15 04:55:55,354 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 04:55:55,354 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D9253210>
+2026-03-15 04:55:55,355 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 04:55:55,355 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 04:55:55,356 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:55:55,356 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D914F8D0>
+2026-03-15 04:55:55,357 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 04:55:55,357 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 04:55:55,357 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D9203450>
+2026-03-15 04:55:55,357 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 04:55:55,357 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 04:55:55,357 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 04:55:55,358 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:55:55,358 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 04:57:08,763 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D922A890>
+2026-03-15 04:57:08,763 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 04:57:08,766 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 04:57:08,767 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:358] - Creating new UnrealConnection instance
+2026-03-15 04:57:08,767 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 04:57:08,767 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 04:57:08,768 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 04:57:08,768 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 04:57:08,768 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true, "blueprint_name": "BP_ThirdPersonCharacter"}}...
+2026-03-15 04:57:09,026 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (129128 bytes) for describe_blueprint_full
+2026-03-15 04:57:09,027 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 04:57:09,027 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:627] - Successfully read Blueprint content. Found:
+2026-03-15 04:57:09,027 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:629] -   - 29 variables
+2026-03-15 04:57:09,028 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:635] -   - 3 components
+2026-03-15 04:57:09,034 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:07:29,341 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D9185750>
+2026-03-15 05:07:29,342 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:07:29,342 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:07:29,342 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/Blueprints/BP_FPSPlayer
+2026-03-15 05:07:29,342 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:07:29,342 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:07:29,342 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:07:29,342 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true, "blueprint_name": "BP_FPSPlayer"}}...
+2026-03-15 05:07:29,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (5562 bytes) for describe_blueprint_full
+2026-03-15 05:07:29,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:07:29,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:627] - Successfully read Blueprint content. Found:
+2026-03-15 05:07:29,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:629] -   - 29 variables
+2026-03-15 05:07:29,378 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:635] -   - 2 components
+2026-03-15 05:07:29,381 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:10:25,778 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D922A890>
+2026-03-15 05:10:25,778 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:10:25,778 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:10:25,779 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/FPS/Migrate/ABP_Manny
+2026-03-15 05:10:25,779 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:10:25,779 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:10:25,779 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:10:25,780 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true, "blueprint_name": "ABP_Manny"}}...
+2026-03-15 05:10:25,821 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (167578 bytes) for describe_blueprint_full
+2026-03-15 05:10:25,822 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:10:25,823 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:627] - Successfully read Blueprint content. Found:
+2026-03-15 05:10:25,823 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:629] -   - 14 variables
+2026-03-15 05:10:25,828 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:16:41,140 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D922A550>
+2026-03-15 05:16:41,141 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:16:41,141 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:16:41,142 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/FPS/Migrate/AM_Fire_Rifle
+2026-03-15 05:16:41,142 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:16:41,142 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:16:41,142 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:16:41,142 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true, "blueprint_name": "AM_Fire_Rifle"}}...
+2026-03-15 05:16:41,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (82 bytes) for describe_blueprint_full
+2026-03-15 05:16:41,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:16:41,148 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:331] - Unreal returned failure: Blueprint not found
+2026-03-15 05:16:41,149 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:16:55,515 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D9233710>
+2026-03-15 05:16:55,515 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:16:55,515 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:16:55,515 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/FPS/Migrate/FPSAnimation/AM_Fire_Rifle
+2026-03-15 05:16:55,515 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:16:55,516 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:16:55,516 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:16:55,516 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true, "blueprint_name": "AM_Fire_Rifle"}}...
+2026-03-15 05:16:55,521 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (82 bytes) for describe_blueprint_full
+2026-03-15 05:16:55,521 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:16:55,521 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:331] - Unreal returned failure: Blueprint not found
+2026-03-15 05:16:55,524 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:22:58,120 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D91CCED0>
+2026-03-15 05:22:58,120 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:22:58,120 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:22:58,120 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/FPS/Characters/Mannequins/Animations/ABP_Quinn
+2026-03-15 05:22:58,120 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:22:58,121 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:22:58,121 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:22:58,121 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": true, "include_components": true, "include_interfaces": true, "blueprint_name": "ABP_Quinn"}}...
+2026-03-15 05:22:58,471 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (4578 bytes) for describe_blueprint_full
+2026-03-15 05:22:58,471 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:22:58,472 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:627] - Successfully read Blueprint content. Found:
+2026-03-15 05:22:58,473 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:26:59,301 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D921FAD0>
+2026-03-15 05:26:59,302 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:26:59,302 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:26:59,302 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/Blueprints/BP_FPSPlayer
+2026-03-15 05:26:59,302 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:26:59,302 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:26:59,302 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:26:59,302 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": false, "include_functions": false, "include_variables": false, "include_components": true, "include_interfaces": false, "blueprint_name": "BP_FPSPlayer"}}...
+2026-03-15 05:26:59,613 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (5559 bytes) for describe_blueprint_full
+2026-03-15 05:26:59,613 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:26:59,614 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:627] - Successfully read Blueprint content. Found:
+2026-03-15 05:26:59,614 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:629] -   - 29 variables
+2026-03-15 05:26:59,614 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:635] -   - 2 components
+2026-03-15 05:26:59,616 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:27:20,510 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D91CCED0>
+2026-03-15 05:27:20,511 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:27:20,511 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:27:20,511 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/Data/Weapon/DA_WeaponBase
+2026-03-15 05:27:20,511 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:27:20,511 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:27:20,511 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:27:20,511 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": false, "include_functions": false, "include_variables": true, "include_components": false, "include_interfaces": false, "blueprint_name": "DA_WeaponBase"}}...
+2026-03-15 05:27:20,618 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (82 bytes) for describe_blueprint_full
+2026-03-15 05:27:20,618 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:27:20,618 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:331] - Unreal returned failure: Blueprint not found
+2026-03-15 05:27:20,619 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:27:26,843 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D921FAD0>
+2026-03-15 05:27:26,844 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:27:26,844 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:27:26,844 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/Data/Weapon/DA_WeaponBase
+2026-03-15 05:27:26,844 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:27:26,844 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:27:26,845 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 05:27:26,845 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": false, "include_functions": false, "include_variables": true, "include_components": false, "include_interfaces": false, "blueprint_name": "DA_WeaponBase"}}...
+2026-03-15 05:27:26,954 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (82 bytes) for describe_blueprint_full
+2026-03-15 05:27:26,954 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 05:27:26,954 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:331] - Unreal returned failure: Blueprint not found
+2026-03-15 05:27:26,956 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:28:42,111 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D912B090>
+2026-03-15 05:28:42,111 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:28:42,111 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:28:42,111 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:678] - Analyzing Blueprint graph: /Game/Blueprints/BP_FPSPlayer -> BeginPlay
+2026-03-15 05:28:42,112 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:28:42,134 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:28:42,134 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_graph_enhanced
+2026-03-15 05:28:42,134 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_graph_enhanced", "params": {"graph_name": "BeginPlay", "include_node_details": true, "include_pin_connections": true, "trace_execution_flow": true, "blueprint_name": "BP_FPSPlayer"}}...
+2026-03-15 05:28:42,303 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (130 bytes) for describe_graph_enhanced
+2026-03-15 05:28:42,304 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_graph_enhanced completed successfully
+2026-03-15 05:28:42,304 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:331] - Unreal returned failure: Graph 'BeginPlay' not found in Blueprint 'BP_FPSPlayer'
+2026-03-15 05:28:42,305 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 05:29:13,799 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001A7D921FAD0>
+2026-03-15 05:29:13,799 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 05:29:13,799 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 05:29:13,799 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:724] - Getting Blueprint variable details: /Game/Data/Weapon/DA_WeaponBase
+2026-03-15 05:29:13,800 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 05:29:13,800 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 05:29:13,800 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): get_blueprint_summary
+2026-03-15 05:29:13,800 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "get_blueprint_summary", "params": {"variable_name": null, "blueprint_name": "DA_WeaponBase"}}...
+2026-03-15 05:29:13,976 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (82 bytes) for get_blueprint_summary
+2026-03-15 05:29:13,976 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command get_blueprint_summary completed successfully
+2026-03-15 05:29:13,977 - UnrealMCP_Advanced - WARNING - [unreal_mcp_server_advanced.py:331] - Unreal returned failure: Blueprint not found
+2026-03-15 05:29:13,977 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 20:06:19,005 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-03-15 20:06:19,008 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-03-15 20:06:19,009 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-03-15 20:06:19,009 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-03-15 20:06:19,009 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-03-15 20:06:19,009 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-03-15 20:06:19,010 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-03-15 20:06:19,010 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-03-15 20:06:19,135 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-03-15 20:06:19,143 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-03-15 20:06:19,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-03-15 20:06:19,148 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-03-15 20:06:19,159 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-03-15 20:06:19,161 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B1F1051650>
+2026-03-15 20:06:19,161 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-03-15 20:06:19,161 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-03-15 20:06:19,162 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 20:06:19,164 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B1F10B0A50>
+2026-03-15 20:06:19,164 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-03-15 20:06:19,164 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-03-15 20:06:19,165 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B1F10A76D0>
+2026-03-15 20:06:19,165 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-03-15 20:06:19,165 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-03-15 20:06:19,165 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-03-15 20:06:19,167 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 20:06:19,168 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 21:19:48,213 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B1F11070D0>
+2026-03-15 21:19:48,216 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 21:19:48,216 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 21:19:48,221 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:358] - Creating new UnrealConnection instance
+2026-03-15 21:19:48,221 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 21:19:48,221 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 21:19:48,222 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 21:19:48,223 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 21:19:48,223 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": false, "include_components": true, "include_interfaces": false, "blueprint_name": "BP_ThirdPersonCharacter"}}...
+2026-03-15 21:19:48,422 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (129128 bytes) for describe_blueprint_full
+2026-03-15 21:19:48,423 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 21:19:48,423 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:627] - Successfully read Blueprint content. Found:
+2026-03-15 21:19:48,423 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:629] -   - 29 variables
+2026-03-15 21:19:48,424 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:635] -   - 3 components
+2026-03-15 21:19:48,436 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-03-15 22:03:43,276 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001B1F1087B90>
+2026-03-15 22:03:43,277 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type CallToolRequest
+2026-03-15 22:03:43,277 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type CallToolRequest
+2026-03-15 22:03:43,277 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:621] - Reading Blueprint content for: /Game/FPS/Migrate/BP_ThirdPersonCharacter
+2026-03-15 22:03:43,277 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:147] - Connecting to Unreal at 127.0.0.1:55558 (attempt 1/4)...
+2026-03-15 22:03:43,278 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:154] - Successfully connected to Unreal Engine
+2026-03-15 22:03:43,278 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:302] - Sending command (attempt 1): describe_blueprint_full
+2026-03-15 22:03:43,278 - UnrealMCP_Advanced - DEBUG - [unreal_mcp_server_advanced.py:303] - Command payload: {"type": "describe_blueprint_full", "params": {"include_event_graph": true, "include_functions": true, "include_variables": false, "include_components": false, "include_interfaces": false, "blueprint_name": "BP_ThirdPersonCharacter"}}...
+2026-03-15 22:03:43,410 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:233] - Received response (129128 bytes) for describe_blueprint_full
+2026-03-15 22:03:43,410 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:322] - Command describe_blueprint_full completed successfully
+2026-03-15 22:03:43,411 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:627] - Successfully read Blueprint content. Found:
+2026-03-15 22:03:43,411 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:629] -   - 29 variables
+2026-03-15 22:03:43,411 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:635] -   - 3 components
+2026-03-15 22:03:43,414 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
