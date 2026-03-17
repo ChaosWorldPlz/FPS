@@ -21,6 +21,7 @@ class UFPSAbilitySystemComponent;
 class UFPSAttributeSetBase;
 class UFPSCombatAttributeSet;
 class UFPSWeaponSlotComponent;
+class UFPSRecoilComponent;
 class UGameplayEffect;
 class UGameplayAbility;
 class AFPSWeaponBase;
@@ -177,6 +178,14 @@ public:
 	/** Manages the three weapon carry slots (Primary1, Primary2, Pistol) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	UFPSWeaponSlotComponent* WeaponSlotComp;
+
+	/** 后坐力组件：管理 Pattern / Spread 运行时状态 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UFPSRecoilComponent* RecoilComponent;
+
+	/** 是否处于 ADS 瞄准状态（供 RecoilComponent 查询） */
+	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
+	bool bIsAiming = false;
 
 	/** 出生时自动装备的武器类（最多3个，按 Primary1/Primary2/Pistol 顺序） */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")

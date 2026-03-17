@@ -8,6 +8,7 @@
 #include "FPS/Weapon/FPSWeaponBase.h"
 #include "FPS/Weapon/FPSWeaponDataAsset.h"
 #include "FPS/GAS/FPSGameplayTags.h"
+#include "FPS/GAS/FPSRecoilComponent.h"
 
 UGA_WeaponFire::UGA_WeaponFire()
 {
@@ -149,6 +150,15 @@ void UGA_WeaponFire::FireWeapon()
 	AFPSWeaponBase* Weapon = GetWeapon(CurrentSpecHandle, CurrentActorInfo);
 	if (Weapon && Weapon->CanFire())
 	{
+		// 通知 RecoilComponent 推进 Pattern / 累加 Spread
+		if (AFPSCharacter* Char = Cast<AFPSCharacter>(GetAvatarActorFromActorInfo()))
+		{
+			if (Char->RecoilComponent && Weapon->WeaponData && Weapon->WeaponData->RecoilProfile)
+			{
+				Char->RecoilComponent->OnShotFired(Weapon->WeaponData->RecoilProfile);
+			}
+		}
+
 		Weapon->Fire();
 
 		// 触发 GameplayCue 播放开火音效和特效（仅本地客户端，避免重复）
@@ -201,7 +211,19 @@ float UGA_WeaponFire::PlayFireMontage()
 		return 0.0f;
 	}
 
-	return Character->PlayAnimMontage(Montage);
+	// 根据射速自动调整 Montage 播放速率，使动画恰好在下一发开枪前播完
+	float PlayRate = 1.0f;
+	if (Weapon->WeaponData->FireRate > 0.0f)
+	{
+		float MontageLength = Montage->GetPlayLength();
+		float TimeBetweenShots = Weapon->WeaponData->GetTimeBetweenShots();
+		if (MontageLength > 0.0f && TimeBetweenShots > 0.0f)
+		{
+			PlayRate = MontageLength / TimeBetweenShots;
+		}
+	}
+
+	return Character->PlayAnimMontage(Montage, PlayRate);
 }
 
 void UGA_WeaponFire::StopFireMontage()

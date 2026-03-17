@@ -16,6 +16,8 @@
 #include "GenericTeamAgentInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "FPSProjectile.h"
+#include "FPS/GAS/FPSRecoilComponent.h"
 
 const FName AFPSWeaponBase::MuzzleSocketName = TEXT("Muzzle");
 
@@ -177,23 +179,47 @@ void AFPSWeaponBase::Fire()
 		return;
 	}
 
-	// Server or standalone: authoritative hit scan
-	for (int32 i = 0; i < WeaponData->PelletsPerShot; i++)
+	// Server or standalone: authoritative fire
+	FVector MuzzleLoc = GetMuzzleLocation();
+
+	if (WeaponData->bUseProjectile && WeaponData->ProjectileClass)
 	{
-		FVector MuzzleLoc = GetMuzzleLocation();
+		// 弹体模式：服务端 Spawn，自动 Replicate 到客户端
 		FVector FireDir = GetFireDirectionWithSpread();
-		FVector EndPoint = MuzzleLoc + (FireDir * GetEffectiveRange());
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner      = this;
+		SpawnParams.Instigator = OwningCharacter.Get();
+		SpawnParams.SpawnCollisionHandlingOverride =
+			ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		FHitResult HitResult = PerformLineTrace(MuzzleLoc, EndPoint);
-
-		if (HitResult.bBlockingHit)
+		FTransform SpawnTransform(FireDir.Rotation(), MuzzleLoc);
+		if (AFPSProjectile* Proj = GetWorld()->SpawnActor<AFPSProjectile>(
+			WeaponData->ProjectileClass, SpawnTransform, SpawnParams))
 		{
-			ApplyDamage(HitResult);
+			Proj->Launch(FireDir, WeaponData, OwningCharacter.Get());
 		}
 
-		// Play locally for listen-server player, broadcast to remote clients
-		PlayFireEffectsLocally(MuzzleLoc, HitResult);
-		MulticastFireEffects(MuzzleLoc, HitResult);
+		PlayFireEffectsLocally(MuzzleLoc, FHitResult());
+		MulticastFireEffects(MuzzleLoc, FHitResult());
+	}
+	else
+	{
+		// Hitscan 模式
+		for (int32 i = 0; i < WeaponData->PelletsPerShot; i++)
+		{
+			FVector FireDir = GetFireDirectionWithSpread();
+			FVector EndPoint = MuzzleLoc + (FireDir * GetEffectiveRange());
+
+			FHitResult HitResult = PerformLineTrace(MuzzleLoc, EndPoint);
+
+			if (HitResult.bBlockingHit)
+			{
+				ApplyDamage(HitResult);
+			}
+
+			PlayFireEffectsLocally(MuzzleLoc, HitResult);
+			MulticastFireEffects(MuzzleLoc, HitResult);
+		}
 	}
 }
 
@@ -496,27 +522,25 @@ FRotator AFPSWeaponBase::GetMuzzleRotation() const
 
 FVector AFPSWeaponBase::GetFireDirectionWithSpread_Implementation()
 {
-	FVector BaseDirection = FVector::ZeroVector;
+	FVector BaseDirection = OwningCharacter.IsValid()
+		? OwningCharacter->GetControlRotation().Vector()
+		: GetActorForwardVector();
 
-	// Get base direction from owner's aim
-	if (OwningCharacter.IsValid())
+	// 优先走 RecoilComponent（含 Pattern + Spread + Lua 重写）
+	if (OwningCharacter.IsValid() && OwningCharacter->RecoilComponent)
 	{
-		BaseDirection = OwningCharacter->GetControlRotation().Vector();
-	}
-	else
-	{
-		BaseDirection = GetActorForwardVector();
+		return OwningCharacter->RecoilComponent->GetFireDirection(BaseDirection);
 	}
 
-	// Apply spread
+	// Fallback：无 RecoilComponent 时保留旧随机圆锥逻辑
 	if (CurrentSpread > 0.0f)
 	{
 		float HalfSpreadRad = FMath::DegreesToRadians(CurrentSpread * 0.5f);
-		float RandomAngle = FMath::FRand() * 2.0f * PI;
-		float RandomRadius = FMath::FRand() * HalfSpreadRad;
+		float RandomAngle   = FMath::FRand() * 2.0f * PI;
+		float RandomRadius  = FMath::FRand() * HalfSpreadRad;
 
 		FVector Right = FVector::CrossProduct(BaseDirection, FVector::UpVector).GetSafeNormal();
-		FVector Up = FVector::CrossProduct(Right, BaseDirection).GetSafeNormal();
+		FVector Up    = FVector::CrossProduct(Right, BaseDirection).GetSafeNormal();
 
 		BaseDirection = BaseDirection.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Cos(RandomAngle)), Up);
 		BaseDirection = BaseDirection.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Sin(RandomAngle)), Right);

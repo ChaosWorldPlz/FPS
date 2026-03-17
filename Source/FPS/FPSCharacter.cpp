@@ -15,6 +15,7 @@
 #include "GAS/FPSCombatAttributeSet.h"
 #include "Weapon/FPSWeaponBase.h"
 #include "Weapon/FPSWeaponSlotComponent.h"
+#include "GAS/FPSRecoilComponent.h"
 #include "Team/FPSPlayerState.h"
 #include "FPSGameMode.h"
 #include "GAS/FPSGameplayTags.h"
@@ -39,6 +40,9 @@ AFPSCharacter::AFPSCharacter()
 
 	// Create the weapon slot component (manages 3 carry slots)
 	WeaponSlotComp = CreateDefaultSubobject<UFPSWeaponSlotComponent>(TEXT("WeaponSlotComp"));
+
+	// Create the recoil component (manages Pattern / Spread state)
+	RecoilComponent = CreateDefaultSubobject<UFPSRecoilComponent>(TEXT("RecoilComponent"));
 }
 
 void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -536,6 +540,7 @@ void AFPSCharacter::HandleAimStart()
 		return;
 	}
 
+	bIsAiming = true;
 	static const FGameplayTag AimingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Aiming"));
 	AbilitySystemComponent->AddLooseGameplayTag(AimingTag);
 }
@@ -547,6 +552,7 @@ void AFPSCharacter::HandleAimStop()
 		return;
 	}
 
+	bIsAiming = false;
 	static const FGameplayTag AimingTag = FGameplayTag::RequestGameplayTag(FName("FPS.State.Aiming"));
 	AbilitySystemComponent->RemoveLooseGameplayTag(AimingTag);
 }

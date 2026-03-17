@@ -16,6 +16,8 @@ class USoundBase;
 class UParticleSystem;
 class USkeletalMesh;
 class UStaticMesh;
+class AFPSProjectile;
+class UFPSRecoilProfile;
 
 /**
  * UFPSWeaponDataAsset
@@ -210,6 +212,42 @@ public:
 	/** Melee animation montage (for melee weapons) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Animation")
 	TSoftObjectPtr<UAnimMontage> MeleeMontage;
+
+	//-------------------------------------------------------------------
+	// Recoil
+	//-------------------------------------------------------------------
+
+	/** 后坐力配置（Pattern + Spread），每把枪一个资产 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Recoil")
+	TObjectPtr<UFPSRecoilProfile> RecoilProfile;
+
+	//-------------------------------------------------------------------
+	// Projectile
+	//-------------------------------------------------------------------
+
+	/** true = 发射物理弹体；false = hitscan 射线 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile")
+	bool bUseProjectile = false;
+
+	/** 弹体 Actor 类（支持 Blueprint 子类，绑定 Lua） */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
+		meta = (EditCondition = "bUseProjectile"))
+	TSubclassOf<AFPSProjectile> ProjectileClass;
+
+	/** 弹体初速度（cm/s） */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
+		meta = (EditCondition = "bUseProjectile", ClampMin = "1"))
+	float ProjectileSpeed = 5000.0f;
+
+	/** 弹体重力缩放（0=无重力，1=正常） */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
+		meta = (EditCondition = "bUseProjectile", ClampMin = "0"))
+	float ProjectileGravityScale = 0.1f;
+
+	/** 弹体最大飞行时间（超时自毁，秒） */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
+		meta = (EditCondition = "bUseProjectile", ClampMin = "0.1"))
+	float ProjectileLifetime = 3.0f;
 
 	//-------------------------------------------------------------------
 	// GAS Integration
