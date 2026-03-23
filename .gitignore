@@ -10,3 +10,4 @@ DerivedDataCache/
 *.sln/
 .claude/
 *.md
+/Plugins/UnLua/Source
