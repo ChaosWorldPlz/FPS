@@ -6,26 +6,6 @@ UFPSWeaponDataAsset::UFPSWeaponDataAsset()
 {
 }
 
-float UFPSWeaponDataAsset::GetDamageAtRange(float Range) const
-{
-	if (Range <= FalloffStartRange)
-	{
-		return BaseDamage;
-	}
-
-	if (Range >= MaxRange)
-	{
-		return BaseDamage * MinDamageMultiplier;
-	}
-
-	// Linear falloff between start and max range
-	float FalloffRange = MaxRange - FalloffStartRange;
-	float RangeInFalloff = Range - FalloffStartRange;
-	float FalloffPercent = RangeInFalloff / FalloffRange;
-
-	float DamageMultiplier = FMath::Lerp(1.0f, MinDamageMultiplier, FalloffPercent);
-	return BaseDamage * DamageMultiplier;
-}
 
 FWeaponAmmoInfo UFPSWeaponDataAsset::GetDefaultAmmoInfo() const
 {

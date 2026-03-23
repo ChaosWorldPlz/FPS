@@ -120,11 +120,20 @@ void UFPSRecoilComponent::ForceResetPattern()
 {
 	CurrentPatternIndex = 0;
 	TotalShotsFired     = 0;
-	TimeSinceLastShot   = 0.0f;
 }
 
 //-------------------------------------------------------------------
-// Tick：散布恢复 + Pattern 超时重置
+// Tick（当前无逻辑，Spread 用 Lazy Evaluation 计算）
+//-------------------------------------------------------------------
+
+void UFPSRecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+//-------------------------------------------------------------------
+// Spread 计算
 //-------------------------------------------------------------------
 
 float UFPSRecoilComponent::ComputeCurrentSpread() const

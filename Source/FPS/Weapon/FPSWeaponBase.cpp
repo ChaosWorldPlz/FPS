@@ -3,27 +3,22 @@
 #include "FPSWeaponBase.h"
 #include "FPSWeaponDataAsset.h"
 #include "FPSWeaponAttachmentData.h"
+#include "FPSProjectile.h"
 #include "FPS/FPSCharacter.h"
-#include "AbilitySystemComponent.h"
 #include "FPS/GAS/FPSAbilitySystemComponent.h"
 #include "FPS/GAS/FPSGameplayAbility.h"
-#include "FPS/GAS/FPSCombatAttributeSet.h"
-#include "AbilitySystemGlobals.h"
-#include "FPS/Team/FPSPlayerState.h"
+#include "FPS/GAS/FPSRecoilComponent.h"
+#include "AbilitySystemComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
-#include "GenericTeamAgentInterface.h"
 #include "Net/UnrealNetwork.h"
 #include "Particles/ParticleSystemComponent.h"
-#include "FPSProjectile.h"
-#include "FPS/GAS/FPSRecoilComponent.h"
 
 const FName AFPSWeaponBase::MuzzleSocketName = TEXT("Muzzle");
 
 AFPSWeaponBase::AFPSWeaponBase()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
 	// Root scene component so WeaponMesh can be freely transformed in Blueprint
@@ -54,7 +49,6 @@ void AFPSWeaponBase::BeginPlay()
 		// Use effective magazine size (accounts for pre-installed attachments)
 		AmmoInfo.MaxMagazine = GetEffectiveMagazineSize();
 		AmmoInfo.CurrentMagazine = AmmoInfo.MaxMagazine;
-		CurrentSpread = GetEffectiveSpread();
 	}
 }
 
@@ -64,14 +58,6 @@ void AFPSWeaponBase::OnRep_InstalledAttachments()
 	// (data assets must be looked up via primary asset manager on clients)
 	// For now clear the cache; GetAttachment() can lazily reload from ID if needed.
 	CachedAttachmentData.Empty();
-}
-
-void AFPSWeaponBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-	// Update spread recovery
-	UpdateSpread(DeltaTime);
 }
 
 void AFPSWeaponBase::OnEquip(AFPSCharacter* NewOwner)
@@ -153,9 +139,6 @@ void AFPSWeaponBase::Fire()
 		OnAmmoChanged.Broadcast(AmmoInfo.CurrentMagazine, AmmoInfo.CurrentReserve);
 	}
 
-	// Increase spread
-	IncreaseSpread();
-
 	// Set fire cooldown
 	bCanFireAgain = false;
 	float FireDelay = WeaponData->GetTimeBetweenShots();
@@ -166,61 +149,25 @@ void AFPSWeaponBase::Fire()
 		FireDelay,
 		false
 	);
-	LastFireTime = GetWorld()->GetTimeSeconds();
 
-	// Client: play effects locally (prediction) then RPC to server for authoritative hit detection
+	// 通知后坐力系统（Lua 重写此函数以推进 Pattern Index）
+	OnShotFired();
+
+	const FVector MuzzleLoc = GetMuzzleLocation();
+
+	// 客户端：预测表现（音效/枪口火焰），然后 RPC 到服务端执行 spawn
 	if (OwningCharacter.IsValid() && OwningCharacter->IsLocallyControlled() && !HasAuthority())
 	{
-		FVector MuzzleLoc = GetMuzzleLocation();
-		FVector FireDir = OwningCharacter->GetControlRotation().Vector();
-		FHitResult PredictedHit = PerformLineTrace(MuzzleLoc, MuzzleLoc + FireDir * GetEffectiveRange());
-		PlayFireEffectsLocally(MuzzleLoc, PredictedHit);
+		PlayFireEffectsLocally(MuzzleLoc);
+		const FVector FireDir = OwningCharacter->GetControlRotation().Vector();
 		ServerFire(MuzzleLoc, FireDir);
 		return;
 	}
 
-	// Server or standalone: authoritative fire
-	FVector MuzzleLoc = GetMuzzleLocation();
-
-	if (WeaponData->bUseProjectile && WeaponData->ProjectileClass)
-	{
-		// 弹体模式：服务端 Spawn，自动 Replicate 到客户端
-		FVector FireDir = GetFireDirectionWithSpread();
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner      = this;
-		SpawnParams.Instigator = OwningCharacter.Get();
-		SpawnParams.SpawnCollisionHandlingOverride =
-			ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		FTransform SpawnTransform(FireDir.Rotation(), MuzzleLoc);
-		if (AFPSProjectile* Proj = GetWorld()->SpawnActor<AFPSProjectile>(
-			WeaponData->ProjectileClass, SpawnTransform, SpawnParams))
-		{
-			Proj->Launch(FireDir, WeaponData, OwningCharacter.Get());
-		}
-
-		PlayFireEffectsLocally(MuzzleLoc, FHitResult());
-		MulticastFireEffects(MuzzleLoc, FHitResult());
-	}
-	else
-	{
-		// Hitscan 模式
-		for (int32 i = 0; i < WeaponData->PelletsPerShot; i++)
-		{
-			FVector FireDir = GetFireDirectionWithSpread();
-			FVector EndPoint = MuzzleLoc + (FireDir * GetEffectiveRange());
-
-			FHitResult HitResult = PerformLineTrace(MuzzleLoc, EndPoint);
-
-			if (HitResult.bBlockingHit)
-			{
-				ApplyDamage(HitResult);
-			}
-
-			PlayFireEffectsLocally(MuzzleLoc, HitResult);
-			MulticastFireEffects(MuzzleLoc, HitResult);
-		}
-	}
+	// 服务端 / Standalone：始终 spawn 弹体（权威路径）
+	SpawnProjectile(MuzzleLoc);
+	PlayFireEffectsLocally(MuzzleLoc);
+	MulticastFireEffects(MuzzleLoc);
 }
 
 //-------------------------------------------------------------------
@@ -259,53 +206,27 @@ void AFPSWeaponBase::ServerFire_Implementation(FVector MuzzleLocation, FVector F
 		FireDelay,
 		false
 	);
-	LastFireTime = GetWorld()->GetTimeSeconds();
 
-	// Server performs hit scan with spread
-	for (int32 i = 0; i < WeaponData->PelletsPerShot; i++)
-	{
-		// Apply spread to client-provided direction
-		FVector SpreadDir = FireDirection;
-		if (CurrentSpread > 0.0f)
-		{
-			float HalfSpreadRad = FMath::DegreesToRadians(CurrentSpread * 0.5f);
-			float RandomAngle = FMath::FRand() * 2.0f * PI;
-			float RandomRadius = FMath::FRand() * HalfSpreadRad;
+	// 通知后坐力系统
+	OnShotFired();
 
-			FVector Right = FVector::CrossProduct(SpreadDir, FVector::UpVector).GetSafeNormal();
-			FVector Up = FVector::CrossProduct(Right, SpreadDir).GetSafeNormal();
-
-			SpreadDir = SpreadDir.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Cos(RandomAngle)), Up);
-			SpreadDir = SpreadDir.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Sin(RandomAngle)), Right);
-			SpreadDir = SpreadDir.GetSafeNormal();
-		}
-
-		FVector EndPoint = MuzzleLocation + (SpreadDir * GetEffectiveRange());
-		FHitResult HitResult = PerformLineTrace(MuzzleLocation, EndPoint);
-
-		if (HitResult.bBlockingHit)
-		{
-			ApplyDamage(HitResult);
-		}
-
-		MulticastFireEffects(MuzzleLocation, HitResult);
-	}
-
-	IncreaseSpread();
+	// 服务端权威路径：spawn 弹体，Replicate 到所有客户端
+	SpawnProjectile(MuzzleLocation);
+	MulticastFireEffects(MuzzleLocation);
 }
 
-void AFPSWeaponBase::MulticastFireEffects_Implementation(FVector MuzzleLocation, FHitResult HitResult)
+void AFPSWeaponBase::MulticastFireEffects_Implementation(FVector MuzzleLocation)
 {
-	// Skip for the local player who already played effects
+	// 跳过本地玩家（客户端预测时已经播过了）
 	if (OwningCharacter.IsValid() && OwningCharacter->IsLocallyControlled())
 	{
 		return;
 	}
 
-	PlayFireEffectsLocally(MuzzleLocation, HitResult);
+	PlayFireEffectsLocally(MuzzleLocation);
 }
 
-void AFPSWeaponBase::PlayFireEffectsLocally(FVector MuzzleLocation, const FHitResult& HitResult)
+void AFPSWeaponBase::PlayFireEffectsLocally(FVector MuzzleLocation)
 {
 	if (!WeaponData)
 	{
@@ -336,40 +257,8 @@ void AFPSWeaponBase::PlayFireEffectsLocally(FVector MuzzleLocation, const FHitRe
 		}
 	}
 
-	// 2. 弹道曳光线特效（从枪口到命中点/最远射程，通过 BeamEnd 参数传递终点）
-	if (WeaponData->TracerEffect.IsValid())
-	{
-		UParticleSystem* TracerVFX = WeaponData->TracerEffect.LoadSynchronous();
-		if (TracerVFX)
-		{
-			FVector TraceEnd = HitResult.bBlockingHit
-				? FVector(HitResult.ImpactPoint)
-				: (MuzzleLocation + GetMuzzleRotation().Vector() * GetEffectiveRange());
-
-			UParticleSystemComponent* TracerComp = UGameplayStatics::SpawnEmitterAtLocation(
-				this, TracerVFX, MuzzleLocation, (TraceEnd - MuzzleLocation).Rotation()
-			);
-			// Cascade 曳光粒子通常用 BeamEnd 参数指定光束终点
-			if (TracerComp)
-			{
-				TracerComp->SetVectorParameter(FName("BeamEnd"), TraceEnd);
-			}
-		}
-	}
-
-	// 3. 命中点特效
-	if (HitResult.bBlockingHit && WeaponData->ImpactEffect.IsValid())
-	{
-		UParticleSystem* ImpactVFX = WeaponData->ImpactEffect.LoadSynchronous();
-		if (ImpactVFX)
-		{
-			UGameplayStatics::SpawnEmitterAtLocation(
-				this, ImpactVFX, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation()
-			);
-		}
-	}
-
-	// 4. 开火音效
+	// 2. 开火音效
+	// 曳光线与命中特效已迁移到 AFPSProjectile::PlayImpactEffects，此处不再负责
 	if (WeaponData->FireSound.IsValid())
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, WeaponData->FireSound.LoadSynchronous(), MuzzleLocation);
@@ -526,24 +415,10 @@ FVector AFPSWeaponBase::GetFireDirectionWithSpread_Implementation()
 		? OwningCharacter->GetControlRotation().Vector()
 		: GetActorForwardVector();
 
-	// 优先走 RecoilComponent（含 Pattern + Spread + Lua 重写）
+	// RecoilComponent 负责 Pattern + Spread（Lua 可完全重写此函数）
 	if (OwningCharacter.IsValid() && OwningCharacter->RecoilComponent)
 	{
 		return OwningCharacter->RecoilComponent->GetFireDirection(BaseDirection);
-	}
-
-	// Fallback：无 RecoilComponent 时保留旧随机圆锥逻辑
-	if (CurrentSpread > 0.0f)
-	{
-		float HalfSpreadRad = FMath::DegreesToRadians(CurrentSpread * 0.5f);
-		float RandomAngle   = FMath::FRand() * 2.0f * PI;
-		float RandomRadius  = FMath::FRand() * HalfSpreadRad;
-
-		FVector Right = FVector::CrossProduct(BaseDirection, FVector::UpVector).GetSafeNormal();
-		FVector Up    = FVector::CrossProduct(Right, BaseDirection).GetSafeNormal();
-
-		BaseDirection = BaseDirection.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Cos(RandomAngle)), Up);
-		BaseDirection = BaseDirection.RotateAngleAxis(FMath::RadiansToDegrees(RandomRadius * FMath::Sin(RandomAngle)), Right);
 	}
 
 	return BaseDirection.GetSafeNormal();
@@ -558,6 +433,30 @@ UAbilitySystemComponent* AFPSWeaponBase::GetOwnerASC() const
 	return nullptr;
 }
 
+void AFPSWeaponBase::SpawnProjectile(const FVector& MuzzleLocation)
+{
+	if (!WeaponData || !WeaponData->ProjectileClass)
+	{
+		return;
+	}
+
+	FVector FireDir = GetFireDirectionWithSpread();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner      = this;
+	SpawnParams.Instigator = OwningCharacter.Get();
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	FTransform SpawnTransform(FireDir.Rotation(), MuzzleLocation);
+	if (AFPSProjectile* Proj = GetWorld()->SpawnActor<AFPSProjectile>(
+		WeaponData->ProjectileClass, SpawnTransform, SpawnParams))
+	{
+		Proj->Launch(FireDir, WeaponData, OwningCharacter.Get());
+		// Launch() 内部写的是 WeaponData->BaseDamage，用配件修正后的有效伤害覆盖
+		Proj->Damage = GetEffectiveDamage();
+	}
+}
+
 void AFPSWeaponBase::SetWeaponState(EFPSWeaponState NewState)
 {
 	if (CurrentState != NewState)
@@ -567,151 +466,9 @@ void AFPSWeaponBase::SetWeaponState(EFPSWeaponState NewState)
 	}
 }
 
-void AFPSWeaponBase::UpdateSpread(float DeltaTime)
-{
-	if (!WeaponData)
-	{
-		return;
-	}
-
-	const float BaseSpread = GetEffectiveSpread();
-
-	// Recover spread over time toward the (potentially attachment-adjusted) base
-	if (CurrentSpread > BaseSpread)
-	{
-		CurrentSpread -= WeaponData->SpreadRecoveryRate * DeltaTime;
-		CurrentSpread = FMath::Max(CurrentSpread, BaseSpread);
-	}
-}
-
-void AFPSWeaponBase::IncreaseSpread()
-{
-	if (!WeaponData)
-	{
-		return;
-	}
-
-	CurrentSpread += WeaponData->SpreadIncreasePerShot;
-	CurrentSpread = FMath::Min(CurrentSpread, WeaponData->MaxSpread);
-
-	// Notify Lua (or Blueprint) that a shot was fired — used to advance recoil pattern
-	OnShotFired();
-}
-
 void AFPSWeaponBase::OnShotFired_Implementation()
 {
-	// Default C++ implementation: advance pattern index.
-	// Lua overrides this to also track time for pattern reset.
-	CurrentPatternIndex++;
-}
-
-FHitResult AFPSWeaponBase::PerformLineTrace(const FVector& Start, const FVector& End) const
-{
-	FHitResult HitResult;
-
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this);
-	if (OwningCharacter.IsValid())
-	{
-		QueryParams.AddIgnoredActor(OwningCharacter.Get());
-	}
-	QueryParams.bTraceComplex = true;
-	QueryParams.bReturnPhysicalMaterial = true;
-
-	GetWorld()->LineTraceSingleByChannel(
-		HitResult,
-		Start,
-		End,
-		ECC_Visibility,
-		QueryParams
-	);
-
-	return HitResult;
-}
-
-bool AFPSWeaponBase::IsFriendlyTarget(const FHitResult& HitResult) const
-{
-	if (!HitResult.GetActor())
-	{
-		return false;
-	}
-
-	AFPSCharacter* OwnerChar = OwningCharacter.IsValid() ? OwningCharacter.Get() : nullptr;
-	AFPSCharacter* TargetChar = Cast<AFPSCharacter>(HitResult.GetActor());
-
-	if (OwnerChar && TargetChar)
-	{
-		ETeamAttitude::Type Attitude = OwnerChar->GetTeamAttitudeTowards(*TargetChar);
-		return Attitude == ETeamAttitude::Friendly;
-	}
-
-	return false;
-}
-
-void AFPSWeaponBase::ApplyDamage(const FHitResult& HitResult)
-{
-	if (!WeaponData || !HitResult.GetActor())
-	{
-		return;
-	}
-
-	// Team filtering: don't damage friendlies
-	if (IsFriendlyTarget(HitResult))
-	{
-		return;
-	}
-
-	// Calculate damage based on range (using attachment-adjusted base damage)
-	float Distance = FVector::Dist(GetMuzzleLocation(), HitResult.ImpactPoint);
-	// Scale effective damage by the same range falloff curve as the base weapon
-	const float BaseDamageFraction = (WeaponData->BaseDamage > 0.f)
-		? (WeaponData->GetDamageAtRange(Distance) / WeaponData->BaseDamage)
-		: 1.f;
-	float Damage = GetEffectiveDamage() * BaseDamageFraction;
-
-	// Check for headshot
-	bLastHitWasHeadshot = (HitResult.BoneName == TEXT("head"));
-	if (bLastHitWasHeadshot)
-	{
-		Damage *= WeaponData->HeadshotMultiplier;
-	}
-
-	// Apply damage via GAS if target has ASC
-	if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitResult.GetActor()))
-	{
-		// Create damage effect
-		if (WeaponData->DamageEffectClass)
-		{
-			UAbilitySystemComponent* SourceASC = GetOwnerASC();
-			if (SourceASC)
-			{
-				FGameplayEffectContextHandle ContextHandle = SourceASC->MakeEffectContext();
-				ContextHandle.AddSourceObject(this);
-				ContextHandle.AddHitResult(HitResult);
-
-				FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(WeaponData->DamageEffectClass, 1.0f, ContextHandle);
-				if (SpecHandle.IsValid())
-				{
-					// Set damage magnitude
-					SpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(TEXT("FPS.Effect.Damage")), Damage);
-					TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-				}
-			}
-		}
-	}
-	else
-	{
-		// Fallback to standard UE damage system
-		UGameplayStatics::ApplyPointDamage(
-			HitResult.GetActor(),
-			Damage,
-			GetFireDirectionWithSpread(),
-			HitResult,
-			OwningCharacter.IsValid() ? OwningCharacter->GetController() : nullptr,
-			this,
-			nullptr
-		);
-	}
+	// 空实现。CurrentPatternIndex 的推进及 Pattern 重置计时由 Lua（RecoilComponent）管理。
 }
 
 void AFPSWeaponBase::GrantAbilities()
@@ -862,23 +619,6 @@ float AFPSWeaponBase::GetEffectiveDamage() const
 	return FMath::Max(0.f, Total);
 }
 
-float AFPSWeaponBase::GetEffectiveSpread() const
-{
-	if (!WeaponData)
-	{
-		return 0.f;
-	}
-	float Total = WeaponData->BaseSpread;
-	for (const auto& Pair : CachedAttachmentData)
-	{
-		if (Pair.Value)
-		{
-			Total += Pair.Value->StatModifiers.SpreadDelta;
-		}
-	}
-	return FMath::Max(0.f, Total);
-}
-
 float AFPSWeaponBase::GetEffectiveReloadTime() const
 {
 	if (!WeaponData)
@@ -913,19 +653,4 @@ int32 AFPSWeaponBase::GetEffectiveMagazineSize() const
 	return FMath::Max(1, FMath::RoundToInt(Total));
 }
 
-float AFPSWeaponBase::GetEffectiveRange() const
-{
-	if (!WeaponData)
-	{
-		return 5000.f;
-	}
-	float Total = WeaponData->MaxRange;
-	for (const auto& Pair : CachedAttachmentData)
-	{
-		if (Pair.Value)
-		{
-			Total += Pair.Value->StatModifiers.RangeDelta;
-		}
-	}
-	return FMath::Max(100.f, Total);
-}
+

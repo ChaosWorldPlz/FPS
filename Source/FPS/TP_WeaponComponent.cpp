@@ -3,7 +3,7 @@
 
 #include "TP_WeaponComponent.h"
 #include "FPSCharacter.h"
-#include "FPSProjectile.h"
+#include "Weapon/FPSProjectile.h"
 #include "GameFramework/PlayerController.h"
 #include "Camera/PlayerCameraManager.h"
 #include "Kismet/GameplayStatics.h"

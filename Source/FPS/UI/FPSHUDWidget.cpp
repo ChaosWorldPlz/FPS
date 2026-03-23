@@ -5,6 +5,7 @@
 #include "FPS/Weapon/FPSWeaponBase.h"
 #include "FPS/GAS/FPSCombatAttributeSet.h"
 #include "FPS/GAS/FPSAbilitySystemComponent.h"
+#include "FPS/GAS/FPSRecoilComponent.h"
 
 void UFPSHUDWidget::NativeConstruct()
 {
@@ -54,10 +55,10 @@ void UFPSHUDWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 			}
 		}
 
-		// Update crosshair spread
-		if (CurrentWeapon.IsValid())
+		// Update crosshair spread（Spread 由 RecoilComponent 管理）
+		if (OwningCharacter.IsValid() && OwningCharacter->RecoilComponent)
 		{
-			UpdateCrosshairSpread(CurrentWeapon->CurrentSpread);
+			UpdateCrosshairSpread(OwningCharacter->RecoilComponent->CurrentSpread);
 		}
 	}
 }

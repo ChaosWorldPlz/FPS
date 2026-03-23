@@ -26,6 +26,7 @@ class UGameplayEffect;
 class UGameplayAbility;
 class AFPSWeaponBase;
 class AFPSPlayerState;
+class UFPSArmorComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 

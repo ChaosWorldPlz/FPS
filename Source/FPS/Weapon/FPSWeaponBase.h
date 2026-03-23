@@ -66,14 +66,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon|State")
 	FWeaponAmmoInfo AmmoInfo;
 
-	/** Current spread value */
-	UPROPERTY(BlueprintReadOnly, Category = "Weapon|State")
-	float CurrentSpread = 0.0f;
-
-	/** Whether the last hit was a headshot (set during ApplyDamage, read by GameMode for kill feed) */
-	UPROPERTY(BlueprintReadOnly, Category = "Weapon|State")
-	bool bLastHitWasHeadshot = false;
-
 	/** Owning character */
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon|State")
 	TWeakObjectPtr<AFPSCharacter> OwningCharacter;
@@ -140,10 +132,10 @@ public:
 
 	/** Broadcast fire effects to all clients */
 	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastFireEffects(FVector MuzzleLocation, FHitResult HitResult);
+	void MulticastFireEffects(FVector MuzzleLocation);
 
-	/** Play fire effects locally (muzzle flash, tracer, impact, sound). Called on client as prediction and on server for listen-server player. */
-	void PlayFireEffectsLocally(FVector MuzzleLocation, const FHitResult& HitResult);
+	/** Play fire effects locally (muzzle flash, fire sound). Called on owning client as prediction and on server for listen-server player. */
+	void PlayFireEffectsLocally(FVector MuzzleLocation);
 
 	//-------------------------------------------------------------------
 	// State Queries
@@ -262,10 +254,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
 	float GetEffectiveDamage() const;
 
-	/** Effective base spread (degrees) with attachment modifiers applied */
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
-	float GetEffectiveSpread() const;
-
 	/** Effective reload time (seconds) with attachment modifiers applied */
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
 	float GetEffectiveReloadTime() const;
@@ -274,13 +262,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
 	int32 GetEffectiveMagazineSize() const;
 
-	/** Effective max range (Unreal units) with attachment modifiers applied */
-	UFUNCTION(BlueprintCallable, Category = "Weapon|Attachments")
-	float GetEffectiveRange() const;
-
 protected:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION()
@@ -289,20 +272,11 @@ protected:
 	/** Set weapon state and broadcast change */
 	void SetWeaponState(EFPSWeaponState NewState);
 
-	/** Update spread based on time */
-	void UpdateSpread(float DeltaTime);
-
-	/** Increase spread after firing */
-	void IncreaseSpread();
-
-	/** Perform line trace for hit detection */
-	FHitResult PerformLineTrace(const FVector& Start, const FVector& End) const;
-
-	/** Apply damage to hit target (with team filtering) */
-	void ApplyDamage(const FHitResult& HitResult);
-
-	/** Check if target is friendly (returns true if should skip damage) */
-	bool IsFriendlyTarget(const FHitResult& HitResult) const;
+	/**
+	 * 在指定枪口位置 spawn 弹体（服务端/Standalone 权威路径）。
+	 * Fire() 和 ServerFire_Implementation() 共用此逻辑。
+	 */
+	void SpawnProjectile(const FVector& MuzzleLocation);
 
 	//-------------------------------------------------------------------
 	// GAS Integration
@@ -335,9 +309,6 @@ protected:
 
 	/** Timer handle for reload */
 	FTimerHandle ReloadTimerHandle;
-
-	/** Last fire time */
-	float LastFireTime = 0.0f;
 
 	/** Can fire again (cooldown check) */
 	bool bCanFireAgain = true;

@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "FPSCharacter.h"
-#include "FPSProjectile.h"
+#include "Weapon/FPSProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"

@@ -68,7 +68,7 @@ void AFPSProjectile::Launch(FVector Direction, UFPSWeaponDataAsset* InWeaponData
 	// 应用到运动组件
 	ProjectileMovement->InitialSpeed    = InitialSpeed;
 	ProjectileMovement->MaxSpeed        = InitialSpeed;
-	ProjectileMovement->GravityScale    = GravityScale;
+	ProjectileMovement->ProjectileGravityScale = GravityScale;
 	ProjectileMovement->Velocity        = Direction.GetSafeNormal() * InitialSpeed;
 
 	// 重设超时计时器（BeginPlay 里的计时器用的是修改前的值）

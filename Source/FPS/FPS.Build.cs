@@ -21,7 +21,8 @@ public class FPS : ModuleRules
 			"GameplayTags",
 			"GameplayTasks",
 			"Niagara",
-			"AIModule"
+			"AIModule",
+			"UnLua"
 		});
 	}
 }

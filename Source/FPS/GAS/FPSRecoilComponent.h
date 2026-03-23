@@ -95,7 +95,7 @@ public:
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Recoil|Lua")
 	FVector2D CalculatePatternOffset(FVector2D RawPatternValue,
-		int32 PatternIndex, int32 TotalShotsFired);
+		int32 PatternIndex, int32 InTotalShotsFired);
 
 	/**
 	 * Pattern 走到末尾时，决定下一发使用的 Index。
@@ -104,7 +104,7 @@ public:
 	 * @return 下一个 PatternIndex
 	 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Recoil|Lua")
-	int32 OnPatternFinished(int32 TotalShotsFired, int32 PatternLength);
+	int32 OnPatternFinished(int32 InTotalShotsFired, int32 PatternLength);
 
 	/**
 	 * Timer 到期时调用，决定是否真正归零 Pattern。

@@ -241,7 +241,8 @@ void AFPSGameMode::HandlePlayerDeath(AFPSPlayerState* Victim, AFPSPlayerState* K
 				{
 					KillFeedInfo.WeaponType = Weapon->WeaponData->WeaponType;
 				}
-				KillFeedInfo.bHeadshot = Weapon->bLastHitWasHeadshot;
+				// 爆头信息由弹体负责，Kill Feed 暂不从武器读取
+			KillFeedInfo.bHeadshot = false;
 			}
 		}
 

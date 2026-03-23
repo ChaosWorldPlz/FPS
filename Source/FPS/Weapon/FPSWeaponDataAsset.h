@@ -73,38 +73,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "1"))
 	float FireRate = 600.0f;
 
-	/** Maximum effective range */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "0"))
-	float MaxRange = 5000.0f;
-
-	/** Damage falloff start range */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "0"))
-	float FalloffStartRange = 2000.0f;
-
-	/** Minimum damage multiplier at max range */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "0", ClampMax = "1"))
-	float MinDamageMultiplier = 0.5f;
-
-	/** Base spread (in degrees) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "0"))
-	float BaseSpread = 1.0f;
-
-	/** Spread increase per shot */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "0"))
-	float SpreadIncreasePerShot = 0.5f;
-
-	/** Maximum spread */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "0"))
-	float MaxSpread = 5.0f;
-
-	/** Spread recovery rate (per second) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "0"))
-	float SpreadRecoveryRate = 10.0f;
-
 	/** Headshot damage multiplier */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "1"))
-	float HeadshotMultiplier = 2.0f;
+	float HeadshotMultiplier = 1.5f;
 
+	/* 子弹等级（与护甲等级比较决定穿透档位，范围 1-6） */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "1"))
+	int32 BulletLevel = 1;
+
+	/* 每发子弹对护甲耐久的伤害 */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "1"))
+	float BulletArmorDamage = 15.0f;
+	
 	/** Pellets per shot (for shotguns) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Combat", meta = (ClampMin = "1"))
 	int32 PelletsPerShot = 1;
@@ -225,28 +205,20 @@ public:
 	// Projectile
 	//-------------------------------------------------------------------
 
-	/** true = 发射物理弹体；false = hitscan 射线 */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile")
-	bool bUseProjectile = false;
-
 	/** 弹体 Actor 类（支持 Blueprint 子类，绑定 Lua） */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
-		meta = (EditCondition = "bUseProjectile"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile")
 	TSubclassOf<AFPSProjectile> ProjectileClass;
 
 	/** 弹体初速度（cm/s） */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
-		meta = (EditCondition = "bUseProjectile", ClampMin = "1"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile", meta = (ClampMin = "1"))
 	float ProjectileSpeed = 5000.0f;
 
 	/** 弹体重力缩放（0=无重力，1=正常） */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
-		meta = (EditCondition = "bUseProjectile", ClampMin = "0"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile", meta = (ClampMin = "0"))
 	float ProjectileGravityScale = 0.1f;
 
 	/** 弹体最大飞行时间（超时自毁，秒） */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile",
-		meta = (EditCondition = "bUseProjectile", ClampMin = "0.1"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon|Projectile", meta = (ClampMin = "0.1"))
 	float ProjectileLifetime = 3.0f;
 
 	//-------------------------------------------------------------------
@@ -276,10 +248,6 @@ public:
 	/** Get time between shots in seconds */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	float GetTimeBetweenShots() const { return 60.0f / FireRate; }
-
-	/** Get damage at a given range */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	float GetDamageAtRange(float Range) const;
 
 	/** Get default ammo info */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
