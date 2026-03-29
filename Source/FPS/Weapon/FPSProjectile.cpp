@@ -3,6 +3,7 @@
 #include "FPSProjectile.h"
 #include "FPSWeaponDataAsset.h"
 #include "FPS/FPSCharacter.h"
+#include "FPS/Armor/FPSArmorComponent.h"
 #include "FPS/Team/FPSPlayerState.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
@@ -129,6 +130,20 @@ void AFPSProjectile::PlayImpactEffects_Implementation(const FHitResult& Hit)
 	// C++ 默认空实现，交给 Lua 重写
 }
 
+float AFPSProjectile::CalculateFinalDamage_Implementation(const FHitResult& Hit, AActor* HitActor)
+{
+	// 默认实现：不考虑穿透，直接返回当前 Damage
+	// Lua 重写此函数以实现等级差档位逻辑
+	return Damage;
+}
+
+float AFPSProjectile::CalculateFinalArmorDamage_Implementation(const FHitResult& Hit, AActor* HitActor)
+{
+	// 默认实现：直接返回武器数据里的护甲伤害值
+	// Lua 重写此函数以实现等级差档位逻辑
+	return WeaponData ? WeaponData->BulletArmorDamage : 0.0f;
+}
+
 //-------------------------------------------------------------------
 // 内部：伤害应用
 //-------------------------------------------------------------------
@@ -154,15 +169,23 @@ void AFPSProjectile::ApplyDamageToTarget(const FHitResult& Hit)
 		}
 	}
 
-	float FinalDamage = Damage;
+	// 血量伤害：由 Lua 重写 CalculateFinalDamage 实现穿透档位逻辑
+	// C++ 默认实现直接返回 Damage（无穿透计算）
+	const float FinalDamage = CalculateFinalDamage(Hit, HitActor);
 
-	// 爆头倍率
-	if (Hit.BoneName == TEXT("head"))
+	// 护甲耐久伤害：由 Lua 重写 CalculateFinalArmorDamage 实现档位逻辑
+	const float FinalArmorDamage = CalculateFinalArmorDamage(Hit, HitActor);
+
+	// 扣除护甲耐久
+	if (AFPSCharacter* TargetChar = Cast<AFPSCharacter>(HitActor))
 	{
-		FinalDamage *= WeaponData->HeadshotMultiplier;
+		if (TargetChar->ArmorComponent)
+		{
+			TargetChar->ArmorComponent->TakeDurabilityDamage(FinalArmorDamage);
+		}
 	}
 
-	// 优先走 GAS 伤害
+	// 血量伤害 → GAS GE
 	if (UAbilitySystemComponent* TargetASC = UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(HitActor))
 	{
 		UAbilitySystemComponent* SourceASC = InstigatorChar.IsValid()
@@ -185,7 +208,7 @@ void AFPSProjectile::ApplyDamageToTarget(const FHitResult& Hit)
 		}
 	}
 
-	// Fallback
+	// Fallback（无 GAS 时）
 	AController* InstigatorController = InstigatorChar.IsValid() ? InstigatorChar->GetController() : nullptr;
 	UGameplayStatics::ApplyPointDamage(HitActor, FinalDamage,
 		ProjectileMovement->Velocity.GetSafeNormal(), Hit,

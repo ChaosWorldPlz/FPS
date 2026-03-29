@@ -18,6 +18,13 @@ void UFPSMenuSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
+	// 若未在编辑器 CDO 里手动赋值，使用默认路径
+	if (MenuConfigAsset.IsNull())
+	{
+		MenuConfigAsset = TSoftObjectPtr<UFPSMenuConfig>(
+			FSoftObjectPath(TEXT("/Game/_FPS/Data/DA_MenuConfig.DA_MenuConfig")));
+	}
+
 	// Load menu config
 	LoadMenuConfig();
 
@@ -110,12 +117,7 @@ void UFPSMenuSubsystem::OpenPauseMenu()
 
 	if (PauseMenuWidget)
 	{
-		// Pause the game
-		if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), 0))
-		{
-			PC->SetPause(true);
-		}
-
+		// 联机 Raid 不暂停游戏，仅切换输入模式到 UI（SetUIInputMode 在 PushMenu 里处理）
 		PushMenu(PauseMenuWidget);
 		SetMenuState(EFPSMenuState::PauseMenu);
 	}
@@ -269,12 +271,6 @@ void UFPSMenuSubsystem::PopMenu()
 		// No more menus, return to game
 		SetUIInputMode(false);
 		SetMenuState(EFPSMenuState::None);
-
-		// Unpause if we were in pause menu
-		if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), 0))
-		{
-			PC->SetPause(false);
-		}
 	}
 }
 
@@ -291,12 +287,6 @@ void UFPSMenuSubsystem::PopAllMenus()
 
 	SetUIInputMode(false);
 	SetMenuState(EFPSMenuState::None);
-
-	// Unpause
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(GetGameInstance()->GetWorld(), 0))
-	{
-		PC->SetPause(false);
-	}
 }
 
 UFPSMenuWidgetBase* UFPSMenuSubsystem::GetCurrentMenu() const

@@ -107,6 +107,7 @@ public:
 	void ResetForRespawn();
 
 protected:
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void Jump() override;
@@ -184,6 +185,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
 	UFPSRecoilComponent* RecoilComponent;
 
+	/** 护甲组件：管理Player的Gas护甲 **/
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Armor")
+	UFPSArmorComponent* ArmorComponent;
+	
 	/** 是否处于 ADS 瞄准状态（供 RecoilComponent 查询） */
 	UPROPERTY(BlueprintReadOnly, Category = "Weapon")
 	bool bIsAiming = false;

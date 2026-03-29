@@ -20,6 +20,7 @@
 #include "FPSGameMode.h"
 #include "GAS/FPSGameplayTags.h"
 #include "Net/UnrealNetwork.h"
+#include "Armor/FPSArmorComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -43,6 +44,9 @@ AFPSCharacter::AFPSCharacter()
 
 	// Create the recoil component (manages Pattern / Spread state)
 	RecoilComponent = CreateDefaultSubobject<UFPSRecoilComponent>(TEXT("RecoilComponent"));
+
+	// Create the armor component
+	ArmorComponent = CreateDefaultSubobject<UFPSArmorComponent>(TEXT("ArmorComponent"));
 }
 
 void AFPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -144,6 +148,18 @@ AFPSPlayerState* AFPSCharacter::GetFPSPlayerState() const
 // Lifecycle
 //-------------------------------------------------------------------
 
+
+void AFPSCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// 让子弹能打到 SkeletalMesh 并返回骨骼名。
+	// 此时 Physics Asset 骨骼体已经创建完毕，SetCollisionResponseToChannel 能正确同步到每个 Body。
+	// ECC_GameTraceChannel1 = 项目自定义 "Projectile" 通道（见 DefaultEngine.ini）
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Ignore);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+}
 
 void AFPSCharacter::BeginPlay()
 {

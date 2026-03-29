@@ -79,6 +79,13 @@ void AFPSPlayerController::SetupInputBindings()
 		{
 			EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AFPSPlayerController::HandleInteract);
 		}
+		
+		// Inventory toggle
+		
+		if (InventoryAction)
+		{
+			EnhancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AFPSPlayerController::HandleInventoryInput);
+		}
 	}
 }
 
@@ -153,7 +160,17 @@ void AFPSPlayerController::HandlePauseMenuInput()
 	TogglePauseMenu();
 }
 
-void AFPSPlayerController::TogglePauseMenu()
+void AFPSPlayerController::HandleInventoryInput()
+{
+	ToggleInventory();
+}
+
+void AFPSPlayerController::ToggleInventory_Implementation()
+{
+	// Default: no-op. Lua overrides via BlueprintNativeEvent.
+}
+
+void AFPSPlayerController::TogglePauseMenu_Implementation()
 {
 	UFPSMenuSubsystem* MenuSubsystem = GetMenuSubsystem();
 	if (!MenuSubsystem)

@@ -97,6 +97,20 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Projectile")
 	void PlayImpactEffects(const FHitResult& Hit);
 
+	/**
+	 * 计算最终血量伤害（Lua 重写实现穿透档位逻辑）。
+	 * C++ 默认实现：直接返回 Damage（爆头倍率已在调用前处理）。
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Projectile")
+	float CalculateFinalDamage(const FHitResult& Hit, AActor* HitActor);
+
+	/**
+	 * 计算最终护甲耐久伤害（Lua 重写实现穿透档位逻辑）。
+	 * C++ 默认实现：直接返回 WeaponData->BulletArmorDamage。
+	 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Projectile")
+	float CalculateFinalArmorDamage(const FHitResult& Hit, AActor* HitActor);
+
 protected:
 	virtual void BeginPlay() override;
 

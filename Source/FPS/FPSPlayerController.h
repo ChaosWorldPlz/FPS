@@ -57,9 +57,15 @@ public:
 	// Menu Control
 	//-------------------------------------------------------------------
 
-	/** Toggle pause menu (ESC key) */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu")
+	/** Toggle pause menu (ESC key)，Lua 可通过 BlueprintNativeEvent 覆盖 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu")
 	void TogglePauseMenu();
+	virtual void TogglePauseMenu_Implementation();
+
+	/** Toggle inventory (TAB key)，Lua 可通过 BlueprintNativeEvent 覆盖 */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu")
+	void ToggleInventory();
+	virtual void ToggleInventory_Implementation();
 
 	/** Check if any menu is currently open */
 	UFUNCTION(BlueprintCallable, Category = "FPS|Menu")
@@ -138,11 +144,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|Weapon")
 	UInputAction* InteractAction;
 
+	/** Inventory toggle (TAB key) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* InventoryAction;
+
 	/** Setup input bindings */
 	void SetupInputBindings();
 
 	/** Handle pause menu input */
 	void HandlePauseMenuInput();
+
+	/** Handle inventory toggle input */
+	void HandleInventoryInput();
 
 	/** Handle weapon slot switch inputs */
 	void HandleSwitchToSlot1();
