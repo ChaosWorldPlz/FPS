@@ -6,6 +6,10 @@
 ]]
 
 local TextManager = require("Gameplay.Core.TextManager")
+local UIManager = require("Gameplay.Core.UIManager")
+
+-- 地图 DataTable 资产路径
+local MAP_TABLE_PATH = "/Game/_FPS/Data/Maps/DT_MapList.DT_MapList"
 
 local WBP_MapSelect = UnLua.Class()
 
@@ -48,7 +52,7 @@ end
 function WBP_MapSelect:SetText(widgetName, text)
     local widget = self[widgetName]
     if widget and widget.SetText then
-        widget:SetText(FText(text))
+        widget:SetText(text)
     end
 end
 
@@ -73,21 +77,83 @@ end
 -- 地图
 --============================================================
 
+local MAP_CARD_CLASS_PATH = "/Game/_FPS/System/UI/Menu/WBP_MapCard.WBP_MapCard_C"
+
 function WBP_MapSelect:RefreshMapList()
-    local maps = self:GetAvailableMaps()
-    print("[MapSelect] Maps: " .. #maps)
+    self.MapTable = UE.UObject.Load(MAP_TABLE_PATH)
+    if not self.MapTable then
+        print("[MapSelect] 找不到地图 DataTable: " .. MAP_TABLE_PATH)
+        return
+    end
+
+    local rowNames = UE.UDataTableFunctionLibrary.GetDataTableRowNames(self.MapTable)
+    local count = rowNames:Length()
+    print("[MapSelect] 地图数量: " .. count)
+
+    -- 清空旧卡片
+    if self.w_scrollbox_MapList then
+        self.w_scrollbox_MapList:ClearChildren()
+    end
+    self.MapCards = {}
+
+    local cardClass = UE.UClass.Load(MAP_CARD_CLASS_PATH)
+    if not cardClass then
+        print("[MapSelect] 找不到 WBP_MapCard 类")
+        return
+    end
+
+    local PC = self:GetOwningPlayer()
+    for i = 1, count do
+        local rowName = rowNames:Get(i)
+        local row = UE.UDataTableFunctionLibrary.GetDataTableRow(self.MapTable, rowName)
+        if row and (row.bEnabled ~= false) then
+            local card = UE.UWidgetBlueprintLibrary.Create(PC, cardClass, PC)
+            if card then
+                card:SetMapData(rowName, row.DisplayName, row.PreviewImage)
+                card.OnCardClicked = function(name) self:OnMapButtonClicked(name) end
+                if self.w_scrollbox_MapList then
+                    self.w_scrollbox_MapList:AddChild(card)
+                end
+                self.MapCards[rowName] = card
+            end
+        end
+    end
+
+    -- 默认选中第一张
+    local firstName = rowNames:Get(1)
+    if firstName then
+        self:OnMapButtonClicked(firstName)
+    end
 end
 
-function WBP_MapSelect:OnMapButtonClicked(mapId)
-    self:SelectMap(mapId)
+function WBP_MapSelect:GetMapRow(rowName)
+    if not self.MapTable then return nil end
+    return UE.UDataTableFunctionLibrary.GetDataTableRow(self.MapTable, rowName)
+end
+
+function WBP_MapSelect:OnMapButtonClicked(rowName)
+    local row = self:GetMapRow(rowName)
+    if row then
+        -- 更新所有卡片选中态
+        if self.MapCards then
+            for name, card in pairs(self.MapCards) do
+                card:SetSelected(name == rowName)
+            end
+        end
+        self.SelectedMap = { RowName = rowName, Row = row }
+        self:OnMapSelected(row)
+    end
 end
 
 function WBP_MapSelect:OnMapSelected(mapInfo)
-    self:SetText("w_text_MapName", mapInfo.DisplayName:ToString())
-    self:SetText("w_text_MapDifficulty", TextManager:Get("MAP_DIFFICULTY") .. ": " .. self:GetDifficultyStars(mapInfo.Difficulty))
-    self:SetText("w_text_MapDuration", TextManager:Format("MAP_DURATION", mapInfo.DurationMinutes))
-    self:SetText("w_text_MapPlayers", TextManager:Format("MAP_PLAYERS", 1, mapInfo.MaxPlayers))
-    self:SetText("w_text_MapDescription", mapInfo.Description:ToString())
+    if not mapInfo then return end
+    local name = tostring(mapInfo.DisplayName or "")
+    local desc = tostring(mapInfo.Description or "")
+    self:SetText("w_text_MapName", name)
+    self:SetText("w_text_MapDifficulty", TextManager:Get("MAP_DIFFICULTY") .. ": " .. self:GetDifficultyStars(mapInfo.Difficulty or 0))
+    self:SetText("w_text_MapDuration", TextManager:Format("MAP_DURATION", mapInfo.DurationMinutes or 0))
+    self:SetText("w_text_MapPlayers", TextManager:Format("MAP_PLAYERS", 1, mapInfo.MaxPlayers or 0))
+    self:SetText("w_text_MapDescription", desc)
 end
 
 function WBP_MapSelect:OnUpdateMapPreview(cameraLocation, cameraRotation)
@@ -98,15 +164,19 @@ end
 -- 按钮
 --============================================================
 
-function WBP_MapSelect:OnClicked_Confirm()
-    local selectedId = self:GetSelectedMapId()
-    if selectedId and not selectedId:IsNone() then
-        self:ConfirmSelection()
+function WBP_MapSelect:ConfirmSelection()
+    if not self.SelectedMap then return end
+    local PC = self:GetOwningPlayer()
+    if PC then
+        local row = self.SelectedMap.Row
+        local levelPath = tostring(row.LevelPath or "")
+        UIManager:CloseAll()
+        PC:HostGame(levelPath, row.MaxPlayers)
     end
 end
 
-function WBP_MapSelect:OnClicked_Back()
-    self:OnBackClicked()
+function WBP_MapSelect:OnBackClicked()
+    UIManager:CloseWindow("UI/Menu/WBP_MapSelect")
 end
 
 --============================================================

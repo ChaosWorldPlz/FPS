@@ -11,6 +11,7 @@
 ]]
 
 local TextManager = require("Gameplay.Core.TextManager")
+local UIManager = require("Gameplay.Core.UIManager")
 
 local WBP_MainMenu = UnLua.Class()
 
@@ -53,7 +54,7 @@ end
 function WBP_MainMenu:SetText(widgetName, text)
     local widget = self[widgetName]
     if widget and widget.SetText then
-        widget:SetText(FText(text))
+        widget:SetText(text)
     end
 end
 
@@ -81,20 +82,20 @@ end
 -- 按钮点击 (绑定到 w_btn_xxx 的 OnClicked)
 --============================================================
 
-function WBP_MainMenu:OnClicked_NewGame()
-    self:OnNewGameClicked()
+function WBP_MainMenu:OnNewGameClicked()
+    UIManager:OpenWindow("UI/Menu/WBP_MapSelect")
 end
 
-function WBP_MainMenu:OnClicked_Continue()
-    self:OnContinueClicked()
+function WBP_MainMenu:OnContinueClicked()
+    -- TODO: 读取存档后进入游戏
 end
 
-function WBP_MainMenu:OnClicked_Settings()
-    self:OnSettingsClicked()
+function WBP_MainMenu:OnSettingsClicked()
+    UIManager:OpenWindow("UI/Menu/WBP_Settings")
 end
 
-function WBP_MainMenu:OnClicked_Quit()
-    self:OnQuitClicked()
+function WBP_MainMenu:OnQuitClicked()
+    self:ConfirmQuit()
 end
 
 --============================================================

@@ -56,7 +56,7 @@ end
 function WBP_Loadout:SetText(widgetName, text)
     local widget = self[widgetName]
     if widget and widget.SetText then
-        widget:SetText(FText(text))
+        widget:SetText(text)
     end
 end
 

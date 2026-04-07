@@ -14,7 +14,7 @@
 #include "GameFramework/GameModeBase.h"
 
 AFPSPlayerController::AFPSPlayerController()
-	: MainMenuMapName(TEXT("/Game/FirstPerson/Maps/Level_LoginMain"))
+	: MainMenuMapName(TEXT("/Game/_FPS/Level/Level_MainMenu"))
 {
 }
 
@@ -153,6 +153,20 @@ void AFPSPlayerController::HandleInteract()
 			}
 		}
 	}
+}
+
+void AFPSPlayerController::SetInputModeGameAndUI()
+{
+	FInputModeGameAndUI Mode;
+	SetInputMode(Mode);
+	SetShowMouseCursor(true);
+}
+
+void AFPSPlayerController::SetInputModeGameOnly()
+{
+	FInputModeGameOnly Mode;
+	SetInputMode(Mode);
+	SetShowMouseCursor(false);
 }
 
 void AFPSPlayerController::HandlePauseMenuInput()

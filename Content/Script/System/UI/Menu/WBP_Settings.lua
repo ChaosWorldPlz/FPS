@@ -6,6 +6,7 @@
 ]]
 
 local TextManager = require("Gameplay.Core.TextManager")
+local UIManager = require("Gameplay.Core.UIManager")
 
 local WBP_Settings = UnLua.Class()
 
@@ -89,7 +90,7 @@ end
 function WBP_Settings:SetText(widgetName, text)
     local widget = self[widgetName]
     if widget and widget.SetText then
-        widget:SetText(FText(text))
+        widget:SetText(text)
     end
 end
 
@@ -170,19 +171,27 @@ function WBP_Settings:OnClicked_Reset()
 end
 
 function WBP_Settings:OnClicked_Back()
-    if self:HasUnsavedChanges() then
-        print("[Settings] Unsaved changes")
-    else
-        self:GoBack()
-    end
+    UIManager:CloseWindow("UI/Menu/WBP_Settings")
 end
 
-function WBP_Settings:OnSettingsApplied()
+--============================================================
+-- 设置读写（TODO: 接存档系统后替换）
+--============================================================
+
+function WBP_Settings:GetGraphicsQuality() return 2 end
+function WBP_Settings:GetFieldOfView()      return 90 end
+function WBP_Settings:GetSFXVolume()        return 80 end
+function WBP_Settings:GetMusicVolume()      return 60 end
+function WBP_Settings:GetMouseSensitivity() return 0.5 end
+
+function WBP_Settings:ApplySettings()
     print("[Settings] Applied")
+    -- TODO: 接存档系统保存
 end
 
-function WBP_Settings:OnSettingsReset()
-    print("[Settings] Reset")
+function WBP_Settings:ResetToDefault()
+    print("[Settings] Reset to default")
+    -- TODO: 接存档系统重置
 end
 
 return WBP_Settings

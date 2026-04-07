@@ -21,8 +21,8 @@
 -- ── 配置区 ────────────────────────────────────────────────────────────────
 local GM_WEAPONS = {
     Primary1 = "/Game/_FPS/Weapon/BP_WeaponBase.BP_WeaponBase_C",
-    Primary2 = "/Game/Blueprints/Weapons/BP_Rifle.BP_Rifle_C",
-    Pistol   = "/Game/Blueprints/Weapons/BP_Pistol.BP_Pistol_C",
+    Primary2 = "/Game/_FPS/Blueprints/Weapons/BP_Rifle.BP_Rifle_C",
+    Pistol   = "/Game/_FPS/Blueprints/Weapons/BP_Pistol.BP_Pistol_C",
 }
 
 local GM_KEYS = nil  -- 延迟初始化，等函数定义完再赋值

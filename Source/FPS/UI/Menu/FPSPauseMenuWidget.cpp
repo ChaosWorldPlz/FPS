@@ -13,7 +13,7 @@ void UFPSPauseMenuWidget::NativeOnMenuHidden()
 	// Game is unpaused when pause menu is hidden
 }
 
-void UFPSPauseMenuWidget::OnResumeClicked()
+void UFPSPauseMenuWidget::OnResumeClicked_Implementation()
 {
 	if (UFPSMenuSubsystem* MenuSubsystem = GetMenuSubsystem())
 	{
@@ -21,7 +21,7 @@ void UFPSPauseMenuWidget::OnResumeClicked()
 	}
 }
 
-void UFPSPauseMenuWidget::OnSettingsClicked()
+void UFPSPauseMenuWidget::OnSettingsClicked_Implementation()
 {
 	if (UFPSMenuSubsystem* MenuSubsystem = GetMenuSubsystem())
 	{
@@ -29,8 +29,7 @@ void UFPSPauseMenuWidget::OnSettingsClicked()
 	}
 }
 
-void UFPSPauseMenuWidget::OnQuitToMenuClicked()
+void UFPSPauseMenuWidget::OnQuitToMenuClicked_Implementation()
 {
-	// Let Blueprint handle confirmation dialog
 	OnQuitToMenuRequested();
 }

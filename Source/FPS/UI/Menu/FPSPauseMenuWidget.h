@@ -23,16 +23,19 @@ public:
 	//-------------------------------------------------------------------
 
 	/** Resume the game */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|Pause")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|Pause")
 	void OnResumeClicked();
+	virtual void OnResumeClicked_Implementation();
 
 	/** Open settings */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|Pause")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|Pause")
 	void OnSettingsClicked();
+	virtual void OnSettingsClicked_Implementation();
 
 	/** Quit to main menu */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|Pause")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|Pause")
 	void OnQuitToMenuClicked();
+	virtual void OnQuitToMenuClicked_Implementation();
 
 	//-------------------------------------------------------------------
 	// Events

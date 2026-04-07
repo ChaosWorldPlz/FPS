@@ -88,7 +88,7 @@ local function CreateWidget(name)
         return nil
     end
 
-    local widget = UE.UWidgetBlueprintLibrary.Create(_pc, cls)
+    local widget = UE.UWidgetBlueprintLibrary.Create(_pc, cls, _pc)
     if not widget then
         print("[UIManager] 创建 Widget 失败: " .. name)
         return nil
@@ -104,13 +104,9 @@ end
 local function SetUIInputMode(enable)
     if not _pc then return end
     if enable then
-        local mode = UE.FInputModeGameAndUI()
-        _pc:SetInputMode(mode)
-        _pc:SetShowMouseCursor(true)
+        _pc:SetInputModeGameAndUI()
     else
-        local mode = UE.FInputModeGameOnly()
-        _pc:SetInputMode(mode)
-        _pc:SetShowMouseCursor(false)
+        _pc:SetInputModeGameOnly()
     end
 end
 
@@ -128,7 +124,12 @@ function UIManager:OpenWindow(name)
     if not widget then return nil end
 
     local zOrder = WindowZOrder[name] or 10
-    widget:AddToViewport(zOrder)
+    widget:AddToPlayerScreen(zOrder)
+
+    -- FPSMenuWidgetBase 默认 Collapsed，需要手动调 ShowMenu
+    if widget.ShowMenu then
+        widget:ShowMenu()
+    end
 
     _openWindows[name] = widget
     table.insert(_windowStack, name)

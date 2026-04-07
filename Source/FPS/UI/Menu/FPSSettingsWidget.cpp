@@ -151,3 +151,8 @@ bool UFPSSettingsWidget::HasUnsavedChanges() const
 {
 	return bSettingsModified;
 }
+
+void UFPSSettingsWidget::OnBackClicked_Implementation()
+{
+	GoBack();
+}

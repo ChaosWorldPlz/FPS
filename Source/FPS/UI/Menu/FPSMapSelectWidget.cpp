@@ -54,7 +54,7 @@ FFPSMapInfo UFPSMapSelectWidget::GetMapInfo(FName MapId) const
 	return FFPSMapInfo();
 }
 
-void UFPSMapSelectWidget::ConfirmSelection()
+void UFPSMapSelectWidget::ConfirmSelection_Implementation()
 {
 	if (SelectedMapId.IsNone())
 	{
@@ -68,7 +68,7 @@ void UFPSMapSelectWidget::ConfirmSelection()
 	}
 }
 
-void UFPSMapSelectWidget::OnBackClicked()
+void UFPSMapSelectWidget::OnBackClicked_Implementation()
 {
 	GoBack();
 }

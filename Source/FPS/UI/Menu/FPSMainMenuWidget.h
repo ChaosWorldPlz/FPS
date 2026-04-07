@@ -23,20 +23,24 @@ public:
 	//-------------------------------------------------------------------
 
 	/** Start a new game - goes to map select */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MainMenu")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|MainMenu")
 	void OnNewGameClicked();
+	virtual void OnNewGameClicked_Implementation();
 
 	/** Continue game - goes to loadout */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MainMenu")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|MainMenu")
 	void OnContinueClicked();
+	virtual void OnContinueClicked_Implementation();
 
 	/** Open settings */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MainMenu")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|MainMenu")
 	void OnSettingsClicked();
+	virtual void OnSettingsClicked_Implementation();
 
 	/** Quit the game */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MainMenu")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|MainMenu")
 	void OnQuitClicked();
+	virtual void OnQuitClicked_Implementation();
 
 	//-------------------------------------------------------------------
 	// Events

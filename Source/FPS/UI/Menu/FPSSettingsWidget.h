@@ -88,7 +88,7 @@ public:
 	void ResetKeyBindings();
 
 	//-------------------------------------------------------------------
-	// Apply / Reset
+	// Apply / Reset / Back
 	//-------------------------------------------------------------------
 
 	/** Apply all settings */
@@ -98,6 +98,11 @@ public:
 	/** Reset all settings to default */
 	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|Settings")
 	void ResetToDefault();
+
+	/** Go back (close settings) */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|Settings")
+	void OnBackClicked();
+	virtual void OnBackClicked_Implementation();
 
 	/** Check if there are unsaved changes */
 	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|Settings")

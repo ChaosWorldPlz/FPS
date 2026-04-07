@@ -57,6 +57,14 @@ public:
 	// Menu Control
 	//-------------------------------------------------------------------
 
+	/** 切换到 UI+游戏 输入模式（显示鼠标） */
+	UFUNCTION(BlueprintCallable, Category = "FPS|Input")
+	void SetInputModeGameAndUI();
+
+	/** 切换到纯游戏输入模式（隐藏鼠标） */
+	UFUNCTION(BlueprintCallable, Category = "FPS|Input")
+	void SetInputModeGameOnly();
+
 	/** Toggle pause menu (ESC key)，Lua 可通过 BlueprintNativeEvent 覆盖 */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu")
 	void TogglePauseMenu();

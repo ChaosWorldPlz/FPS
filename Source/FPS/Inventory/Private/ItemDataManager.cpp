@@ -15,7 +15,7 @@ void UItemDataManager::Initialize(FSubsystemCollectionBase& Collection)
 	// TODO: 改用 TSoftObjectPtr + 异步加载，详见开发指南 TODO 1
 	ItemDefinitionTable = LoadObject<UDataTable>(
 		nullptr,
-		TEXT("/Game/Data/Items/DT_ItemDefinition")
+		TEXT("/Game/_FPS/Data/Items/DT_ItemDefinition")
 	);
 
 	if (ItemDefinitionTable)
@@ -26,7 +26,7 @@ void UItemDataManager::Initialize(FSubsystemCollectionBase& Collection)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("[ItemDataManager] DataTable 加载失败！路径: /Game/Data/Items/DT_ItemDefinition"));
+		UE_LOG(LogTemp, Error, TEXT("[ItemDataManager] DataTable 加载失败！路径: /Game/_FPS/Data/Items/DT_ItemDefinition"));
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("[ItemDataManager] ========== 初始化结束 =========="));

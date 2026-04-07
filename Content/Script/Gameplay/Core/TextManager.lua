@@ -36,7 +36,7 @@ end
 
 function TextManager:LoadTextTable()
     -- 尝试加载 JSON 文件
-    local jsonPath = "/Game/Data/TextTable.json"
+    local jsonPath = "/Game/_FPS/Data/TextTable.json"
 
     -- 方案1: 通过 UE 的 JsonUtilities 加载 (需要 C++ 暴露接口)
     -- 方案2: 直接在 Lua 中定义文本表 (开发期间使用)

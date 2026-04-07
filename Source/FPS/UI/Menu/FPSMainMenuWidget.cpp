@@ -9,7 +9,7 @@ void UFPSMainMenuWidget::NativeOnMenuShown()
 	// Called when main menu is shown
 }
 
-void UFPSMainMenuWidget::OnNewGameClicked()
+void UFPSMainMenuWidget::OnNewGameClicked_Implementation()
 {
 	if (UFPSMenuSubsystem* MenuSubsystem = GetMenuSubsystem())
 	{
@@ -17,7 +17,7 @@ void UFPSMainMenuWidget::OnNewGameClicked()
 	}
 }
 
-void UFPSMainMenuWidget::OnContinueClicked()
+void UFPSMainMenuWidget::OnContinueClicked_Implementation()
 {
 	if (UFPSMenuSubsystem* MenuSubsystem = GetMenuSubsystem())
 	{
@@ -25,7 +25,7 @@ void UFPSMainMenuWidget::OnContinueClicked()
 	}
 }
 
-void UFPSMainMenuWidget::OnSettingsClicked()
+void UFPSMainMenuWidget::OnSettingsClicked_Implementation()
 {
 	if (UFPSMenuSubsystem* MenuSubsystem = GetMenuSubsystem())
 	{
@@ -33,8 +33,7 @@ void UFPSMainMenuWidget::OnSettingsClicked()
 	}
 }
 
-void UFPSMainMenuWidget::OnQuitClicked()
+void UFPSMainMenuWidget::OnQuitClicked_Implementation()
 {
-	// Let Blueprint handle confirmation dialog
 	OnQuitRequested();
 }

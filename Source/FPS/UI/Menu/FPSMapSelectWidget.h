@@ -48,12 +48,14 @@ public:
 	//-------------------------------------------------------------------
 
 	/** Confirm selection and proceed to loadout */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|MapSelect")
 	void ConfirmSelection();
+	virtual void ConfirmSelection_Implementation();
 
 	/** Go back to main menu */
-	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "FPS|Menu|MapSelect")
 	void OnBackClicked();
+	virtual void OnBackClicked_Implementation();
 
 	//-------------------------------------------------------------------
 	// Events

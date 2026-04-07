@@ -21,6 +21,11 @@ local M = UnLua.Class()
 function M:ReceiveBeginPlay()
     UIManager:Init(self)
     GM.Init(self)
+    M:OpenHUD()
+end
+
+function M:OpenHUD()
+    UIManager:OpenWindow("UI/WBP_HUD")
 end
 
 function M:ReceiveTick(DeltaTime)

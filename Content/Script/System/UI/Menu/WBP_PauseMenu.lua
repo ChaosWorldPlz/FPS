@@ -6,6 +6,7 @@
 ]]
 
 local TextManager = require("Gameplay.Core.TextManager")
+local UIManager = require("Gameplay.Core.UIManager")
 
 local WBP_PauseMenu = UnLua.Class()
 
@@ -44,7 +45,7 @@ end
 function WBP_PauseMenu:SetText(widgetName, text)
     local widget = self[widgetName]
     if widget and widget.SetText then
-        widget:SetText(FText(text))
+        widget:SetText(text)
     end
 end
 
@@ -72,30 +73,19 @@ end
 -- 按钮点击
 --============================================================
 
-function WBP_PauseMenu:OnClicked_Resume()
-    self:OnResumeClicked()
+function WBP_PauseMenu:OnResumeClicked()
+    UIManager:CloseWindow("UI/Menu/WBP_PauseMenu")
 end
 
-function WBP_PauseMenu:OnClicked_Settings()
-    self:OnSettingsClicked()
+function WBP_PauseMenu:OnSettingsClicked()
+    UIManager:OpenWindow("UI/Menu/WBP_Settings")
 end
 
-function WBP_PauseMenu:OnClicked_QuitToMenu()
-    self:OnQuitToMenuClicked()
-end
-
---============================================================
--- 退出确认
---============================================================
-
-function WBP_PauseMenu:OnQuitToMenuRequested()
-    -- 显示确认弹窗
-end
-
-function WBP_PauseMenu:ConfirmQuitToMenu()
-    local MenuSubsystem = self:GetMenuSubsystem()
-    if MenuSubsystem then
-        MenuSubsystem:ExitToMainMenu()
+function WBP_PauseMenu:OnQuitToMenuClicked()
+    local PC = self:GetOwningPlayer()
+    if PC then
+        UIManager:CloseAll()
+        PC:LeaveGame()
     end
 end
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/DataTable.h"
 #include "FPSLevelFlowTypes.generated.h"
 
 /**
@@ -76,6 +77,50 @@ struct FFPSRaidResult
 	/** Experience gained */
 	UPROPERTY(BlueprintReadOnly)
 	int32 ExperienceGained = 0;
+};
+
+/**
+ * FFPSMapInfoRow
+ *
+ * DataTable 行结构，描述一张可进入的地图。
+ * 在编辑器里创建 DataTable（行类型选此结构），Lua 通过 ItemDataManager 同样的方式查询。
+ */
+USTRUCT(BlueprintType)
+struct FFPSMapInfoRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	/** 地图显示名称 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	FText DisplayName;
+
+	/** 地图描述 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	FText Description;
+
+	/** UE 关卡路径，如 /Game/Maps/Map_Factory */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	FSoftObjectPath LevelPath;
+
+	/** 缩略图 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	TSoftObjectPtr<UTexture2D> PreviewImage;
+
+	/** 最大玩家数 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	int32 MaxPlayers = 10;
+
+	/** 地图难度（1~5） */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map", meta = (ClampMin = 1, ClampMax = 5))
+	int32 Difficulty = 1;
+
+	/** 预计时长（分钟） */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	int32 DurationMinutes = 30;
+
+	/** 是否在选图界面显示 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map")
+	bool bEnabled = true;
 };
 
 // Delegates
