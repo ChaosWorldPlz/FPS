@@ -24,6 +24,10 @@ function M:ReceiveBeginPlay()
     M:OpenHUD()
 end
 
+function M:ReceiveEndPlay()
+    UIManager:Teardown()
+end
+
 function M:OpenHUD()
     UIManager:OpenWindow("UI/WBP_HUD")
 end

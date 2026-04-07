@@ -46,8 +46,8 @@ end
 function WBP_MapCard:SetSelected(selected)
     if self.w_border_Selected then
         self.w_border_Selected:SetVisibility(
-            selected and ESlateVisibility.HitTestInvisible
-                      or ESlateVisibility.Collapsed
+            selected and UE.ESlateVisibility.HitTestInvisible
+                      or UE.ESlateVisibility.Collapsed
         )
     end
 end

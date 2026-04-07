@@ -61,7 +61,7 @@ end
 function WBP_MainMenu:SetOverlayVisible(overlayName, visible)
     local widget = self[overlayName]
     if widget then
-        widget:SetVisibility(visible and ESlateVisibility.Visible or ESlateVisibility.Collapsed)
+        widget:SetVisibility(visible and UE.ESlateVisibility.Visible or UE.ESlateVisibility.Collapsed)
     end
 end
 

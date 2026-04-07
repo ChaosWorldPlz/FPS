@@ -16,4 +16,8 @@ function M:ReceiveBeginPlay()
     UIManager:OpenWindow("UI/Menu/WBP_MainMenu")
 end
 
+function M:ReceiveEndPlay()
+    UIManager:Teardown()
+end
+
 return M

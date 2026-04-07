@@ -33,6 +33,13 @@ local WBP_MapSelect = UnLua.Class()
 function WBP_MapSelect:Construct()
     print("[MapSelect] Construct")
     self:InitializeTexts()
+
+    if self.w_btn_Confirm then
+        self.w_btn_Confirm.OnClicked:Add(self, self.ConfirmSelection)
+    end
+    if self.w_btn_Back then
+        self.w_btn_Back.OnClicked:Add(self, self.OnBackClicked)
+    end
 end
 
 function WBP_MapSelect:Destruct()
@@ -59,7 +66,7 @@ end
 function WBP_MapSelect:SetOverlayVisible(overlayName, visible)
     local widget = self[overlayName]
     if widget then
-        widget:SetVisibility(visible and ESlateVisibility.Visible or ESlateVisibility.Collapsed)
+        widget:SetVisibility(visible and UE.ESlateVisibility.Visible or UE.ESlateVisibility.Collapsed)
     end
 end
 
@@ -80,17 +87,17 @@ end
 local MAP_CARD_CLASS_PATH = "/Game/_FPS/System/UI/Menu/WBP_MapCard.WBP_MapCard_C"
 
 function WBP_MapSelect:RefreshMapList()
-    self.MapTable = UE.UObject.Load(MAP_TABLE_PATH)
-    if not self.MapTable then
+    local mapTable = UE.UObject.Load(MAP_TABLE_PATH)
+    if not mapTable then
         print("[MapSelect] 找不到地图 DataTable: " .. MAP_TABLE_PATH)
         return
     end
+    self:SetMapDataTable(mapTable)
 
-    local rowNames = UE.UDataTableFunctionLibrary.GetDataTableRowNames(self.MapTable)
-    local count = rowNames:Length()
+    local rowNames = self:GetMapRowNames()
+    local count = rowNames:Num()
     print("[MapSelect] 地图数量: " .. count)
 
-    -- 清空旧卡片
     if self.w_scrollbox_MapList then
         self.w_scrollbox_MapList:ClearChildren()
     end
@@ -103,32 +110,43 @@ function WBP_MapSelect:RefreshMapList()
     end
 
     local PC = self:GetOwningPlayer()
+    local firstName = nil
     for i = 1, count do
         local rowName = rowNames:Get(i)
-        local row = UE.UDataTableFunctionLibrary.GetDataTableRow(self.MapTable, rowName)
-        if row and (row.bEnabled ~= false) then
+        if self:IsMapEnabled(rowName) then
             local card = UE.UWidgetBlueprintLibrary.Create(PC, cardClass, PC)
             if card then
-                card:SetMapData(rowName, row.DisplayName, row.PreviewImage)
+                local displayName = tostring(self:GetMapDisplayName(rowName))
+                card:SetMapData(rowName, displayName, nil)
                 card.OnCardClicked = function(name) self:OnMapButtonClicked(name) end
                 if self.w_scrollbox_MapList then
                     self.w_scrollbox_MapList:AddChild(card)
                 end
                 self.MapCards[rowName] = card
+                if not firstName then firstName = rowName end
             end
         end
     end
 
-    -- 默认选中第一张
-    local firstName = rowNames:Get(1)
     if firstName then
         self:OnMapButtonClicked(firstName)
     end
 end
 
 function WBP_MapSelect:GetMapRow(rowName)
-    if not self.MapTable then return nil end
-    return UE.UDataTableFunctionLibrary.GetDataTableRow(self.MapTable, rowName)
+    if not self:IsMapEnabled(rowName) then return nil end
+
+    local softPath = self:GetMapLevelPath(rowName)
+    local levelPath = tostring(softPath.AssetPath.PackageName)
+
+    return {
+        DisplayName    = tostring(self:GetMapDisplayName(rowName)),
+        Description    = tostring(self:GetMapDescription(rowName)),
+        LevelPath      = levelPath,
+        Difficulty     = self:GetMapDifficulty(rowName),
+        DurationMinutes= self:GetMapDurationMinutes(rowName),
+        MaxPlayers     = self:GetMapMaxPlayers(rowName),
+    }
 end
 
 function WBP_MapSelect:OnMapButtonClicked(rowName)
@@ -169,7 +187,7 @@ function WBP_MapSelect:ConfirmSelection()
     local PC = self:GetOwningPlayer()
     if PC then
         local row = self.SelectedMap.Row
-        local levelPath = tostring(row.LevelPath or "")
+        local levelPath = row.LevelPath or ""
         UIManager:CloseAll()
         PC:HostGame(levelPath, row.MaxPlayers)
     end

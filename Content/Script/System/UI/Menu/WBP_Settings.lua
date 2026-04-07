@@ -97,7 +97,7 @@ end
 function WBP_Settings:SetOverlayVisible(overlayName, visible)
     local widget = self[overlayName]
     if widget then
-        widget:SetVisibility(visible and ESlateVisibility.Visible or ESlateVisibility.Collapsed)
+        widget:SetVisibility(visible and UE.ESlateVisibility.Visible or UE.ESlateVisibility.Collapsed)
     end
 end
 
@@ -170,7 +170,7 @@ function WBP_Settings:OnClicked_Reset()
     self:RefreshAllSettings()
 end
 
-function WBP_Settings:OnClicked_Back()
+function WBP_Settings:OnBackClicked()
     UIManager:CloseWindow("UI/Menu/WBP_Settings")
 end
 

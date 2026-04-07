@@ -63,14 +63,14 @@ end
 function WBP_Loadout:SetOverlayVisible(overlayName, visible)
     local widget = self[overlayName]
     if widget then
-        widget:SetVisibility(visible and ESlateVisibility.Visible or ESlateVisibility.Collapsed)
+        widget:SetVisibility(visible and UE.ESlateVisibility.Visible or UE.ESlateVisibility.Collapsed)
     end
 end
 
 function WBP_Loadout:SetWidgetVisibility(widgetName, visible)
     local widget = self[widgetName]
     if widget then
-        widget:SetVisibility(visible and ESlateVisibility.Visible or ESlateVisibility.Collapsed)
+        widget:SetVisibility(visible and UE.ESlateVisibility.Visible or UE.ESlateVisibility.Collapsed)
     end
 end
 

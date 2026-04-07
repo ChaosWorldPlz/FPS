@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "FPSMenuWidgetBase.h"
 #include "FPS/UI/FPSMenuTypes.h"
+#include "FPS/Level/FPSLevelFlowTypes.h"
 #include "FPSMapSelectWidget.generated.h"
 
 /**
@@ -44,6 +45,40 @@ public:
 	FFPSMapInfo GetMapInfo(FName MapId) const;
 
 	//-------------------------------------------------------------------
+	// DataTable Access (for Lua — GetDataTableRow is not callable in UnLua)
+	//-------------------------------------------------------------------
+
+	/** 设置地图 DataTable 路径，由 Lua 在 BeginPlay 传入 */
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	void SetMapDataTable(UDataTable* InTable) { MapDataTable = InTable; }
+
+	/** 获取所有行名 */
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	TArray<FName> GetMapRowNames() const;
+
+	/** 以下逐字段读取，避免 UnLua 对含 UObject 的结构体崩溃 */
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	FText GetMapDisplayName(FName RowName) const;
+
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	FText GetMapDescription(FName RowName) const;
+
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	FSoftObjectPath GetMapLevelPath(FName RowName) const;
+
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	int32 GetMapDifficulty(FName RowName) const;
+
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	int32 GetMapDurationMinutes(FName RowName) const;
+
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	int32 GetMapMaxPlayers(FName RowName) const;
+
+	UFUNCTION(BlueprintCallable, Category = "FPS|Menu|MapSelect")
+	bool IsMapEnabled(FName RowName) const;
+
+	//-------------------------------------------------------------------
 	// Actions
 	//-------------------------------------------------------------------
 
@@ -75,4 +110,8 @@ protected:
 	/** Currently selected map */
 	UPROPERTY()
 	FName SelectedMapId;
+
+	/** Map DataTable（由 Lua 通过 UObject.Load + SetMapDataTable 传入）*/
+	UPROPERTY()
+	UDataTable* MapDataTable = nullptr;
 };

@@ -206,4 +206,13 @@ function UIManager:GetWindow(name)
     return _openWindows[name]
 end
 
+--- 关卡卸载时调用，清空所有内部状态
+-- 不调用 RemoveFromParent（World 正在销毁，Widget 即将随之消亡）
+-- 绑定到 PlayerController 的 ReceiveEndPlay，自动触发
+function UIManager:Teardown()
+    _pc          = nil
+    _openWindows = {}
+    _windowStack = {}
+end
+
 return UIManager
