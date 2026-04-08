@@ -9,8 +9,8 @@
     - 所有 UI 打开/关闭通过 UIManager 统一管理
 ]]
 
-local UIManager = require("Gameplay.Core.UIManager")
-local GM = require("Gameplay.Core.GM")
+local UIManager    = require("Gameplay.Core.UIManager")
+local GM           = require("Gameplay.Core.GM")
 
 local M = UnLua.Class()
 

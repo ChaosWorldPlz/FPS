@@ -184,4 +184,5 @@ protected:
 	/** Map to travel to for main menu */
 	UPROPERTY(EditDefaultsOnly, Category = "FPS|Session")
 	FString MainMenuMapName;
+
 };
