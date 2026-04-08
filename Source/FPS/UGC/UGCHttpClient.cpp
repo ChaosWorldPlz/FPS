@@ -36,9 +36,8 @@ void UUGCHttpClient::SendMessage(const FString& UserMessage, const FString& Tool
     TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
     Request->SetURL(APIEndpoint);
     Request->SetVerb(TEXT("POST"));
-    Request->SetHeader(TEXT("Content-Type"),       TEXT("application/json"));
-    Request->SetHeader(TEXT("x-api-key"),          APIKey);
-    Request->SetHeader(TEXT("anthropic-version"),  TEXT("2023-06-01"));
+    Request->SetHeader(TEXT("Content-Type"),  TEXT("application/json"));
+    Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *APIKey));
     Request->SetContentAsString(Body);
 
     Request->OnProcessRequestComplete().BindUObject(this, &UUGCHttpClient::OnHttpResponse);
@@ -72,25 +71,30 @@ void UUGCHttpClient::CancelRequest()
 
 FString UUGCHttpClient::BuildRequestBody(const FString& UserMessage, const FString& ToolsJSON) const
 {
-    // 手动拼接 JSON，避免复杂的 JsonObject 嵌套操作
-    // 结构：{ model, max_tokens, system, tools: [...], messages: [{role,content}] }
+    // OpenAI 兼容格式（DeepSeek / Qwen 等均支持）
+    // 结构：{ model, max_tokens, messages: [{system},{user}], tools: [...] }
 
     FString SafeUserMsg = UserMessage.Replace(TEXT("\""), TEXT("\\\""));
     FString SafeSystem  = SystemPrompt.Replace(TEXT("\""), TEXT("\\\""));
+
+    FString ToolsPart = ToolsJSON.IsEmpty() ? TEXT("") :
+        FString::Printf(TEXT(",\"tools\":%s,\"tool_choice\":\"auto\""), *ToolsJSON);
 
     FString Body = FString::Printf(
         TEXT("{")
         TEXT("\"model\":\"%s\",")
         TEXT("\"max_tokens\":%d,")
-        TEXT("\"system\":\"%s\",")
-        TEXT("\"tools\":%s,")
-        TEXT("\"messages\":[{\"role\":\"user\",\"content\":\"%s\"}]")
+        TEXT("\"messages\":[")
+            TEXT("{\"role\":\"system\",\"content\":\"%s\"},")
+            TEXT("{\"role\":\"user\",\"content\":\"%s\"}")
+        TEXT("]")
+        TEXT("%s")
         TEXT("}"),
         *ModelID,
         MaxTokens,
         *SafeSystem,
-        ToolsJSON.IsEmpty() ? TEXT("[]") : *ToolsJSON,
-        *SafeUserMsg
+        *SafeUserMsg,
+        *ToolsPart
     );
 
     return Body;

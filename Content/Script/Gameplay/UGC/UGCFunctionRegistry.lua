@@ -201,7 +201,8 @@ end
 
 --============================================================
 -- 导出 Schema（供 LLM 读取）
--- 返回符合 Claude / OpenAI Function Calling 格式的 JSON 字符串
+-- OpenAI / DeepSeek Function Calling 格式：
+-- [{"type":"function","function":{"name":...,"description":...,"parameters":{...}}}]
 --============================================================
 
 function Registry:GetSchemas()
@@ -219,7 +220,7 @@ function Registry:GetSchemas()
             end
         end
         table.insert(parts, string.format(
-            '{"name":"%s","description":"%s","input_schema":{"type":"object","properties":{%s},"required":[%s]}}',
+            '{"type":"function","function":{"name":"%s","description":"%s","parameters":{"type":"object","properties":{%s},"required":[%s]}}}',
             name,
             def.desc,
             table.concat(paramParts, ","),

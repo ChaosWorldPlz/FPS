@@ -78,54 +78,41 @@ end
 function Gateway:OnResponse(responseJSON)
     print("[LLMGateway] 收到响应，开始解析")
 
-    -- 简单 JSON 解析（UnLua 环境无标准 JSON 库，手动解析关键字段）
-    -- Claude 响应结构：
-    -- { "content": [ { "type": "tool_use", "name": "...", "input": {...} } ] }
-    -- 或  { "content": [ { "type": "text", "text": "..." } ] }
+    -- OpenAI 兼容格式（DeepSeek）：
+    -- tool_calls: choices[0].message.tool_calls[].function.{name, arguments(JSON string)}
+    -- 文字回复:   choices[0].message.content
 
-    local results = {}
-
-    -- 提取所有 tool_use 块
-    for toolBlock in responseJSON:gmatch('"type"%s*:%s*"tool_use".-"name"%s*:%s*"([^"]+)".-"input"%s*:%s*(%b{})') do
-        -- 这个 pattern 提取不出两个捕获，需要分步处理
-    end
-
-    -- 分步解析：先找所有 tool_use 段
-    local hasToolCall = false
-    for segment in responseJSON:gmatch('"type"%s*:%s*"tool_use"(.-)(?="type"|%])') do
-        hasToolCall = true
-    end
-
-    -- 更可靠的方式：逐段匹配 name + input
     local toolCalls = {}
+
+    -- 找所有 "function": { "name": "...", "arguments": "..." } 段
     local pos = 1
     while true do
         local s, e, name = responseJSON:find('"name"%s*:%s*"([^"]+)"', pos)
         if not s then break end
-        -- 找 name 后面最近的 "input": { ... }
-        local inputStart = responseJSON:find('"input"%s*:%s*%{', e)
-        if inputStart then
-            local braceStart = responseJSON:find('%{', inputStart)
-            if braceStart then
-                local inputJSON = Gateway:ExtractBalanced(responseJSON, braceStart)
-                if inputJSON then
-                    table.insert(toolCalls, { name = name, inputJSON = inputJSON })
-                end
-            end
+
+        -- 往后找 "arguments": "..."（值是转义的 JSON 字符串）
+        local argS, argE, argsRaw = responseJSON:find('"arguments"%s*:%s*"(.-[^\\])"', e)
+        if argS then
+            -- 反转义：\" → "，\\ → \，\n → 换行
+            local argsJSON = argsRaw:gsub('\\"', '"'):gsub('\\\\', '\\'):gsub('\\n', '\n')
+            table.insert(toolCalls, { name = name, inputJSON = argsJSON })
+            pos = argE + 1
+        else
+            pos = e + 1
         end
-        pos = e + 1
     end
 
     if #toolCalls == 0 then
-        -- 没有函数调用，提取纯文本回复
-        local text = responseJSON:match('"type"%s*:%s*"text".-"text"%s*:%s*"(.-)"')
+        -- 没有函数调用，提取文字回复 choices[0].message.content
+        local text = responseJSON:match('"content"%s*:%s*"(.-[^\\])"')
         if text then
-            text = text:gsub('\\n', '\n'):gsub('\\"', '"')
+            text = text:gsub('\\"', '"'):gsub('\\n', '\n')
             print("[LLMGateway] 文字回复: " .. text)
             if _onResult then _onResult(true, text) end
         else
             if _onResult then _onResult(false, "无法解析响应") end
         end
+        _onResult = nil
         return
     end
 

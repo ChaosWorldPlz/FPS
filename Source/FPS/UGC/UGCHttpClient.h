@@ -35,9 +35,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UGC|LLM|Config")
     FString APIKey;
 
-    /** API 端点，默认 Anthropic Messages API */
+    /** API 端点，默认 DeepSeek（OpenAI 兼容格式） */
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UGC|LLM|Config")
-    FString APIEndpoint = TEXT("https://api.anthropic.com/v1/messages");
+    FString APIEndpoint = TEXT("https://api.deepseek.com/v1/chat/completions");
 
     /** 使用的模型 ID */
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UGC|LLM|Config")

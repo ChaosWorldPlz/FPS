@@ -8,6 +8,7 @@
 
 class UUGCFunctionBridge;
 class UUGCHttpClient;
+class UUGCEditorBridge;
 
 /**
  * AUGCPlayerController
@@ -44,12 +45,33 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UGC")
     UUGCHttpClient* GetUGCHttpClient() const { return UGCHttpClient; }
 
+    /** 获取编辑器原子操作组件 */
+    UFUNCTION(BlueprintCallable, Category = "UGC")
+    UUGCEditorBridge* GetUGCEditorBridge() const { return EditorBridge; }
+
+    /** 切换编辑器（F2），Lua 可覆盖 */
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "UGC")
+    void ToggleEditor();
+    virtual void ToggleEditor_Implementation() {}
+
+protected:
+    /** F2 → 切换编辑器 InputAction */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|UGC")
+    UInputAction* ToggleEditorAction;
+
+    virtual void SetupInputComponent() override;
+    void HandleToggleEditorInput();
+
 protected:
     /** UGC 原子操作组件 */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UGC")
     UUGCFunctionBridge* UGCBridge;
 
-    /** Claude API HTTP 客户端组件 */
+    /** Claude/DeepSeek API HTTP 客户端组件 */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UGC")
     UUGCHttpClient* UGCHttpClient;
+
+    /** 编辑器射线/生成/高亮原子操作组件 */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UGC")
+    UUGCEditorBridge* EditorBridge;
 };

@@ -8,11 +8,12 @@
     - 提供 SendToLLM(message, callback) 快捷接口供 UI 调用
 ]]
 
-local Base         = require("Gameplay.PlayerController")
 local UGCRegistry  = require("Gameplay.UGC.UGCFunctionRegistry")
 local LLMGateway   = require("Gameplay.UGC.LLMGateway")
+local EditorCore   = require("Gameplay.UGC.UGCEditorCore")
 
-local M = UnLua.Class(Base)
+local M = UnLua.Class("Gameplay.PlayerController")
+local Base = require("Gameplay.PlayerController")
 
 --============================================================
 -- 生命周期
@@ -25,8 +26,24 @@ function M:ReceiveBeginPlay()
     -- 初始化 UGC 层
     UGCRegistry:Init(self)
     LLMGateway:Init(self)
+    EditorCore:Init(self)
 
     print("[UGCPlayerController] UGC 层初始化完成")
+end
+
+-- F2 切换编辑器（由 BP_UGCPlayerController 绑定 IA_ToggleEditor 调用）
+function M:ToggleEditor()
+    EditorCore:ToggleEditMode()
+end
+
+-- ESC 在编辑模式下取消放置
+function M:HandlePauseMenuInput()
+    if EditorCore:GetState() == "Edit" then
+        EditorCore:CancelPrefab()
+        return
+    end
+    -- 不在编辑模式，走基类暂停菜单逻辑
+    Base.HandlePauseMenuInput(self)
 end
 
 --============================================================

@@ -3,9 +3,32 @@
 #include "UGCPlayerController.h"
 #include "UGCFunctionBridge.h"
 #include "UGCHttpClient.h"
+#include "UGCEditorBridge.h"
+#include "EnhancedInputComponent.h"
+#include "InputAction.h"
 
 AUGCPlayerController::AUGCPlayerController()
 {
-    UGCBridge = CreateDefaultSubobject<UUGCFunctionBridge>(TEXT("UGCFunctionBridge"));
+    UGCBridge     = CreateDefaultSubobject<UUGCFunctionBridge>(TEXT("UGCFunctionBridge"));
     UGCHttpClient = CreateDefaultSubobject<UUGCHttpClient>(TEXT("UGCHttpClient"));
+    EditorBridge  = CreateDefaultSubobject<UUGCEditorBridge>(TEXT("UGCEditorBridge"));
+}
+
+void AUGCPlayerController::SetupInputComponent()
+{
+    Super::SetupInputComponent();
+
+    if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
+    {
+        if (ToggleEditorAction)
+        {
+            EIC->BindAction(ToggleEditorAction, ETriggerEvent::Started, this,
+                &AUGCPlayerController::HandleToggleEditorInput);
+        }
+    }
+}
+
+void AUGCPlayerController::HandleToggleEditorInput()
+{
+    ToggleEditor();
 }
