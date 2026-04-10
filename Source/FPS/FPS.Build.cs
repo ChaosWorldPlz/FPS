@@ -22,7 +22,9 @@ public class FPS : ModuleRules
 			"GameplayTasks",
 			"Niagara",
 			"AIModule",
-			"UnLua"
+			"UnLua",
+			"HTTP",
+			"Json"
 		});
 	}
 }

@@ -1,0 +1,10 @@
+[
+  { "id": "Box",           "label": "方块",   "category": "几何体"   },
+  { "id": "Sphere",        "label": "球体",   "category": "几何体"   },
+  { "id": "Cylinder",      "label": "圆柱",   "category": "几何体"   },
+  { "id": "Ramp",          "label": "斜坡",   "category": "几何体"   },
+  { "id": "SpawnPoint",    "label": "出生点", "category": "关卡功能" },
+  { "id": "Extraction",    "label": "撤离点", "category": "关卡功能" },
+  { "id": "TriggerZone",   "label": "触发区", "category": "关卡功能" },
+  { "id": "WeaponSpawn",   "label": "武器生成","category": "武器道具" }
+]

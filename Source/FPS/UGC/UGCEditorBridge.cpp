@@ -5,6 +5,9 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/PrimitiveComponent.h"
 #include "CollisionQueryParams.h"
+#include "HAL/FileManager.h"
+#include "DrawDebugHelpers.h"
+#include "InputCoreTypes.h"
 
 UUGCEditorBridge::UUGCEditorBridge()
 {
@@ -96,7 +99,166 @@ void UUGCEditorBridge::SetActorTransform(AActor* Actor, const FTransform& NewTra
     Actor->SetActorTransform(NewTransform);
 }
 
+void UUGCEditorBridge::SetActorTranslucencySortPriority(AActor* Actor, int32 Priority)
+{
+    if (!Actor || !IsValid(Actor)) return;
+
+    TArray<UPrimitiveComponent*> Prims;
+    Actor->GetComponents<UPrimitiveComponent>(Prims);
+    for (UPrimitiveComponent* Prim : Prims)
+    {
+        if (!Prim) continue;
+        Prim->TranslucencySortPriority = Priority;
+        Prim->MarkRenderStateDirty();
+    }
+}
+
+void UUGCEditorBridge::SetActorDepthPriorityForeground(AActor* Actor, bool bForeground)
+{
+    if (!Actor || !IsValid(Actor)) return;
+
+    TArray<UPrimitiveComponent*> Prims;
+    Actor->GetComponents<UPrimitiveComponent>(Prims);
+    for (UPrimitiveComponent* Prim : Prims)
+    {
+        if (!Prim) continue;
+        Prim->SetDepthPriorityGroup(bForeground ? SDPG_Foreground : SDPG_World);
+        Prim->MarkRenderStateDirty();
+    }
+}
+
+float UUGCEditorBridge::GetActorLocalBoundsMinZ(AActor* Actor) const
+{
+    if (!Actor || !IsValid(Actor)) return 0.f;
+
+    const FBox LocalBounds = Actor->CalculateComponentsBoundingBoxInLocalSpace();
+    return LocalBounds.Min.Z;
+}
+
+FVector UUGCEditorBridge::LineTraceScreenPosition(float ScreenX, float ScreenY, AActor* ActorToIgnore)
+{
+    APlayerController* PC = GetPC();
+    if (!PC) return FVector::ZeroVector;
+
+    FVector WorldPos, WorldDir;
+    if (!PC->DeprojectScreenPositionToWorld(ScreenX, ScreenY, WorldPos, WorldDir))
+        return FVector::ZeroVector;
+
+    FVector Start = WorldPos;
+    FVector End   = WorldPos + WorldDir * 50000.f;
+
+    FHitResult Hit;
+    FCollisionQueryParams QueryParams;
+    QueryParams.AddIgnoredActor(PC->GetPawn());
+    if (ActorToIgnore && IsValid(ActorToIgnore))
+    {
+        QueryParams.AddIgnoredActor(ActorToIgnore);
+    }
+
+    bool bHit = GetWorld()->LineTraceSingleByChannel(
+        Hit, Start, End,
+        ECollisionChannel::ECC_Visibility,
+        QueryParams
+    );
+
+    return bHit ? Hit.ImpactPoint : FVector::ZeroVector;
+}
+
+FVector UUGCEditorBridge::LineTraceScreenPositionMulti(float ScreenX, float ScreenY, const TArray<AActor*>& ActorsToIgnore)
+{
+    APlayerController* PC = GetPC();
+    if (!PC) return FVector::ZeroVector;
+
+    FVector WorldPos, WorldDir;
+    if (!PC->DeprojectScreenPositionToWorld(ScreenX, ScreenY, WorldPos, WorldDir))
+        return FVector::ZeroVector;
+
+    FVector Start = WorldPos;
+    FVector End   = WorldPos + WorldDir * 50000.f;
+
+    FHitResult Hit;
+    FCollisionQueryParams QueryParams;
+    QueryParams.AddIgnoredActor(PC->GetPawn());
+    for (AActor* A : ActorsToIgnore)
+    {
+        if (A && IsValid(A))
+            QueryParams.AddIgnoredActor(A);
+    }
+
+    bool bHit = GetWorld()->LineTraceSingleByChannel(
+        Hit, Start, End,
+        ECollisionChannel::ECC_Visibility,
+        QueryParams
+    );
+
+    return bHit ? Hit.ImpactPoint : FVector::ZeroVector;
+}
+
 APlayerController* UUGCEditorBridge::GetPC() const
 {
     return Cast<APlayerController>(GetOwner());
 }
+
+TArray<FString> UUGCEditorBridge::FindFilesInDirectory(const FString& Directory, const FString& WildCard)
+{
+    TArray<FString> Result;
+    IFileManager::Get().FindFilesRecursive(Result, *Directory, *WildCard, /*Files=*/true, /*Dirs=*/false);
+    return Result;
+}
+
+void UUGCEditorBridge::DrawActorAxes(AActor* Actor, float AxisLength)
+{
+    if (!Actor || !IsValid(Actor)) return;
+    UWorld* World = GetWorld();
+    if (!World) return;
+
+    const FVector Origin    = Actor->GetActorLocation();
+    const FTransform TForm  = Actor->GetActorTransform();
+    const float ArrowSize   = AxisLength * 0.2f;
+
+    // X 轴 — 红色
+    DrawDebugDirectionalArrow(World,
+        Origin,
+        Origin + TForm.GetUnitAxis(EAxis::X) * AxisLength,
+        ArrowSize, FColor::Red,
+        /*bPersistentLines=*/true, /*LifeTime=*/-1.f, /*DepthPriority=*/0, /*Thickness=*/2.0f);
+
+    // Y 轴 — 绿色
+    DrawDebugDirectionalArrow(World,
+        Origin,
+        Origin + TForm.GetUnitAxis(EAxis::Y) * AxisLength,
+        ArrowSize, FColor::Green,
+        /*bPersistentLines=*/true, /*LifeTime=*/-1.f, /*DepthPriority=*/0, /*Thickness=*/2.0f);
+
+    // Z 轴 — 蓝色
+    DrawDebugDirectionalArrow(World,
+        Origin,
+        Origin + TForm.GetUnitAxis(EAxis::Z) * AxisLength,
+        ArrowSize, FColor::Blue,
+        /*bPersistentLines=*/true, /*LifeTime=*/-1.f, /*DepthPriority=*/0, /*Thickness=*/2.0f);
+}
+
+bool UUGCEditorBridge::IsMouseButtonDown()
+{
+    APlayerController* PC = GetPC();
+    if (!PC) return false;
+    return PC->IsInputKeyDown(EKeys::LeftMouseButton);
+}
+
+bool UUGCEditorBridge::IsEscapeDown()
+{
+    APlayerController* PC = GetPC();
+    if (!PC) return false;
+    return PC->IsInputKeyDown(EKeys::Escape);
+}
+
+void UUGCEditorBridge::ClearDebugAxes()
+{
+    UWorld* World = GetWorld();
+    if (World)
+    {
+        // 清除所有持久调试线（坐标轴箭头）
+        FlushPersistentDebugLines(World);
+    }
+}
+

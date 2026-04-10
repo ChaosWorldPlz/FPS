@@ -8,6 +8,7 @@
     - 提供 SendToLLM(message, callback) 快捷接口供 UI 调用
 ]]
 
+local UIManager    = require("Gameplay.Core.UIManager")
 local UGCRegistry  = require("Gameplay.UGC.UGCFunctionRegistry")
 local LLMGateway   = require("Gameplay.UGC.LLMGateway")
 local EditorCore   = require("Gameplay.UGC.UGCEditorCore")
@@ -31,19 +32,68 @@ function M:ReceiveBeginPlay()
     print("[UGCPlayerController] UGC 层初始化完成")
 end
 
--- F2 切换编辑器（由 BP_UGCPlayerController 绑定 IA_ToggleEditor 调用）
+-- F9 切换编辑器
 function M:ToggleEditor()
     EditorCore:ToggleEditMode()
 end
 
--- ESC 在编辑模式下取消放置
-function M:HandlePauseMenuInput()
-    if EditorCore:GetState() == "Edit" then
-        EditorCore:CancelPrefab()
+-- 编辑模式鼠标左键点击
+function M:EditorClick()
+    if EditorCore:GetState() ~= "Edit" then return end
+
+    -- 获取当前鼠标屏幕坐标
+    local ok, x, y = self:GetMousePosition()
+    if not ok then return end
+
+    EditorCore:OnViewportClick(x, y)
+    -- Transform 面板刷新由 EditorCore:OnSelectionChanged 回调驱动
+end
+
+-- 鼠标上一帧状态（用于检测按下/松开的边沿）
+local _prevMouseDown = false
+-- ESC 上一帧状态（用于检测按下边沿，避免持续触发）
+local _prevEscDown = false
+
+-- Tick：编辑模式下驱动 Ghost 跟随 / 选中 Actor 拖拽
+function M:ReceiveTick(deltaTime)
+    if EditorCore:GetState() ~= "Edit" then return end
+    local ok, x, y = self:GetMousePosition()
+    if not ok then return end
+
+    if EditorCore:GetPendingPrefab() then
+        -- ESC 取消放置：与鼠标按键轮询同一套机制
+        local escDown = EditorCore:IsEscapeDown()
+        if escDown and not _prevEscDown then
+            EditorCore:CancelPrefab()
+        end
+        _prevEscDown = escDown
+
+        if EditorCore:GetPendingPrefab() then
+            -- 取消后 pending 已清空，跳过 ghost 更新；未取消则继续跟随鼠标
+            EditorCore:UpdateGhostPosition(x, y)
+        end
+        -- 持续同步鼠标状态，避免退出放置模式后 _prevMouseDown 残留旧值误触 BeginDrag
+        _prevMouseDown = EditorCore:IsMouseDown()
         return
     end
-    -- 不在编辑模式，走基类暂停菜单逻辑
-    Base.HandlePauseMenuInput(self)
+
+    _prevEscDown = false   -- 不在放置模式时重置，防止进入放置模式时误判边沿
+
+    -- 拖拽移动已选中 Actor：追踪鼠标按下/持续/松开
+    local mouseDown = EditorCore:IsMouseDown()
+    if mouseDown and not _prevMouseDown then
+        EditorCore:BeginDrag(x, y)
+    elseif not mouseDown and _prevMouseDown then
+        EditorCore:EndDrag()
+    elseif mouseDown then
+        EditorCore:OnDragUpdate(x, y)
+    end
+    _prevMouseDown = mouseDown
+
+    -- 无鼠标按下时，根据相机距离实时刷新 Gizmo 缩放，保持屏幕视觉大小一致
+    if not mouseDown and EditorCore:GetSelectedID() then
+        EditorCore:UpdateGizmoScale()
+    end
 end
 
 --============================================================

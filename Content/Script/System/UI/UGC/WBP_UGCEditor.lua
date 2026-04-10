@@ -27,31 +27,76 @@ local PrefabRegistry  = require("Gameplay.UGC.UGCPrefabRegistry")
 
 local M = UnLua.Class()
 
+local function Log(msg)
+    print("[WBP_UGCEditor] " .. tostring(msg))
+end
+
+local function Warn(msg)
+    print("[WBP_UGCEditor][Warn] " .. tostring(msg))
+end
+
+local function bindButton(self, widgetName, handler)
+    local widget = self[widgetName]
+    if not widget then
+        Warn("缺少按钮控件: " .. widgetName .. "（请检查蓝图命名和 Is Variable）")
+        return false
+    end
+    if not widget.OnClicked then
+        Warn("按钮控件没有 OnClicked: " .. widgetName)
+        return false
+    end
+    widget.OnClicked:Add(self, handler)
+    return true
+end
+
+local function bindTextCommit(self, widgetName)
+    local widget = self[widgetName]
+    if not widget then
+        Warn("缺少输入框控件: " .. widgetName .. "（请检查蓝图命名和 Is Variable）")
+        return false
+    end
+    if not widget.OnTextCommitted then
+        Warn("输入框控件没有 OnTextCommitted: " .. widgetName)
+        return false
+    end
+    widget.OnTextCommitted:Add(self, M.OnTransformCommit)
+    return true
+end
+
 --============================================================
 -- 生命周期
 --============================================================
 
 function M:Construct()
-    -- 绑定底栏按钮
-    self.w_btn_Play.OnClicked:Add(self, M.OnClickPlay)
-    self.w_btn_Save.OnClicked:Add(self, M.OnClickSave)
-    self.w_btn_Load.OnClicked:Add(self, M.OnClickLoad)
-    self.w_btn_Clear.OnClicked:Add(self, M.OnClickClear)
-    self.w_btn_Delete.OnClicked:Add(self, M.OnClickDelete)
-    self.w_btn_Undo.OnClicked:Add(self, M.OnClickUndo)
+    local missingCount = 0
 
-    -- 绑定 Transform 输入框（失去焦点时提交）
-    self.w_input_X.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_Y.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_Z.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_P.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_Yaw.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_R.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_SX.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_SY.OnTextCommitted:Add(self, M.OnTransformCommit)
-    self.w_input_SZ.OnTextCommitted:Add(self, M.OnTransformCommit)
+    for _, pair in ipairs({
+        { "w_btn_Play",   M.OnClickPlay },
+        { "w_btn_Save",   M.OnClickSave },
+        { "w_btn_Load",   M.OnClickLoad },
+        { "w_btn_Clear",  M.OnClickClear },
+        { "w_btn_Delete", M.OnClickDelete },
+        { "w_btn_Undo",   M.OnClickUndo },
+    }) do
+        if not bindButton(self, pair[1], pair[2]) then
+            missingCount = missingCount + 1
+        end
+    end
 
-    -- 动态生成预制体按钮列表
+    for _, widgetName in ipairs({
+        "w_input_X", "w_input_Y", "w_input_Z",
+        "w_input_P", "w_input_Yaw", "w_input_R",
+        "w_input_SX", "w_input_SY", "w_input_SZ",
+    }) do
+        if not bindTextCommit(self, widgetName) then
+            missingCount = missingCount + 1
+        end
+    end
+
+    if missingCount > 0 then
+        Warn("Construct: 共发现 " .. tostring(missingCount) .. " 个控件未正确绑定")
+    end
+
     self:BuildPrefabList()
 
     -- 监听状态变化（刷新试玩按钮文字）
@@ -59,39 +104,128 @@ function M:Construct()
         self:RefreshPlayButton(state)
     end)
 
+    -- 监听选中变化（刷新 Transform 面板）
+    EditorCore:OnSelectionChanged(function(sceneID)
+        if sceneID then
+            self:RefreshTransformInputs()
+        else
+            self:ClearTransformInputs()
+        end
+    end)
+
     self:SetStatus("就绪 — 点击预制体开始放置")
-    print("[WBP_UGCEditor] UI 构建完成")
+
+    -- 初始化网格对齐 UI（控件可选，不存在时只打 Warn 不报错）
+    self:BuildSnapUI()
+
+
+    Log("UI 构建完成")
 end
 
 --============================================================
 -- 预制体列表（动态生成按钮）
 --============================================================
 
+--- 重建预制体列表（AddCustomPrefab 后调用刷新 UI）
+function M:RebuildPrefabList()
+    if not self.w_panel_Prefabs then
+        Warn("RebuildPrefabList: 找不到 w_panel_Prefabs")
+        return
+    end
+    self.w_panel_Prefabs:ClearChildren()
+    self:BuildPrefabList()
+end
+
+local BTN_CLASS_PATH = "/Game/_UGC/UI/WBP_UGCPrefabBtn.WBP_UGCPrefabBtn_C"
+local _btnClass = nil
+
+local function getBtnClass()
+    if not _btnClass then
+        _btnClass = UE.UClass.Load(BTN_CLASS_PATH)
+        if not _btnClass then
+            Warn("找不到 WBP_UGCPrefabBtn，路径: " .. BTN_CLASS_PATH)
+        end
+    end
+    return _btnClass
+end
+
 function M:BuildPrefabList()
-    -- w_panel_Prefabs 是一个 VerticalBox
-    -- 每个分类加一个 SectionHeader + 若干 Button
-    for _, category in ipairs(PrefabRegistry.Categories) do
-        -- 分类标题（Text Block）
-        local header = self:CreateWidget("WBP_UGCPrefabHeader")
+    if not self.w_panel_Prefabs then
+        Warn("BuildPrefabList: 找不到 w_panel_Prefabs，请检查蓝图是否勾选 Is Variable")
+        self:SetStatus("预制体面板未绑定")
+        return
+    end
+
+    local cats = PrefabRegistry.Categories or {}
+    Log(string.format("BuildPrefabList: %d 个分类", #cats))
+
+    if #cats == 0 then
+        Warn("当前没有可用预制体，请检查 Placeables 目录、manifest 或注册表日志")
+        self:SetStatus("未找到预制体")
+        return
+    end
+
+    local pc = self:GetOwningPlayer()
+    if not pc then
+        Warn("BuildPrefabList: GetOwningPlayer 返回 nil")
+        self:SetStatus("无法获取 OwningPlayer")
+        return
+    end
+
+    local btnClass = getBtnClass()
+    if not btnClass then
+        self:SetStatus("列表项蓝图丢失")
+        return
+    end
+
+    local addedCount = 0
+
+    for _, category in ipairs(cats) do
+        local header = UE.UWidgetBlueprintLibrary.Create(pc, btnClass, pc)
         if header then
-            header:SetText(category.name)
+            if header.w_label then
+                header.w_label:SetText("── " .. category.name .. " ──")
+            else
+                Warn("分类按钮缺少 w_label: " .. tostring(category.name))
+            end
+            if header.w_btn then
+                header.w_btn:SetIsEnabled(false)
+            else
+                Warn("分类按钮缺少 w_btn: " .. tostring(category.name))
+            end
             self.w_panel_Prefabs:AddChild(header)
+        else
+            Warn("创建分类标题失败: " .. tostring(category.name))
         end
 
-        for _, item in ipairs(category.items) do
-            -- 预制体按钮
-            local btn = self:CreateWidget("WBP_UGCPrefabBtn")
+        for _, item in ipairs(category.items or {}) do
+            local btn = UE.UWidgetBlueprintLibrary.Create(pc, btnClass, pc)
             if btn then
-                btn:SetLabel(item.label)
-                -- 通过闭包绑定点击
+                if btn.w_label then
+                    btn.w_label:SetText(item.label)
+                else
+                    Warn("预制体按钮缺少 w_label: " .. tostring(item.id))
+                end
+
                 local prefabID = item.id
-                btn.w_btn.OnClicked:Add(self, function()
-                    self:OnClickPrefab(prefabID)
-                end)
+                if btn.w_btn and btn.w_btn.OnPressed then
+                    btn.w_btn.OnPressed:Add(self, function()
+                        self:OnClickPrefab(prefabID)
+                    end)
+                else
+                    Warn("预制体按钮缺少 w_btn 或 OnPressed: " .. tostring(item.id))
+                end
+
                 self.w_panel_Prefabs:AddChild(btn)
+                addedCount = addedCount + 1
+                Log("添加: " .. tostring(item.id))
+            else
+                Warn("创建预制体按钮失败: " .. tostring(item.id))
             end
         end
     end
+
+    Log(string.format("BuildPrefabList 完成，共添加 %d 个预制体按钮", addedCount))
 end
 
 --============================================================
@@ -115,21 +249,19 @@ end
 
 function M:OnClickSave()
     local json = EditorCore:SaveSceneJSON()
-    -- 暂时写到本地（之后对接 FastAPI）
-    -- 用 UnLua 的 io.open 写文件（编辑器模式下可用）
     local path = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/scene_latest.json"
     local dir  = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
-    -- 确保目录存在（通过引擎接口）
-    UE.UKismetSystemLibrary.MakeDirectory(dir)
+    -- MakeDirectory 在部分 UE 版本可能不存在，pcall 保护；io.open 失败时下方已有错误处理
+    pcall(function() UE.UKismetSystemLibrary.MakeDirectory(dir) end)
     local f = io.open(path, "w")
     if f then
         f:write(json)
         f:close()
         self:SetStatus("场景已保存 → " .. path)
-        print("[WBP_UGCEditor] 保存成功: " .. path)
+        Log("保存成功: " .. path)
     else
         self:SetStatus("保存失败（文件写入错误）")
-        print("[WBP_UGCEditor] 保存失败")
+        Warn("保存失败")
     end
 end
 
@@ -143,7 +275,7 @@ function M:OnClickLoad()
         self:SetStatus("场景已加载 — " .. tostring(EditorCore:GetSelectedID() or "无选中"))
     else
         self:SetStatus("加载失败（找不到保存文件）")
-        print("[WBP_UGCEditor] 找不到保存文件: " .. path)
+        Warn("找不到保存文件: " .. path)
     end
 end
 
@@ -170,8 +302,8 @@ end
 --============================================================
 
 function M:OnTransformCommit(text, commitType)
-    -- 任意输入框提交后，读取全部 9 个值并应用
     local function readFloat(widget)
+        if not widget then return 0 end
         local t = widget:GetText()
         return tonumber(tostring(t)) or 0
     end
@@ -191,36 +323,40 @@ end
 
 function M:RefreshTransformInputs()
     local x,y,z, p,yaw,r, sx,sy,sz = EditorCore:GetSelectedTransformValues()
-    local function setVal(widget, v)
-        widget:SetText(string.format("%.1f", v))
+    local function setVal(widget, v, widgetName)
+        if widget then
+            widget:SetText(string.format("%.1f", v))
+        elseif widgetName then
+            Warn("RefreshTransformInputs: 缺少控件 " .. widgetName)
+        end
     end
-    setVal(self.w_input_X,   x)
-    setVal(self.w_input_Y,   y)
-    setVal(self.w_input_Z,   z)
-    setVal(self.w_input_P,   p)
-    setVal(self.w_input_Yaw, yaw)
-    setVal(self.w_input_R,   r)
-    setVal(self.w_input_SX,  sx)
-    setVal(self.w_input_SY,  sy)
-    setVal(self.w_input_SZ,  sz)
+    setVal(self.w_input_X,   x,   "w_input_X")
+    setVal(self.w_input_Y,   y,   "w_input_Y")
+    setVal(self.w_input_Z,   z,   "w_input_Z")
+    setVal(self.w_input_P,   p,   "w_input_P")
+    setVal(self.w_input_Yaw, yaw, "w_input_Yaw")
+    setVal(self.w_input_R,   r,   "w_input_R")
+    setVal(self.w_input_SX,  sx,  "w_input_SX")
+    setVal(self.w_input_SY,  sy,  "w_input_SY")
+    setVal(self.w_input_SZ,  sz,  "w_input_SZ")
 end
 
 function M:ClearTransformInputs()
     for _, name in ipairs({"w_input_X","w_input_Y","w_input_Z","w_input_P","w_input_Yaw","w_input_R","w_input_SX","w_input_SY","w_input_SZ"}) do
-        self[name]:SetText("")
+        if self[name] then
+            self[name]:SetText("")
+        end
     end
 end
 
 --============================================================
 -- 视口点击转发（WBP 的 OnMouseButtonDown 事件绑定到这里）
+-- 注意：点击逻辑已由 IA_EditorClick → UGCPlayerController:EditorClick() 统一处理，
+--       此处仅返回 Handled 消费掉 Slate 事件，不重复调用 OnViewportClick，
+--       避免双重触发（InputAction + Widget 各一次）。
 --============================================================
 
 function M:OnViewportMouseDown(geometry, pointerEvent)
-    local pos = pointerEvent:GetScreenSpacePosition()
-    EditorCore:OnViewportClick(pos.X, pos.Y)
-    -- 点击后刷新 Transform 面板
-    self:RefreshTransformInputs()
-    -- 返回 Handled，阻止事件继续传递
     return UE.UWidgetBlueprintLibrary.Handled()
 end
 
@@ -231,15 +367,70 @@ end
 function M:SetStatus(msg)
     if self.w_text_Status then
         self.w_text_Status:SetText(msg)
+    else
+        Warn("缺少状态文本控件 w_text_Status，消息: " .. tostring(msg))
     end
 end
+
+--============================================================
+-- 网格对齐 UI（控件可选：w_btn_SnapToggle / w_combo_SnapSize）
+--============================================================
+
+function M:BuildSnapUI()
+    -- Snap 开关按钮
+    local btnSnap = self.w_btn_SnapToggle
+    if btnSnap then
+        -- 设置初始文字
+        local textBlock = btnSnap:GetChildAt(0)
+        if textBlock then
+            textBlock:SetText("Snap: ON")
+        end
+        -- 绑定点击事件
+        bindButton(self, "w_btn_SnapToggle", function()
+            local enabled = not EditorCore:GetSnapEnabled()
+            EditorCore:SetSnapEnabled(enabled)
+            -- 刷新按钮文字
+            local tb = self.w_btn_SnapToggle:GetChildAt(0)
+            if tb then
+                tb:SetText(enabled and "Snap: ON" or "Snap: OFF")
+            end
+        end)
+    else
+        Warn("BuildSnapUI: 未找到 w_btn_SnapToggle（可在蓝图中添加以启用 Snap 切换按钮）")
+    end
+
+    -- 网格尺度下拉框
+    local combo = self.w_combo_SnapSize
+    if combo then
+        -- 添加尺度选项
+        for _, v in ipairs({ "5", "25", "50", "100", "200" }) do
+            combo:AddOption(v)
+        end
+        -- 默认选中 50
+        combo:SetSelectedOption("50")
+        -- 绑定选项变化事件
+        combo.OnSelectionChanged:Add(self, function(val, selType)
+            local size = tonumber(val)
+            if size then
+                EditorCore:SetSnapSize(size)
+                Log("网格尺度设置为: " .. tostring(size))
+            end
+        end)
+    else
+        Warn("BuildSnapUI: 未找到 w_combo_SnapSize（可在蓝图中添加以启用尺度选择下拉框）")
+    end
+end
+
 
 function M:RefreshPlayButton(state)
     if self.w_btn_Play then
         local label = (state == "Edit") and "▶ 试玩" or "✎ 返回编辑"
-        -- Button 的子 Text Block 通常叫 ButtonText
         local textBlock = self.w_btn_Play:GetChildAt(0)
-        if textBlock then textBlock:SetText(label) end
+        if textBlock then
+            textBlock:SetText(label)
+        else
+            Warn("试玩按钮缺少子文本控件")
+        end
     end
 end
 

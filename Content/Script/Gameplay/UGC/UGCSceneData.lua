@@ -78,10 +78,15 @@ function SceneData:CreateActor(prefabName, location, rotation)
     end
 
     local path = PrefabRegistry.GetPath(prefabName)
+    if not path then
+        print("[UGCSceneData] CreateActor: 预制体没有可用路径 " .. tostring(prefabName))
+        return nil, nil
+    end
+
     local rot  = rotation or UE.FRotator(0, 0, 0)
     local actor = _bridge:SpawnPlaceable(path, location, rot)
     if not actor then
-        print("[UGCSceneData] CreateActor: Spawn 失败")
+        print("[UGCSceneData] CreateActor: Spawn 失败 prefab=" .. tostring(prefabName) .. " path=" .. tostring(path))
         return nil, nil
     end
 
@@ -197,8 +202,7 @@ function SceneData:Undo()
     elseif record.op == "Delete" then
         -- 撤销删除 = 重新 Spawn
         local path = PrefabRegistry.GetPath(record.prefabName)
-        local loc  = record.transform:GetLocation()
-        local rot  = record.transform:Rotator()
+        local loc, rot, _ = UE.UKismetMathLibrary.BreakTransform(record.transform)
         local actor = _bridge:SpawnPlaceable(path, loc, rot)
         if actor then
             _bridge:SetActorTransform(actor, record.transform)
@@ -256,8 +260,8 @@ end
 
 --============================================================
 -- JSON 序列化
--- 输出格式：{"version":1,"actors":[{"id":1,"prefab":"Box","t":[x,y,z,px,py,pz,sx,sy,sz]},...]}
--- Transform 编码：[qx,qy,qz,qw, px,py,pz, sx,sy,sz]
+-- 输出格式：{"version":2,"actors":[{"id":1,"prefab":"Box","t":[px,py,pz,pitch,yaw,roll,sx,sy,sz]},...]}
+-- Transform 编码（9值）：位置 XYZ + 欧拉角 PYR + 缩放 XYZ
 --============================================================
 
 function SceneData:SerializeToJSON()
@@ -265,17 +269,16 @@ function SceneData:SerializeToJSON()
 
     for sceneID, entry in pairs(_actors) do
         if entry.actor and UE.UKismetSystemLibrary.IsValid(entry.actor) then
-            local t   = _bridge:GetActorTransform(entry.actor)
-            local loc = t:GetLocation()
-            local rot = t:GetRotation()  -- FQuat
-            local scl = t:GetScale3D()
+            local t             = _bridge:GetActorTransform(entry.actor)
+            -- FTransform 在 UnLua 不暴露成员方法，用 BreakTransform
+            local loc, rot, scl = UE.UKismetMathLibrary.BreakTransform(t)
 
             table.insert(actorParts, string.format(
-                '{"id":%d,"prefab":"%s","t":[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]}',
+                '{"id":%d,"prefab":"%s","t":[%f,%f,%f,%f,%f,%f,%f,%f,%f]}',
                 sceneID,
                 entry.prefabName,
-                rot.X, rot.Y, rot.Z, rot.W,
                 loc.X, loc.Y, loc.Z,
+                rot.Pitch, rot.Yaw, rot.Roll,
                 scl.X, scl.Y, scl.Z
             ))
         end
@@ -297,27 +300,26 @@ function SceneData:DeserializeFromJSON(json)
     if nextID then _nextID = tonumber(nextID) end
 
     -- 逐条解析 actor 记录
-    -- 格式：{"id":N,"prefab":"Name","t":[10 个数字]}
+    -- 格式（v2）：{"id":N,"prefab":"Name","t":[9 个数字：px,py,pz,pitch,yaw,roll,sx,sy,sz]}
     for idStr, prefab, tData in json:gmatch('"id"%s*:%s*(%d+)%s*,%s*"prefab"%s*:%s*"([^"]+)"%s*,%s*"t"%s*:%s*%[([^%]]+)%]') do
         local sceneID = tonumber(idStr)
         local nums = {}
         for n in tData:gmatch("(%-?%d+%.?%d*e?[%+%-]?%d*)") do
             table.insert(nums, tonumber(n))
         end
-        if #nums == 10 then
-            local qx,qy,qz,qw = nums[1],nums[2],nums[3],nums[4]
-            local px,py,pz    = nums[5],nums[6],nums[7]
-            local sx,sy,sz    = nums[8],nums[9],nums[10]
+        if #nums == 9 then
+            local px,py,pz          = nums[1],nums[2],nums[3]
+            local pitch,yaw,roll    = nums[4],nums[5],nums[6]
+            local sx,sy,sz          = nums[7],nums[8],nums[9]
 
-            local loc = UE.FVector(px, py, pz)
-            local rot = UE.FQuat(qx, qy, qz, qw)
-            local scl = UE.FVector(sx, sy, sz)
-            local transform = UE.FTransform(rot, loc, scl)
+            local loc       = UE.FVector(px, py, pz)
+            local rot       = UE.FRotator(pitch, yaw, roll)
+            local scl       = UE.FVector(sx, sy, sz)
+            local transform = UE.UKismetMathLibrary.MakeTransform(loc, rot, scl)
 
             local path = PrefabRegistry.GetPath(prefab)
             if path then
-                local rotator = transform:Rotator()
-                local actor = _bridge:SpawnPlaceable(path, loc, rotator)
+                local actor = _bridge:SpawnPlaceable(path, loc, rot)
                 if actor then
                     _bridge:SetActorTransform(actor, transform)
                     _actors[sceneID] = {

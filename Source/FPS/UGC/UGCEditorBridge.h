@@ -51,6 +51,15 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
     AActor* LineTraceScreen(float ScreenX, float ScreenY);
 
+    /** 同 LineTraceScreen，但返回命中的世界坐标（未命中返回 ZeroVector）
+     *  ActorToIgnore：额外忽略的 Actor（如 Ghost 预览体），传 nullptr 不忽略 */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    FVector LineTraceScreenPosition(float ScreenX, float ScreenY, AActor* ActorToIgnore);
+
+    /** 同 LineTraceScreenPosition，但可忽略多个 Actor（用于拖拽时同时排除 Actor 本身和 Gizmo 箭头） */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    FVector LineTraceScreenPositionMulti(float ScreenX, float ScreenY, const TArray<AActor*>& ActorsToIgnore);
+
     /**
      * 设置 Actor 的选中高亮（描边）
      * @param Actor   目标 Actor
@@ -70,6 +79,52 @@ public:
      */
     UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
     void SetActorTransform(AActor* Actor, const FTransform& NewTransform);
+
+    /**
+     * 设置 Actor 下所有 PrimitiveComponent 的 Translucency Sort Priority。
+     * 主要用于让 Gizmo 这类半透明编辑器控件拥有更高的渲染排序。
+     */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    void SetActorTranslucencySortPriority(AActor* Actor, int32 Priority);
+
+    /**
+     * 设置 Actor 下所有 PrimitiveComponent 的深度优先级组。
+     * bForeground=true 时会尝试以前景层绘制，减少被场景几何遮挡。
+     */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    void SetActorDepthPriorityForeground(AActor* Actor, bool bForeground);
+
+    /**
+     * 读取 Actor 本地包围盒的最小 Z。
+     * 用于像 Gizmo 这类“默认沿本地 +Z 朝前”的资产，计算根部到 Actor 原点的真实偏移。
+     */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    float GetActorLocalBoundsMinZ(AActor* Actor) const;
+
+    /**
+     * 枚举目录下匹配通配符的文件，返回完整绝对路径数组
+     * 仅在 PIE/Development 模式下可用（打包后 .uasset 在 pak 内不可见）
+     * Directory 示例：FPaths::ProjectContentDir() + "_UGC/Placeables/"
+     * WildCard  示例："*.uasset"
+     */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    TArray<FString> FindFilesInDirectory(const FString& Directory, const FString& WildCard);
+
+    /** 在 Actor 位置绘制持久调试坐标轴（X=红 Y=绿 Z=蓝） */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    void DrawActorAxes(AActor* Actor, float AxisLength);
+
+    /** 清除之前绘制的调试坐标轴 */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    void ClearDebugAxes();
+
+    /** 检测鼠标左键当前是否处于按下状态（供 Lua 拖拽检测使用） */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    bool IsMouseButtonDown();
+
+    /** 检测 Escape 键当前是否处于按下状态（供 Lua 取消放置模式使用） */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    bool IsEscapeDown();
 
 private:
     APlayerController* GetPC() const;

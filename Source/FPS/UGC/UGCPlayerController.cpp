@@ -21,14 +21,21 @@ void AUGCPlayerController::SetupInputComponent()
     if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(InputComponent))
     {
         if (ToggleEditorAction)
-        {
             EIC->BindAction(ToggleEditorAction, ETriggerEvent::Started, this,
                 &AUGCPlayerController::HandleToggleEditorInput);
-        }
+
+        if (EditorClickAction)
+            EIC->BindAction(EditorClickAction, ETriggerEvent::Started, this,
+                &AUGCPlayerController::HandleEditorClickInput);
     }
 }
 
 void AUGCPlayerController::HandleToggleEditorInput()
 {
     ToggleEditor();
+}
+
+void AUGCPlayerController::HandleEditorClickInput()
+{
+    EditorClick();
 }
