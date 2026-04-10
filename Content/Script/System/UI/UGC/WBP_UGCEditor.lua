@@ -248,11 +248,20 @@ function M:OnClickPlay()
 end
 
 function M:OnClickSave()
-    local json = EditorCore:SaveSceneJSON()
-    local path = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/scene_latest.json"
-    local dir  = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
-    -- MakeDirectory 在部分 UE 版本可能不存在，pcall 保护；io.open 失败时下方已有错误处理
-    pcall(function() UE.UKismetSystemLibrary.MakeDirectory(dir) end)
+    local json    = EditorCore:SaveSceneJSON()
+    local bridge  = EditorCore:GetBridge()
+    local defDir  = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
+    local winDir  = defDir:gsub("/", "\\")
+    os.execute('mkdir "' .. winDir .. '" 2>NUL')
+
+    local path = bridge:ShowSaveFileDialog("保存场景", defDir, "scene_latest", "JSON 文件|*.json")
+    if not path or path == "" then
+        self:SetStatus("保存已取消")
+        return
+    end
+    -- 确保扩展名存在
+    if not path:match("%.json$") then path = path .. ".json" end
+
     local f = io.open(path, "w")
     if f then
         f:write(json)
@@ -261,21 +270,29 @@ function M:OnClickSave()
         Log("保存成功: " .. path)
     else
         self:SetStatus("保存失败（文件写入错误）")
-        Warn("保存失败")
+        Warn("保存失败，路径: " .. path)
     end
 end
 
 function M:OnClickLoad()
-    local path = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/scene_latest.json"
+    local bridge = EditorCore:GetBridge()
+    local defDir = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
+
+    local path = bridge:ShowOpenFileDialog("加载场景", defDir, "JSON 文件|*.json")
+    if not path or path == "" then
+        self:SetStatus("加载已取消")
+        return
+    end
+
     local f = io.open(path, "r")
     if f then
         local json = f:read("*a")
         f:close()
         EditorCore:LoadSceneJSON(json)
-        self:SetStatus("场景已加载 — " .. tostring(EditorCore:GetSelectedID() or "无选中"))
+        self:SetStatus("场景已加载 ← " .. path)
     else
-        self:SetStatus("加载失败（找不到保存文件）")
-        Warn("找不到保存文件: " .. path)
+        self:SetStatus("加载失败（找不到文件）")
+        Warn("找不到文件: " .. path)
     end
 end
 

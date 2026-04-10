@@ -24,7 +24,8 @@ public class FPS : ModuleRules
 			"AIModule",
 			"UnLua",
 			"HTTP",
-			"Json"
+			"Json",
+			"DesktopPlatform"
 		});
 	}
 }

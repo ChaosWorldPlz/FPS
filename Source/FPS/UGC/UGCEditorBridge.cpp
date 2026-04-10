@@ -8,6 +8,9 @@
 #include "HAL/FileManager.h"
 #include "DrawDebugHelpers.h"
 #include "InputCoreTypes.h"
+#include "DesktopPlatformModule.h"
+#include "IDesktopPlatform.h"
+#include "Framework/Application/SlateApplication.h"
 
 UUGCEditorBridge::UUGCEditorBridge()
 {
@@ -250,6 +253,36 @@ bool UUGCEditorBridge::IsEscapeDown()
     APlayerController* PC = GetPC();
     if (!PC) return false;
     return PC->IsInputKeyDown(EKeys::Escape);
+}
+
+static void* GetParentWindowHandle()
+{
+    TSharedPtr<SWindow> TopWindow = FSlateApplication::Get().GetActiveTopLevelWindow();
+    if (TopWindow.IsValid() && TopWindow->GetNativeWindow().IsValid())
+    {
+        return TopWindow->GetNativeWindow()->GetOSWindowHandle();
+    }
+    return nullptr;
+}
+
+FString UUGCEditorBridge::ShowSaveFileDialog(const FString& Title, const FString& DefaultPath, const FString& DefaultFile, const FString& FileType)
+{
+    IDesktopPlatform* DP = FDesktopPlatformModule::Get();
+    if (!DP) return TEXT("");
+
+    TArray<FString> OutFiles;
+    bool bOK = DP->SaveFileDialog(GetParentWindowHandle(), Title, DefaultPath, DefaultFile, FileType, EFileDialogFlags::None, OutFiles);
+    return (bOK && OutFiles.Num() > 0) ? OutFiles[0] : TEXT("");
+}
+
+FString UUGCEditorBridge::ShowOpenFileDialog(const FString& Title, const FString& DefaultPath, const FString& FileType)
+{
+    IDesktopPlatform* DP = FDesktopPlatformModule::Get();
+    if (!DP) return TEXT("");
+
+    TArray<FString> OutFiles;
+    bool bOK = DP->OpenFileDialog(GetParentWindowHandle(), Title, DefaultPath, TEXT(""), FileType, EFileDialogFlags::None, OutFiles);
+    return (bOK && OutFiles.Num() > 0) ? OutFiles[0] : TEXT("");
 }
 
 void UUGCEditorBridge::ClearDebugAxes()

@@ -126,6 +126,19 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
     bool IsEscapeDown();
 
+    /**
+     * 弹出系统原生「另存为」对话框，返回用户选择的完整路径；取消返回空字符串
+     * DefaultPath：初始目录；DefaultFile：默认文件名；FileType 示例："JSON 文件|*.json"
+     */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    FString ShowSaveFileDialog(const FString& Title, const FString& DefaultPath, const FString& DefaultFile, const FString& FileType);
+
+    /**
+     * 弹出系统原生「打开文件」对话框，返回用户选择的完整路径；取消返回空字符串
+     */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Editor")
+    FString ShowOpenFileDialog(const FString& Title, const FString& DefaultPath, const FString& FileType);
+
 private:
     APlayerController* GetPC() const;
 };

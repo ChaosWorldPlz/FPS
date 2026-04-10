@@ -565,6 +565,10 @@ function EditorCore:GetSelectedID()
     return _selectedID
 end
 
+function EditorCore:GetBridge()
+    return _bridge
+end
+
 --============================================================
 -- 网格对齐接口
 --============================================================
