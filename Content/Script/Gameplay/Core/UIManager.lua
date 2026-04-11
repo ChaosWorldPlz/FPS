@@ -33,6 +33,7 @@ local WindowRegistry = {
     -- UGC 编辑器
     ["WBP_UGCEditor"]          = "/Game/_UGC/UI/WBP_UGCEditor",
     ["WBP_UGCChat"]            = "/Game/_UGC/UI/WBP_UGCChat",
+    ["WBP_UGCBlueprintEditor"] = "/Game/_UGC/UI/WBP_UGCBlueprintEditor",
 }
 
 -- ZOrder 配置（值越大越靠前）
@@ -46,6 +47,7 @@ local WindowZOrder = {
     ["UI/Menu/WBP_Loadout"]    = 30,
     ["WBP_UGCEditor"]          = 5,   -- HUD 之上，菜单之下
     ["WBP_UGCChat"]            = 15,
+    ["WBP_UGCBlueprintEditor"] = 20,
 }
 
 -- 非全屏窗口尺寸配置（不填则全屏）

@@ -32,9 +32,26 @@ function M:ReceiveBeginPlay()
     print("[UGCPlayerController] UGC 层初始化完成")
 end
 
--- F9 切换编辑器
+-- F9 切换关卡编辑器
 function M:ToggleEditor()
     EditorCore:ToggleEditMode()
+end
+
+-- F8 切换蓝图编辑器（验证用）
+function M:ToggleBlueprintEditor()
+    local name = "WBP_UGCBlueprintEditor"
+    local widget = UIManager:ToggleWindow(name)
+    -- 打开时注入 PC 引用，供 Tick 驱动连线
+    if UIManager:IsOpen(name) then
+        local inst = UIManager:GetWindow(name)
+        if inst then
+            _bpEditor = inst
+            self:SetBlueprintEditor(inst)
+        end
+    else
+        _bpEditor = nil
+        self:SetBlueprintEditor(nil)
+    end
 end
 
 -- 编辑模式鼠标左键点击
@@ -54,8 +71,36 @@ local _prevMouseDown = false
 -- ESC 上一帧状态（用于检测按下边沿，避免持续触发）
 local _prevEscDown = false
 
+-- 蓝图编辑器引用（打开时由 UIManager 回调注入）
+local _bpEditor = nil
+
+function M:SetBlueprintEditor(editor)
+    _bpEditor = editor
+end
+
 -- Tick：编辑模式下驱动 Ghost 跟随 / 选中 Actor 拖拽
 function M:ReceiveTick(deltaTime)
+    -- 蓝图编辑器：节点拖拽 + 连线更新（独立于关卡编辑器状态）
+    if _bpEditor then
+        local ok, x, y = self:GetMousePosition()
+        if ok then
+            local bridge    = EditorCore:GetBridge()
+            local mouseDown = bridge and bridge:IsMouseButtonDown() or false
+
+            -- 节点拖拽
+            if _bpEditor:IsDraggingNode() then
+                if mouseDown then
+                    _bpEditor:OnDragTick(x, y)
+                else
+                    _bpEditor:EndNodeDrag()
+                end
+            end
+
+            -- 连线绘制（含待连预览线，每帧更新）
+            _bpEditor:UpdateWires(x, y)
+        end
+    end
+
     if EditorCore:GetState() ~= "Edit" then return end
     local ok, x, y = self:GetMousePosition()
     if not ok then return end

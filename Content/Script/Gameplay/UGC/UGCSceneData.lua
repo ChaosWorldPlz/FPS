@@ -12,7 +12,8 @@
     C++ Bridge 只负责引擎层的实际 Spawn/Destroy/Transform 操作。
 ]]
 
-local PrefabRegistry = require("Gameplay.UGC.UGCPrefabRegistry")
+local PrefabRegistry  = require("Gameplay.UGC.UGCPrefabRegistry")
+local UGCSerialize    = require("Gameplay.UGC.UGCSerialize")
 
 local SceneData = {}
 SceneData.__index = SceneData
@@ -26,6 +27,7 @@ local _nextID     = 1     -- 自增 SceneID
 local _actors     = {}    -- SceneID → { actor, prefabName, sceneID }
 local _undoStack  = {}    -- 撤销栈，最多 5 条
 local _redoStack  = {}    -- 重做栈
+local _scripts    = {}    -- 蓝图脚本：{["_level"]=graphData, [sceneID]=graphData, ...}
 
 local UNDO_MAX = 5
 local ACTOR_MAX = 50
@@ -40,6 +42,7 @@ function SceneData:Init(editorBridge)
     _actors    = {}
     _undoStack = {}
     _redoStack = {}
+    _scripts   = {}
     print("[UGCSceneData] 初始化完成")
 end
 
@@ -54,7 +57,51 @@ function SceneData:Clear()
     _nextID     = 1
     _undoStack  = {}
     _redoStack  = {}
+    _scripts    = {}
     print("[UGCSceneData] 场景已清空")
+end
+
+--============================================================
+-- 蓝图脚本存取
+--============================================================
+
+--- 通用脚本存取（以 programId 字符串为 key）
+--- programId 示例："level_main" / "actor_prog_3"
+function SceneData:SetScript(programId, data)
+    _scripts[programId] = data
+end
+
+function SceneData:GetScript(programId)
+    return _scripts[programId]
+end
+
+--- 关卡全局蓝图（快捷别名，key = "level_main"）
+function SceneData:SetLevelScript(data)
+    _scripts["level_main"] = data
+end
+
+function SceneData:GetLevelScript()
+    return _scripts["level_main"]
+end
+
+--- Actor 蓝图（快捷别名，key = "actor_prog_{sceneID}"）
+function SceneData:SetActorScript(sceneID, data)
+    _scripts["actor_prog_" .. sceneID] = data
+end
+
+function SceneData:GetActorScript(sceneID)
+    return _scripts["actor_prog_" .. sceneID]
+end
+
+--- 返回全部脚本表（供序列化使用）
+function SceneData:GetAllScripts()
+    return _scripts
+end
+
+--- 批量加载脚本（反序列化时使用）
+--- @param scriptMap table  { ["level_main"]=data, ["actor_prog_N"]=data, ... }
+function SceneData:LoadAllScripts(scriptMap)
+    _scripts = scriptMap or {}
 end
 
 --============================================================
@@ -97,6 +144,8 @@ function SceneData:CreateActor(prefabName, location, rotation)
         actor      = actor,
         prefabName = prefabName,
         sceneID    = sceneID,
+        actorId    = "actor_" .. sceneID,
+        programId  = "actor_prog_" .. sceneID,
     }
     _actors[sceneID] = entry
 
@@ -259,62 +308,71 @@ function SceneData:Redo()
 end
 
 --============================================================
--- JSON 序列化
--- 输出格式：{"version":2,"actors":[{"id":1,"prefab":"Box","t":[px,py,pz,pitch,yaw,roll,sx,sy,sz]},...]}
--- Transform 编码（9值）：位置 XYZ + 欧拉角 PYR + 缩放 XYZ
+-- scene.json 序列化（v2）
+-- 格式：{
+--   "version": 2,
+--   "nextID":  N,
+--   "levelProgramId": "level_main",
+--   "actors": [
+--     { "sceneID":1, "actorId":"actor_1", "programId":"actor_prog_1",
+--       "prefab":"Box", "t":[px,py,pz,pitch,yaw,roll,sx,sy,sz] },
+--     ...
+--   ]
+-- }
 --============================================================
 
 function SceneData:SerializeToJSON()
-    local actorParts = {}
+    local actorList = {}
 
     for sceneID, entry in pairs(_actors) do
         if entry.actor and UE.UKismetSystemLibrary.IsValid(entry.actor) then
             local t             = _bridge:GetActorTransform(entry.actor)
-            -- FTransform 在 UnLua 不暴露成员方法，用 BreakTransform
             local loc, rot, scl = UE.UKismetMathLibrary.BreakTransform(t)
 
-            table.insert(actorParts, string.format(
-                '{"id":%d,"prefab":"%s","t":[%f,%f,%f,%f,%f,%f,%f,%f,%f]}',
-                sceneID,
-                entry.prefabName,
-                loc.X, loc.Y, loc.Z,
-                rot.Pitch, rot.Yaw, rot.Roll,
-                scl.X, scl.Y, scl.Z
-            ))
+            table.insert(actorList, {
+                sceneID   = sceneID,
+                actorId   = entry.actorId   or ("actor_" .. sceneID),
+                programId = entry.programId or ("actor_prog_" .. sceneID),
+                prefab    = entry.prefabName,
+                t         = { loc.X, loc.Y, loc.Z,
+                              rot.Pitch, rot.Yaw, rot.Roll,
+                              scl.X, scl.Y, scl.Z },
+            })
         end
     end
 
-    local json = string.format(
-        '{"version":1,"nextID":%d,"actors":[%s]}',
-        _nextID,
-        table.concat(actorParts, ",")
-    )
-    return json
+    local root = {
+        version        = 2,
+        nextID         = _nextID,
+        levelProgramId = "level_main",
+        actors         = actorList,
+    }
+    return UGCSerialize.encode(root)
 end
 
 function SceneData:DeserializeFromJSON(json)
     self:Clear()
 
-    -- 解析 nextID
-    local nextID = json:match('"nextID"%s*:%s*(%d+)')
-    if nextID then _nextID = tonumber(nextID) end
+    local data = UGCSerialize.decode(json)
+    if not data then
+        print("[UGCSceneData] DeserializeFromJSON: decode 失败")
+        return
+    end
 
-    -- 逐条解析 actor 记录
-    -- 格式（v2）：{"id":N,"prefab":"Name","t":[9 个数字：px,py,pz,pitch,yaw,roll,sx,sy,sz]}
-    for idStr, prefab, tData in json:gmatch('"id"%s*:%s*(%d+)%s*,%s*"prefab"%s*:%s*"([^"]+)"%s*,%s*"t"%s*:%s*%[([^%]]+)%]') do
-        local sceneID = tonumber(idStr)
-        local nums = {}
-        for n in tData:gmatch("(%-?%d+%.?%d*e?[%+%-]?%d*)") do
-            table.insert(nums, tonumber(n))
-        end
-        if #nums == 9 then
-            local px,py,pz          = nums[1],nums[2],nums[3]
-            local pitch,yaw,roll    = nums[4],nums[5],nums[6]
-            local sx,sy,sz          = nums[7],nums[8],nums[9]
+    local ver = data.version or 1
+    if data.nextID then _nextID = data.nextID end
 
-            local loc       = UE.FVector(px, py, pz)
-            local rot       = UE.FRotator(pitch, yaw, roll)
-            local scl       = UE.FVector(sx, sy, sz)
+    -- v1 格式（旧版）：actors 为整数 id
+    -- v2 格式：actors 含 actorId / programId 字符串
+    for _, a in ipairs(data.actors or {}) do
+        local sceneID  = a.sceneID or a.id   -- 兼容 v1 的 "id" 字段
+        local prefab   = a.prefab or a.prefabName
+        local nums     = a.t or {}
+
+        if sceneID and prefab and #nums == 9 then
+            local loc       = UE.FVector(nums[1], nums[2], nums[3])
+            local rot       = UE.FRotator(nums[4], nums[5], nums[6])
+            local scl       = UE.FVector(nums[7], nums[8], nums[9])
             local transform = UE.UKismetMathLibrary.MakeTransform(loc, rot, scl)
 
             local path = PrefabRegistry.GetPath(prefab)
@@ -326,6 +384,8 @@ function SceneData:DeserializeFromJSON(json)
                         actor      = actor,
                         prefabName = prefab,
                         sceneID    = sceneID,
+                        actorId    = a.actorId   or ("actor_" .. sceneID),
+                        programId  = a.programId or ("actor_prog_" .. sceneID),
                     }
                     print("[UGCSceneData] 加载 Actor: " .. prefab .. " ID=" .. sceneID)
                 end
@@ -333,7 +393,51 @@ function SceneData:DeserializeFromJSON(json)
         end
     end
 
-    print("[UGCSceneData] 反序列化完成，Actor 数量: " .. self:Count())
+    print("[UGCSceneData] 反序列化完成 v" .. ver .. "，Actor 数量: " .. self:Count())
+end
+
+--============================================================
+-- programs.json 序列化
+-- 格式：{
+--   "version": 1,
+--   "programs": {
+--     "level_main":      { nodes={...}, connections={...}, nextID=N },
+--     "actor_prog_1":    { ... },
+--     ...
+--   }
+-- }
+--============================================================
+
+function SceneData:SerializeProgramsJSON()
+    local root = {
+        version  = 1,
+        programs = _scripts,
+    }
+    return UGCSerialize.encode(root)
+end
+
+function SceneData:DeserializeProgramsJSON(json)
+    if not json or json == "" then return end
+    local data = UGCSerialize.decode(json)
+    if data and data.programs then
+        _scripts = data.programs
+        print("[UGCSceneData] programs 加载完成，图数量: " .. (function()
+            local n = 0; for _ in pairs(_scripts) do n = n + 1 end; return n
+        end)())
+    end
+end
+
+--============================================================
+-- editor.json 序列化（UI 状态存根，Day 5 扩展）
+-- 当前只存版本号，后续可加展开/折叠、摄像机位置等
+--============================================================
+
+function SceneData:SerializeEditorJSON()
+    return UGCSerialize.encode({ version = 1, blueprintEditors = {} })
+end
+
+function SceneData:DeserializeEditorJSON(json)
+    -- 暂无需恢复的 UI 状态
 end
 
 return SceneData

@@ -27,12 +27,14 @@ local PrefabRegistry  = require("Gameplay.UGC.UGCPrefabRegistry")
 
 local M = UnLua.Class()
 
+local LOG_TAG = "[System.UI.UGC.WBP_UGCEditor]"
+
 local function Log(msg)
-    print("[WBP_UGCEditor] " .. tostring(msg))
+    print(LOG_TAG .. " " .. tostring(msg))
 end
 
 local function Warn(msg)
-    print("[WBP_UGCEditor][Warn] " .. tostring(msg))
+    print(LOG_TAG .. "[Warn] " .. tostring(msg))
 end
 
 local function bindButton(self, widgetName, handler)
@@ -71,12 +73,14 @@ function M:Construct()
     local missingCount = 0
 
     for _, pair in ipairs({
-        { "w_btn_Play",   M.OnClickPlay },
-        { "w_btn_Save",   M.OnClickSave },
-        { "w_btn_Load",   M.OnClickLoad },
-        { "w_btn_Clear",  M.OnClickClear },
-        { "w_btn_Delete", M.OnClickDelete },
-        { "w_btn_Undo",   M.OnClickUndo },
+        { "w_btn_Play",      M.OnClickPlay },
+        { "w_btn_Save",      M.OnClickSave },
+        { "w_btn_Load",      M.OnClickLoad },
+        { "w_btn_Clear",     M.OnClickClear },
+        { "w_btn_Delete",    M.OnClickDelete },
+        { "w_btn_Undo",      M.OnClickUndo },
+        { "w_btn_Blueprint",       M.OnClickBlueprint },
+        { "w_btn_Blueprint_Actor", M.OnClickActorBlueprint },
     }) do
         if not bindButton(self, pair[1], pair[2]) then
             missingCount = missingCount + 1
@@ -104,14 +108,18 @@ function M:Construct()
         self:RefreshPlayButton(state)
     end)
 
-    -- 监听选中变化（刷新 Transform 面板）
+    -- 监听选中变化（刷新 Transform 面板 + Actor 蓝图按钮可见性）
     EditorCore:OnSelectionChanged(function(sceneID)
         if sceneID then
             self:RefreshTransformInputs()
         else
             self:ClearTransformInputs()
         end
+        self:RefreshActorBlueprintBtn(sceneID)
     end)
+
+    -- Actor 蓝图按钮初始隐藏（无选中时不显示）
+    self:RefreshActorBlueprintBtn(nil)
 
     self:SetStatus("就绪 — 点击预制体开始放置")
 
@@ -248,29 +256,48 @@ function M:OnClickPlay()
 end
 
 function M:OnClickSave()
-    local json    = EditorCore:SaveSceneJSON()
     local bridge  = EditorCore:GetBridge()
     local defDir  = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
     local winDir  = defDir:gsub("/", "\\")
     os.execute('mkdir "' .. winDir .. '" 2>NUL')
+
+    -- 先把蓝图编辑器当前图存回 SceneData
+    local UIManager = require("Gameplay.Core.UIManager")
+    local bpInst = UIManager:GetWindow("WBP_UGCBlueprintEditor")
+    if bpInst and bpInst.SaveCurrentGraphToSceneData then
+        bpInst:SaveCurrentGraphToSceneData()
+    end
 
     local path = bridge:ShowSaveFileDialog("保存场景", defDir, "scene_latest", "JSON 文件|*.json")
     if not path or path == "" then
         self:SetStatus("保存已取消")
         return
     end
-    -- 确保扩展名存在
     if not path:match("%.json$") then path = path .. ".json" end
 
-    local f = io.open(path, "w")
-    if f then
-        f:write(json)
-        f:close()
+    -- 派生 programs / editor 路径
+    local base          = path:gsub("%.json$", "")
+    local pathPrograms  = base .. "_programs.json"
+    local pathEditor    = base .. "_editor.json"
+
+    local SceneData = require("Gameplay.UGC.UGCSceneData")
+
+    local function writeFile(p, content)
+        local f = io.open(p, "w")
+        if f then f:write(content); f:close(); return true end
+        return false
+    end
+
+    local ok1 = writeFile(path,         SceneData:SerializeToJSON())
+    local ok2 = writeFile(pathPrograms, SceneData:SerializeProgramsJSON())
+    local ok3 = writeFile(pathEditor,   SceneData:SerializeEditorJSON())
+
+    if ok1 and ok2 and ok3 then
         self:SetStatus("场景已保存 → " .. path)
         Log("保存成功: " .. path)
     else
-        self:SetStatus("保存失败（文件写入错误）")
-        Warn("保存失败，路径: " .. path)
+        self:SetStatus("保存部分失败，请检查日志")
+        Warn("保存失败 scene=" .. tostring(ok1) .. " prog=" .. tostring(ok2) .. " editor=" .. tostring(ok3))
     end
 end
 
@@ -284,16 +311,36 @@ function M:OnClickLoad()
         return
     end
 
-    local f = io.open(path, "r")
-    if f then
-        local json = f:read("*a")
-        f:close()
-        EditorCore:LoadSceneJSON(json)
-        self:SetStatus("场景已加载 ← " .. path)
-    else
+    local function readFile(p)
+        local f = io.open(p, "r")
+        if not f then return nil end
+        local s = f:read("*a"); f:close(); return s
+    end
+
+    -- 加载 scene.json
+    local sceneJSON = readFile(path)
+    if not sceneJSON then
         self:SetStatus("加载失败（找不到文件）")
         Warn("找不到文件: " .. path)
+        return
     end
+    EditorCore:LoadSceneJSON(sceneJSON)
+
+    -- 加载 programs.json（可选）
+    local base         = path:gsub("%.json$", "")
+    local programsJSON = readFile(base .. "_programs.json")
+    if programsJSON then
+        local SceneData = require("Gameplay.UGC.UGCSceneData")
+        SceneData:DeserializeProgramsJSON(programsJSON)
+        Log("programs.json 加载成功")
+    else
+        Log("programs.json 不存在，跳过")
+    end
+
+    -- editor.json（目前仅存根，跳过处理）
+
+    self:SetStatus("场景已加载 ← " .. path)
+    Log("加载成功: " .. path)
 end
 
 function M:OnClickClear()
@@ -312,6 +359,65 @@ function M:OnClickUndo()
     EditorCore:Undo()
     self:SetStatus("撤销完成")
     self:RefreshTransformInputs()
+end
+
+function M:OnClickBlueprint()
+    local UIManager = require("Gameplay.Core.UIManager")
+    local name = "WBP_UGCBlueprintEditor"
+    local inst = UIManager:GetWindow(name) or UIManager:OpenWindow(name)
+    if inst then
+        -- 从 SceneData 恢复已保存的关卡蓝图
+        local SceneData = require("Gameplay.UGC.UGCSceneData")
+        local savedData = SceneData:GetLevelScript()
+        if savedData then
+            inst:LoadGraphData("level_main", savedData)
+        end
+        inst:OpenGraph("level_main", "关卡蓝图 — 全局逻辑")
+        local pc = self:GetOwningPlayer()
+        if pc and pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
+    end
+    self:SetStatus("关卡蓝图编辑器已打开")
+end
+
+--- 选中 Actor 后点击「配置逻辑」，打开该 Actor 专属的蓝图图
+function M:OnClickActorBlueprint()
+    local sceneID = EditorCore:GetSelectedID()
+    if not sceneID then
+        self:SetStatus("请先选中一个 Actor")
+        return
+    end
+
+    local UIManager = require("Gameplay.Core.UIManager")
+    local name = "WBP_UGCBlueprintEditor"
+    local inst = UIManager:GetWindow(name) or UIManager:OpenWindow(name)
+    if not inst then
+        self:SetStatus("打开蓝图编辑器失败")
+        return
+    end
+
+    -- 从 SceneData actor entry 取 programId
+    local SceneData = require("Gameplay.UGC.UGCSceneData")
+    local entry     = SceneData:QueryActor(sceneID)
+    local programID = (entry and entry.programId) or ("actor_prog_" .. sceneID)
+
+    -- 恢复已保存的脚本图（如有）
+    local savedData = SceneData:GetScript(programID)
+    if savedData then
+        inst:LoadGraphData(programID, savedData)
+    end
+
+    inst:OpenGraph(programID, "Actor #" .. tostring(sceneID) .. " 蓝图")
+
+    local pc = self:GetOwningPlayer()
+    if pc and pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
+    self:SetStatus("Actor #" .. tostring(sceneID) .. " 蓝图编辑器已打开")
+end
+
+--- 根据是否有选中 Actor 控制「配置逻辑」按钮可见性
+function M:RefreshActorBlueprintBtn(sceneID)
+    if not self.w_btn_Blueprint_Actor then return end
+    local vis = sceneID and UE.ESlateVisibility.Visible or UE.ESlateVisibility.Collapsed
+    self.w_btn_Blueprint_Actor:SetVisibility(vis)
 end
 
 --============================================================
