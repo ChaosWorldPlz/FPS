@@ -94,7 +94,9 @@ end
 --============================================================
 
 function M:Construct()
-    self:BuildNodeLib()
+    -- BuildNodeLib 延迟到首次 OpenGraph 调用，避免 Construct 期间创建子 Widget
+    -- 导致 UnLua TryBind 重入崩溃（0xffffffffffffffff）
+    self._nodeLibBuilt = false
 
     local function bind(name, fn)
         local w = self[name]
@@ -282,9 +284,18 @@ end
 --============================================================
 
 --- 切换到指定 programID 的图，清空画布并重建节点 Widget
---- @param programID string  "_level" 或 "actor_{sceneID}"
+--- @param programID string  图标识（"level_main" 或 "actor_prog_N"）
 --- @param title     string  可选标题，显示在底栏
-function M:OpenGraph(programID, title)
+--- @param graphData table   可选：直接传入图数据，避免调用方先 LoadGraphData 再 OpenGraph
+---                          （分两步调用会导致旧 widget 孤立，Lua GC 在后续 Create 中
+---                          触发 UnLua 对象图并发修改崩溃）
+function M:OpenGraph(programID, title, graphData)
+    -- 首次调用时构建节点库（延迟自 Construct，避免 TryBind 重入崩溃）
+    if not self._nodeLibBuilt then
+        self._nodeLibBuilt = true
+        self:BuildNodeLib()
+    end
+
     -- 先保存当前图到 SceneData（避免切换丢失）
     self:SaveCurrentGraphToSceneData()
 
@@ -293,14 +304,22 @@ function M:OpenGraph(programID, title)
     _dragNodeID    = nil
     _isDirtyWires  = false
 
-    -- 移除当前图的所有节点 Widget
-    local oldG = getG()
-    for _, node in pairs(oldG.nodes) do
-        if node.widget then
-            node.widget:RemoveFromParent()
-            node.widget = nil
+    -- ★ 关键：在切换 _activeID 之前，先显式 RemoveFromParent 旧图所有 widget。
+    --   这样旧 widget 的 UnLua 绑定立即释放，不会留给 Lua GC 在后续
+    --   UWidgetBlueprintLibrary.Create 的内存分配时机触发 __gc 修改对象图。
+    local oldG = _graphs[_activeID]
+    if oldG then
+        for _, node in pairs(oldG.nodes) do
+            if node.widget then
+                node.widget:RemoveFromParent()
+                node.widget = nil
+            end
         end
     end
+    if self.w_canvas_main then
+        self.w_canvas_main:ClearChildren()
+    end
+
     if self.w_wire_overlay then
         self.w_wire_overlay:BeginWireUpdate()
         self.w_wire_overlay:EndWireUpdate()
@@ -310,13 +329,33 @@ function M:OpenGraph(programID, title)
     -- 切换活动图
     _activeID = programID or "level_main"
 
+    -- 如果直接传入了图数据，写入 _graphs（替代单独调用 LoadGraphData）
+    if graphData then
+        local g = {
+            nodes       = {},
+            connections = graphData.connections or {},
+            nextID      = graphData.nextID or 1,
+        }
+        for _, n in ipairs(graphData.nodes or {}) do
+            if n.id then
+                g.nodes[n.id] = {
+                    id     = n.id,
+                    type   = n.type or "Unknown",
+                    pos    = n.pos or { x = 0, y = 0 },
+                    params = n.params or {},
+                }
+            end
+        end
+        _graphs[_activeID] = g
+    end
+
     -- 更新底栏提示
     local displayTitle = title
         or ((_activeID == "level_main") and "关卡蓝图 — 全局逻辑"
             or ("Actor 蓝图: " .. _activeID))
     self:SetStatus(displayTitle)
 
-    -- 重建新图的节点 Widget（已有数据的恢复场景）
+    -- 重建新图的节点 Widget
     if self.w_canvas_main then
         local pc  = self:GetOwningPlayer()
         local cls = getNodeClass()

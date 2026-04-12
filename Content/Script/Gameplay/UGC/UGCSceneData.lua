@@ -28,6 +28,7 @@ local _actors     = {}    -- SceneID → { actor, prefabName, sceneID }
 local _undoStack  = {}    -- 撤销栈，最多 5 条
 local _redoStack  = {}    -- 重做栈
 local _scripts    = {}    -- 蓝图脚本：{["_level"]=graphData, [sceneID]=graphData, ...}
+local _isDirty    = false -- 脏标记：有未保存的修改时为 true
 
 local UNDO_MAX = 5
 local ACTOR_MAX = 50
@@ -43,6 +44,7 @@ function SceneData:Init(editorBridge)
     _undoStack = {}
     _redoStack = {}
     _scripts   = {}
+    _isDirty   = false
     print("[UGCSceneData] 初始化完成")
 end
 
@@ -58,8 +60,17 @@ function SceneData:Clear()
     _undoStack  = {}
     _redoStack  = {}
     _scripts    = {}
+    _isDirty    = false
     print("[UGCSceneData] 场景已清空")
 end
+
+--============================================================
+-- 脏标记
+--============================================================
+
+function SceneData:IsDirty()   return _isDirty  end
+function SceneData:MarkDirty() _isDirty = true   end
+function SceneData:ClearDirty() _isDirty = false end
 
 --============================================================
 -- 蓝图脚本存取
@@ -69,6 +80,7 @@ end
 --- programId 示例："level_main" / "actor_prog_3"
 function SceneData:SetScript(programId, data)
     _scripts[programId] = data
+    _isDirty = true
 end
 
 function SceneData:GetScript(programId)
@@ -148,6 +160,7 @@ function SceneData:CreateActor(prefabName, location, rotation)
         programId  = "actor_prog_" .. sceneID,
     }
     _actors[sceneID] = entry
+    _isDirty = true
 
     -- 记录撤销
     self:PushUndo({ op = "Create", sceneID = sceneID })
@@ -170,6 +183,7 @@ function SceneData:DeleteActor(sceneID)
 
     _bridge:DestroyActor(entry.actor)
     _actors[sceneID] = nil
+    _isDirty = true
 
     self:PushUndo({
         op         = "Delete",
@@ -190,6 +204,7 @@ function SceneData:ModifyActor(sceneID, newTransform)
 
     local oldTransform = _bridge:GetActorTransform(entry.actor)
     _bridge:SetActorTransform(entry.actor, newTransform)
+    _isDirty = true
 
     self:PushUndo({
         op           = "Modify",
@@ -270,6 +285,7 @@ function SceneData:Undo()
         end
     end
 
+    _isDirty = true
     print("[UGCSceneData] Undo: " .. record.op)
     return true
 end
@@ -302,6 +318,7 @@ function SceneData:Redo()
         end
     end
 
+    _isDirty = true
     table.insert(_undoStack, record)
     print("[UGCSceneData] Redo: " .. record.op)
     return true
@@ -393,6 +410,7 @@ function SceneData:DeserializeFromJSON(json)
         end
     end
 
+    _isDirty = false   -- 刚加载的数据视为"已保存"
     print("[UGCSceneData] 反序列化完成 v" .. ver .. "，Actor 数量: " .. self:Count())
 end
 
@@ -421,6 +439,7 @@ function SceneData:DeserializeProgramsJSON(json)
     local data = UGCSerialize.decode(json)
     if data and data.programs then
         _scripts = data.programs
+        _isDirty = false   -- 刚加载的脚本视为"已保存"
         print("[UGCSceneData] programs 加载完成，图数量: " .. (function()
             local n = 0; for _ in pairs(_scripts) do n = n + 1 end; return n
         end)())

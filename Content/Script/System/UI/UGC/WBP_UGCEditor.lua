@@ -256,10 +256,9 @@ function M:OnClickPlay()
 end
 
 function M:OnClickSave()
-    local bridge  = EditorCore:GetBridge()
-    local defDir  = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
-    local winDir  = defDir:gsub("/", "\\")
-    os.execute('mkdir "' .. winDir .. '" 2>NUL')
+    local bridge = EditorCore:GetBridge()
+    local defDir = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
+    os.execute('mkdir "' .. defDir:gsub("/", "\\") .. '" 2>NUL')
 
     -- 先把蓝图编辑器当前图存回 SceneData
     local UIManager = require("Gameplay.Core.UIManager")
@@ -268,17 +267,20 @@ function M:OnClickSave()
         bpInst:SaveCurrentGraphToSceneData()
     end
 
-    local path = bridge:ShowSaveFileDialog("保存场景", defDir, "scene_latest", "JSON 文件|*.json")
-    if not path or path == "" then
+    -- 对话框：用户输入场景名，返回路径作为文件夹名使用（无需扩展名）
+    local picked = bridge:ShowSaveFileDialog("保存场景（输入场景名）", defDir, "my_scene", "所有文件|*.*")
+    if not picked or picked == "" then
         self:SetStatus("保存已取消")
         return
     end
-    if not path:match("%.json$") then path = path .. ".json" end
 
-    -- 派生 programs / editor 路径
-    local base          = path:gsub("%.json$", "")
-    local pathPrograms  = base .. "_programs.json"
-    local pathEditor    = base .. "_editor.json"
+    -- 统一正斜杠，去掉用户可能多打的扩展名，末尾补 /
+    picked = picked:gsub("\\", "/")
+    local folderPath = picked:gsub("%.[^/]+$", "") .. "/"
+
+    -- 创建场景子文件夹
+    local folderWin = folderPath:gsub("/", "\\"):gsub("\\$", "")
+    os.execute('mkdir "' .. folderWin .. '" 2>NUL')
 
     local SceneData = require("Gameplay.UGC.UGCSceneData")
 
@@ -288,13 +290,14 @@ function M:OnClickSave()
         return false
     end
 
-    local ok1 = writeFile(path,         SceneData:SerializeToJSON())
-    local ok2 = writeFile(pathPrograms, SceneData:SerializeProgramsJSON())
-    local ok3 = writeFile(pathEditor,   SceneData:SerializeEditorJSON())
+    local ok1 = writeFile(folderPath .. "scene.json",    SceneData:SerializeToJSON())
+    local ok2 = writeFile(folderPath .. "programs.json", SceneData:SerializeProgramsJSON())
+    local ok3 = writeFile(folderPath .. "editor.json",   SceneData:SerializeEditorJSON())
 
     if ok1 and ok2 and ok3 then
-        self:SetStatus("场景已保存 → " .. path)
-        Log("保存成功: " .. path)
+        SceneData:ClearDirty()
+        self:SetStatus("场景已保存 → " .. folderPath)
+        Log("保存成功: " .. folderPath)
     else
         self:SetStatus("保存部分失败，请检查日志")
         Warn("保存失败 scene=" .. tostring(ok1) .. " prog=" .. tostring(ok2) .. " editor=" .. tostring(ok3))
@@ -305,11 +308,20 @@ function M:OnClickLoad()
     local bridge = EditorCore:GetBridge()
     local defDir = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
 
-    local path = bridge:ShowOpenFileDialog("加载场景", defDir, "JSON 文件|*.json")
+    -- 用户导航到场景文件夹，选中里面的 scene.json
+    local path = bridge:ShowOpenFileDialog("加载场景（选择文件夹内的 scene.json）", defDir, "JSON 文件|*.json")
     if not path or path == "" then
         self:SetStatus("加载已取消")
         return
     end
+
+    -- 立刻显示加载遮罩，阻止加载期间的误操作
+    self:ShowLoading("场景加载中…")
+
+    path = path:gsub("\\", "/")
+
+    -- 从选中文件推断出所在文件夹
+    local folderPath = path:match("^(.*/)") or defDir
 
     local function readFile(p)
         local f = io.open(p, "r")
@@ -317,18 +329,18 @@ function M:OnClickLoad()
         local s = f:read("*a"); f:close(); return s
     end
 
-    -- 加载 scene.json
-    local sceneJSON = readFile(path)
+    -- 加载 scene.json（优先从同目录读，兼容用户直接选中 scene.json 或选了别的 json）
+    local sceneJSON = readFile(folderPath .. "scene.json")
     if not sceneJSON then
-        self:SetStatus("加载失败（找不到文件）")
-        Warn("找不到文件: " .. path)
+        self:HideLoading()
+        self:SetStatus("加载失败（文件夹内找不到 scene.json）")
+        Warn("找不到: " .. folderPath .. "scene.json")
         return
     end
     EditorCore:LoadSceneJSON(sceneJSON)
 
     -- 加载 programs.json（可选）
-    local base         = path:gsub("%.json$", "")
-    local programsJSON = readFile(base .. "_programs.json")
+    local programsJSON = readFile(folderPath .. "programs.json")
     if programsJSON then
         local SceneData = require("Gameplay.UGC.UGCSceneData")
         SceneData:DeserializeProgramsJSON(programsJSON)
@@ -339,8 +351,23 @@ function M:OnClickLoad()
 
     -- editor.json（目前仅存根，跳过处理）
 
-    self:SetStatus("场景已加载 ← " .. path)
-    Log("加载成功: " .. path)
+    local folderName = folderPath:match("([^/]+)/$") or folderPath
+    local doneMsg    = "场景已加载 ← " .. folderName
+    Log("加载成功: " .. folderPath)
+
+    -- 延迟 3 帧后隐藏遮罩：给引擎足够时间完成 Actor BeginPlay 等延迟初始化，
+    -- 避免玩家在同一帧或次帧立刻操作引发 TryBind 重入崩溃
+    local pc = self:GetOwningPlayer()
+    if pc and pc.ScheduleCallback then
+        pc:ScheduleCallback(function()
+            self:HideLoading()
+            self:SetStatus(doneMsg)
+        end, 3)
+    else
+        -- 降级：直接隐藏（不延迟）
+        self:HideLoading()
+        self:SetStatus(doneMsg)
+    end
 end
 
 function M:OnClickClear()
@@ -366,13 +393,10 @@ function M:OnClickBlueprint()
     local name = "WBP_UGCBlueprintEditor"
     local inst = UIManager:GetWindow(name) or UIManager:OpenWindow(name)
     if inst then
-        -- 从 SceneData 恢复已保存的关卡蓝图
         local SceneData = require("Gameplay.UGC.UGCSceneData")
-        local savedData = SceneData:GetLevelScript()
-        if savedData then
-            inst:LoadGraphData("level_main", savedData)
-        end
-        inst:OpenGraph("level_main", "关卡蓝图 — 全局逻辑")
+        -- 把已保存的图数据直接传给 OpenGraph，由其在切换前先 RemoveFromParent 旧 widget，
+        -- 避免 LoadGraphData+OpenGraph 分步调用导致旧 widget 孤立触发 Lua GC 重入崩溃
+        inst:OpenGraph("level_main", "关卡蓝图 — 全局逻辑", SceneData:GetLevelScript())
         local pc = self:GetOwningPlayer()
         if pc and pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
     end
@@ -395,18 +419,13 @@ function M:OnClickActorBlueprint()
         return
     end
 
-    -- 从 SceneData actor entry 取 programId
     local SceneData = require("Gameplay.UGC.UGCSceneData")
     local entry     = SceneData:QueryActor(sceneID)
     local programID = (entry and entry.programId) or ("actor_prog_" .. sceneID)
 
-    -- 恢复已保存的脚本图（如有）
-    local savedData = SceneData:GetScript(programID)
-    if savedData then
-        inst:LoadGraphData(programID, savedData)
-    end
-
-    inst:OpenGraph(programID, "Actor #" .. tostring(sceneID) .. " 蓝图")
+    -- 把已保存的图数据直接传给 OpenGraph，由其在切换前先 RemoveFromParent 旧 widget，
+    -- 避免 LoadGraphData+OpenGraph 分步调用导致旧 widget 孤立触发 Lua GC 重入崩溃
+    inst:OpenGraph(programID, "Actor #" .. tostring(sceneID) .. " 蓝图", SceneData:GetScript(programID))
 
     local pc = self:GetOwningPlayer()
     if pc and pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
@@ -489,10 +508,42 @@ end
 
 function M:SetStatus(msg)
     if self.w_text_Status then
-        self.w_text_Status:SetText(msg)
+        -- 有未保存修改时在状态栏末尾附加 * 提示
+        local SceneData = require("Gameplay.UGC.UGCSceneData")
+        local dirty = SceneData and SceneData:IsDirty()
+        self.w_text_Status:SetText(dirty and (msg .. "  ●未保存") or msg)
     else
         Warn("缺少状态文本控件 w_text_Status，消息: " .. tostring(msg))
     end
+end
+
+--============================================================
+-- 加载遮罩（w_panel_Loading 控件可选，不存在时只禁用交互）
+-- WBP_UGCEditor 蓝图结构参考：
+--   在根 Overlay 的最顶层加一个 w_panel_Loading（Border 或 Overlay），
+--   填满父级，颜色 #CC000000（半透明黑），默认 Visibility = Collapsed；
+--   里面放一个居中的 TextBlock 写"加载中…"即可。
+--============================================================
+
+function M:ShowLoading(msg)
+    -- 显示遮罩
+    if self.w_panel_Loading then
+        self.w_panel_Loading:SetVisibility(UE.ESlateVisibility.Visible)
+        -- 把加载提示写到遮罩内部文本（w_text_Loading 可选）
+        if self.w_text_Loading then
+            self.w_text_Loading:SetText(msg or "加载中…")
+        end
+    end
+    -- 禁用底部操作栏，防止加载期间误操作（loading 遮罩也能阻挡，双保险）
+    if self.w_panel_Bottom then self.w_panel_Bottom:SetIsEnabled(false) end
+    self:SetStatus(msg or "加载中…")
+end
+
+function M:HideLoading()
+    if self.w_panel_Loading then
+        self.w_panel_Loading:SetVisibility(UE.ESlateVisibility.Collapsed)
+    end
+    if self.w_panel_Bottom then self.w_panel_Bottom:SetIsEnabled(true) end
 end
 
 --============================================================

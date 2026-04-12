@@ -13,3 +13,5 @@ DerivedDataCache/
 /Plugins/UnLua/Source
 /Plugins/UnLua/Source
 *.log
+/Output/docx_builder
+*.docx

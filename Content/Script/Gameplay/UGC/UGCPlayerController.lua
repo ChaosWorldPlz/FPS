@@ -74,12 +74,33 @@ local _prevEscDown = false
 -- 蓝图编辑器引用（打开时由 UIManager 回调注入）
 local _bpEditor = nil
 
+-- 延迟回调队列：{fn=function, framesLeft=int}
+-- 每帧倒计时，归零时执行 fn，用于 UI 加载等需要跨帧延迟的场景
+local _pendingCallbacks = {}
+
 function M:SetBlueprintEditor(editor)
     _bpEditor = editor
 end
 
+--- 延迟 N 帧后执行回调（无需 UFUNCTION，由 ReceiveTick 驱动）
+--- @param fn       function  要执行的函数
+--- @param frames   int       延迟帧数，默认 3
+function M:ScheduleCallback(fn, frames)
+    table.insert(_pendingCallbacks, { fn = fn, framesLeft = frames or 3 })
+end
+
 -- Tick：编辑模式下驱动 Ghost 跟随 / 选中 Actor 拖拽
 function M:ReceiveTick(deltaTime)
+    -- 延迟回调：每帧倒计时，归零时执行
+    for i = #_pendingCallbacks, 1, -1 do
+        local cb = _pendingCallbacks[i]
+        cb.framesLeft = cb.framesLeft - 1
+        if cb.framesLeft <= 0 then
+            cb.fn()
+            table.remove(_pendingCallbacks, i)
+        end
+    end
+
     -- 蓝图编辑器：节点拖拽 + 连线更新（独立于关卡编辑器状态）
     if _bpEditor then
         local ok, x, y = self:GetMousePosition()
