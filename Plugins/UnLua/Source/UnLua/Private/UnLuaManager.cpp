@@ -29,6 +29,33 @@
 
 static const TCHAR* SReadableInputEvent[] = { TEXT("Pressed"), TEXT("Released"), TEXT("Repeat"), TEXT("DoubleClick"), TEXT("Axis"), TEXT("Max") };
 
+namespace
+{
+    class FScopedLuaGCPause
+    {
+    public:
+        explicit FScopedLuaGCPause(UnLua::FLuaEnv* InEnv)
+            : Env(InEnv)
+        {
+            if (Env)
+            {
+                Env->PauseLuaGC();
+            }
+        }
+
+        ~FScopedLuaGCPause()
+        {
+            if (Env)
+            {
+                Env->ResumeLuaGC();
+            }
+        }
+
+    private:
+        UnLua::FLuaEnv* Env;
+    };
+}
+
 UUnLuaManager::UUnLuaManager()
     : InputActionFunc(nullptr), InputAxisFunc(nullptr), InputTouchFunc(nullptr), InputVectorAxisFunc(nullptr), InputGestureFunc(nullptr), AnimNotifyFunc(nullptr)
 {
@@ -60,38 +87,42 @@ bool UUnLuaManager::Bind(UObject *Object, const TCHAR *InModuleName, int32 Initi
     const auto Class = Object->IsA<UClass>() ? static_cast<UClass*>(Object) : Object->GetClass();
     lua_State *L = Env->GetMainState();
 
-    if (!Env->GetClassRegistry()->Register(Class))
-        return false;
+    {
+        FScopedLuaGCPause ScopedLuaGCPause(Env);
 
-    // try bind lua if not bind or use a copyed table
-    UnLua::FLuaRetValues RetValues = UnLua::Call(L, "require", TCHAR_TO_UTF8(InModuleName));
-    FString Error;
-    if (!RetValues.IsValid() || RetValues.Num() == 0)
-    {
-        Error = "invalid return value of require()";
-    }
-    else if (RetValues[0].GetType() != LUA_TTABLE)
-    {
-        Error = FString("table needed but got ");
-        if(RetValues[0].GetType() == LUA_TSTRING)
-            Error += UTF8_TO_TCHAR(RetValues[0].Value<const char*>());
+        if (!Env->GetClassRegistry()->Register(Class))
+            return false;
+
+        // try bind lua if not bind or use a copyed table
+        UnLua::FLuaRetValues RetValues = UnLua::Call(L, "require", TCHAR_TO_UTF8(InModuleName));
+        FString Error;
+        if (!RetValues.IsValid() || RetValues.Num() == 0)
+        {
+            Error = "invalid return value of require()";
+        }
+        else if (RetValues[0].GetType() != LUA_TTABLE)
+        {
+            Error = FString("table needed but got ");
+            if(RetValues[0].GetType() == LUA_TSTRING)
+                Error += UTF8_TO_TCHAR(RetValues[0].Value<const char*>());
+            else
+                Error += UTF8_TO_TCHAR(lua_typename(L, RetValues[0].GetType()));
+        }
         else
-            Error += UTF8_TO_TCHAR(lua_typename(L, RetValues[0].GetType()));
-    }
-    else
-    {
-        BindClass(Class, InModuleName, Error);
-    }
+        {
+            BindClass(Class, InModuleName, Error);
+        }
 
-    if (!Error.IsEmpty())
-    {
-        UE_LOG(LogUnLua, Warning, TEXT("Failed to attach %s module for object %s,%p!\n%s"), InModuleName, *Object->GetName(), Object, *Error);
-        return false;
-    }
+        if (!Error.IsEmpty())
+        {
+            UE_LOG(LogUnLua, Warning, TEXT("Failed to attach %s module for object %s,%p!\n%s"), InModuleName, *Object->GetName(), Object, *Error);
+            return false;
+        }
 
-    // create a Lua instance for this UObject
-    Env->GetObjectRegistry()->Bind(Class);
-    Env->GetObjectRegistry()->Bind(Object);
+        // Protect the bind critical section from automatic Lua GC re-entry.
+        Env->GetObjectRegistry()->Bind(Class);
+        Env->GetObjectRegistry()->Bind(Object);
+    }
 
     // try call user first user function handler
     int32 FunctionRef = PushFunction(L, Object, "Initialize");                  // push hard coded Lua function 'Initialize'

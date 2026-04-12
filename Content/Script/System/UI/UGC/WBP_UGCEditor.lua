@@ -389,18 +389,23 @@ function M:OnClickUndo()
 end
 
 function M:OnClickBlueprint()
-    local UIManager = require("Gameplay.Core.UIManager")
-    local name = "WBP_UGCBlueprintEditor"
-    local inst = UIManager:GetWindow(name) or UIManager:OpenWindow(name)
-    if inst then
-        local SceneData = require("Gameplay.UGC.UGCSceneData")
-        -- 把已保存的图数据直接传给 OpenGraph，由其在切换前先 RemoveFromParent 旧 widget，
-        -- 避免 LoadGraphData+OpenGraph 分步调用导致旧 widget 孤立触发 Lua GC 重入崩溃
-        inst:OpenGraph("level_main", "关卡蓝图 — 全局逻辑", SceneData:GetLevelScript())
-        local pc = self:GetOwningPlayer()
-        if pc and pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
-    end
-    self:SetStatus("关卡蓝图编辑器已打开")
+    -- ★ 延迟 1 帧执行：避免在 OnClicked delegate 回调链内部调用 UWidgetBlueprintLibrary.Create，
+    --   否则 Lua GC 可能在 C++ 内存分配时触发，__gc(RemoveObject) 与 TryBind(AddObject)
+    --   并发修改 UnLua 对象图，导致 0xffffffffffffffff 崩溃。
+    local pc = self:GetOwningPlayer()
+    if not pc then return end
+    local SceneData = require("Gameplay.UGC.UGCSceneData")
+    local scriptData = SceneData:GetLevelScript()
+    pc:ScheduleCallback(function()
+        local UIManager = require("Gameplay.Core.UIManager")
+        local name = "WBP_UGCBlueprintEditor"
+        local inst = UIManager:GetWindow(name) or UIManager:OpenWindow(name)
+        if not inst then self:SetStatus("打开蓝图编辑器失败"); return end
+        inst:OpenGraph("level_main", "关卡蓝图 — 全局逻辑", scriptData)
+        if pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
+        self:SetStatus("关卡蓝图编辑器已打开")
+    end, 1)
+    self:SetStatus("正在打开关卡蓝图…")
 end
 
 --- 选中 Actor 后点击「配置逻辑」，打开该 Actor 专属的蓝图图
@@ -411,25 +416,26 @@ function M:OnClickActorBlueprint()
         return
     end
 
-    local UIManager = require("Gameplay.Core.UIManager")
-    local name = "WBP_UGCBlueprintEditor"
-    local inst = UIManager:GetWindow(name) or UIManager:OpenWindow(name)
-    if not inst then
-        self:SetStatus("打开蓝图编辑器失败")
-        return
-    end
+    local pc = self:GetOwningPlayer()
+    if not pc then return end
 
+    -- ★ 延迟 1 帧执行：同 OnClickBlueprint，避免 delegate 回调链内部 Create → TryBind 崩溃
     local SceneData = require("Gameplay.UGC.UGCSceneData")
     local entry     = SceneData:QueryActor(sceneID)
     local programID = (entry and entry.programId) or ("actor_prog_" .. sceneID)
+    local scriptData = SceneData:GetScript(programID)
+    local title      = "Actor #" .. tostring(sceneID) .. " 蓝图"
 
-    -- 把已保存的图数据直接传给 OpenGraph，由其在切换前先 RemoveFromParent 旧 widget，
-    -- 避免 LoadGraphData+OpenGraph 分步调用导致旧 widget 孤立触发 Lua GC 重入崩溃
-    inst:OpenGraph(programID, "Actor #" .. tostring(sceneID) .. " 蓝图", SceneData:GetScript(programID))
-
-    local pc = self:GetOwningPlayer()
-    if pc and pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
-    self:SetStatus("Actor #" .. tostring(sceneID) .. " 蓝图编辑器已打开")
+    pc:ScheduleCallback(function()
+        local UIManager = require("Gameplay.Core.UIManager")
+        local name = "WBP_UGCBlueprintEditor"
+        local inst = UIManager:GetWindow(name) or UIManager:OpenWindow(name)
+        if not inst then self:SetStatus("打开蓝图编辑器失败"); return end
+        inst:OpenGraph(programID, title, scriptData)
+        if pc.SetBlueprintEditor then pc:SetBlueprintEditor(inst) end
+        self:SetStatus(title .. " 已打开")
+    end, 1)
+    self:SetStatus("正在打开 " .. title .. "…")
 end
 
 --- 根据是否有选中 Actor 控制「配置逻辑」按钮可见性
@@ -506,11 +512,19 @@ end
 -- 工具
 --============================================================
 
+local _sceneData = nil
+local function getSceneData()
+    if not _sceneData then
+        local ok, sd = pcall(require, "Gameplay.UGC.UGCSceneData")
+        if ok then _sceneData = sd end
+    end
+    return _sceneData
+end
+
 function M:SetStatus(msg)
     if self.w_text_Status then
-        -- 有未保存修改时在状态栏末尾附加 * 提示
-        local SceneData = require("Gameplay.UGC.UGCSceneData")
-        local dirty = SceneData and SceneData:IsDirty()
+        local sd = getSceneData()
+        local dirty = sd and sd:IsDirty()
         self.w_text_Status:SetText(dirty and (msg .. "  ●未保存") or msg)
     else
         Warn("缺少状态文本控件 w_text_Status，消息: " .. tostring(msg))

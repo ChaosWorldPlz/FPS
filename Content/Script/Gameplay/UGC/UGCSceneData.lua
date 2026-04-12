@@ -49,11 +49,12 @@ function SceneData:Init(editorBridge)
 end
 
 function SceneData:Clear()
-    -- 销毁所有 Actor
+    -- 销毁所有 Actor，并立即 nil 各引用，让 UnLua userdata 尽早失去强引用
     for _, entry in pairs(_actors) do
         if entry.actor and UE.UKismetSystemLibrary.IsValid(entry.actor) then
             _bridge:DestroyActor(entry.actor)
         end
+        entry.actor = nil
     end
     _actors     = {}
     _nextID     = 1
@@ -61,6 +62,15 @@ function SceneData:Clear()
     _redoStack  = {}
     _scripts    = {}
     _isDirty    = false
+
+    -- ★ 强制完整 GC：
+    --   _actors = {} 令所有 actor userdata 成孤儿，但 Lua 增量 GC 不会立刻回收。
+    --   若延迟到 UWidgetBlueprintLibrary.Create 内部的内存分配才触发，
+    --   __gc（RemoveObject）与 TryBind（AddObject）并发修改 UnLua 对象图
+    --   → 读到 0xffffffffffffffff 崩溃。
+    --   在此处（安全上下文，不在 TryBind 调用链内）强制跑完，消除隐患。
+    collectgarbage("collect")
+
     print("[UGCSceneData] 场景已清空")
 end
 
@@ -411,6 +421,8 @@ function SceneData:DeserializeFromJSON(json)
     end
 
     _isDirty = false   -- 刚加载的数据视为"已保存"
+    collectgarbage("collect")   -- 清掉 DeserializeFromJSON 产生的临时 userdata，
+                                -- 避免延迟到下次 widget Create 的内存分配时触发 GC
     print("[UGCSceneData] 反序列化完成 v" .. ver .. "，Actor 数量: " .. self:Count())
 end
 

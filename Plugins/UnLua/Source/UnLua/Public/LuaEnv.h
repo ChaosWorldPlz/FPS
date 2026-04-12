@@ -120,6 +120,10 @@ namespace UnLua
 
         void RemoveManualObjectReference(UObject* Object);
 
+        void PauseLuaGC();
+
+        void ResumeLuaGC();
+
     protected:
         lua_State* L;
 
@@ -182,6 +186,8 @@ namespace UnLua
         TArray<UInputComponent*> CandidateInputComponents;
         FDelegateHandle OnWorldTickStartHandle;
         FString Name = TEXT("Env_0");
+        int32 LuaGCPauseDepth = 0;
+        bool bLuaGCWasRunningBeforePause = false;
         bool bObjectArrayListenerRegistered;
         bool bStarted;
     };

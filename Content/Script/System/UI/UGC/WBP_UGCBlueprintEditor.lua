@@ -120,6 +120,7 @@ end
 function M:BuildNodeLib()
     if not self.w_scroll_nodeLib then Warn("缺少 w_scroll_nodeLib"); return end
     self.w_scroll_nodeLib:ClearChildren()
+    collectgarbage("collect")   -- 清掉 ClearChildren 产生的孤儿 userdata，再 Create 新按钮
 
     local pc  = self:GetOwningPlayer()
     local cls = getNodeLibBtnClass()
@@ -311,7 +312,15 @@ function M:OpenGraph(programID, title, graphData)
     if oldG then
         for _, node in pairs(oldG.nodes) do
             if node.widget then
-                node.widget:RemoveFromParent()
+                -- IsValid 检查：UE GC 可能已回收（编辑器关闭后 _graphs 模块变量残留引用）
+                local ok = pcall(function()
+                    if UE.UKismetSystemLibrary.IsValid(node.widget) then
+                        node.widget:RemoveFromParent()
+                    end
+                end)
+                if not ok then
+                    Log("RemoveFromParent 失败（widget 已失效），跳过")
+                end
                 node.widget = nil
             end
         end
@@ -319,6 +328,11 @@ function M:OpenGraph(programID, title, graphData)
     if self.w_canvas_main then
         self.w_canvas_main:ClearChildren()
     end
+
+    -- 旧 widget 已全部 nil / RemoveFromParent，强制 GC 立即回收孤儿 userdata，
+    -- 防止其 __gc(RemoveObject) 在随后 Create 的内存分配里触发，
+    -- 与 TryBind(AddObject) 并发修改 UnLua 对象图导致崩溃
+    collectgarbage("collect")
 
     if self.w_wire_overlay then
         self.w_wire_overlay:BeginWireUpdate()
@@ -621,6 +635,16 @@ end
 
 function M:OnClickClose()
     self:SaveCurrentGraphToSceneData()
+
+    -- 关闭前清空所有图里的 widget 引用，防止 _graphs 模块变量持有已回收 UObject，
+    -- 导致下次 OpenGraph 调用 RemoveFromParent 时 UnLua 访问死亡对象卡死
+    for _, g in pairs(_graphs) do
+        for _, node in pairs(g.nodes) do
+            node.widget = nil
+        end
+    end
+    if self.w_canvas_main then self.w_canvas_main:ClearChildren() end
+
     local UIManager = require("Gameplay.Core.UIManager")
     local pc = self:GetOwningPlayer()
     if pc and pc.SetBlueprintEditor then pc:SetBlueprintEditor(nil) end
@@ -633,7 +657,7 @@ end
 
 function M:OnClickSave()
     self:SaveCurrentGraphToSceneData()
-    self:SetStatus("蓝图已写入场景数据，场景保存时写入文件")
+    self:SetStatus("蓝图已暂存 — 请在关卡编辑器点击「保存场景」写入文件")
 end
 
 function M:OnClickLoad()
@@ -643,13 +667,17 @@ end
 function M:OnClickClear()
     local g = getG()
     for _, node in pairs(g.nodes) do
-        if node.widget then node.widget:RemoveFromParent() end
+        if node.widget then
+            node.widget:RemoveFromParent()
+            node.widget = nil
+        end
     end
     g.nodes       = {}
     g.connections = {}
     g.nextID      = 1
     _pendingPin   = nil
     _isDirtyWires = false
+    collectgarbage("collect")   -- 清掉 RemoveFromParent 后的孤儿 userdata
     if self.w_wire_overlay then
         self.w_wire_overlay:BeginWireUpdate()
         self.w_wire_overlay:EndWireUpdate()

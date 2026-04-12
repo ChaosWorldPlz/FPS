@@ -543,6 +543,42 @@ namespace UnLua
         ManualObjectReference.Remove(Object);
     }
 
+    void FLuaEnv::PauseLuaGC()
+    {
+        if (!L)
+            return;
+
+        if (LuaGCPauseDepth++ > 0)
+            return;
+
+#if 504 == LUA_VERSION_NUM
+        bLuaGCWasRunningBeforePause = lua_gc(L, LUA_GCISRUNNING, 0) != 0;
+#else
+        bLuaGCWasRunningBeforePause = true;
+#endif
+
+        if (bLuaGCWasRunningBeforePause)
+        {
+            lua_gc(L, LUA_GCSTOP, 0);
+        }
+    }
+
+    void FLuaEnv::ResumeLuaGC()
+    {
+        if (!L || LuaGCPauseDepth <= 0)
+            return;
+
+        if (--LuaGCPauseDepth > 0)
+            return;
+
+        if (bLuaGCWasRunningBeforePause)
+        {
+            lua_gc(L, LUA_GCRESTART, 0);
+        }
+
+        bLuaGCWasRunningBeforePause = false;
+    }
+
     int FLuaEnv::LoadFromBuiltinLibs(lua_State* L)
     {
         const FLuaEnv* Env = (FLuaEnv*)lua_touserdata(L, lua_upvalueindex(1));
