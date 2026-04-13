@@ -59,6 +59,32 @@ public:
     void EditorClick();
     virtual void EditorClick_Implementation() {}
 
+    /**
+     * Pawn 进入 TriggerZone 时由 AUGCTriggerZone 调用，Lua 可覆盖。
+     * @param ProgramID  触发区域关联的程序 ID（"actor_prog_N"）
+     */
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "UGC|TriggerZone")
+    void OnTriggerZoneEnter(const FString& ProgramID);
+    virtual void OnTriggerZoneEnter_Implementation(const FString& ProgramID) {}
+
+    /**
+     * Pawn 离开 TriggerZone 时由 AUGCTriggerZone 调用，Lua 可覆盖。
+     * @param ProgramID  触发区域关联的程序 ID（"actor_prog_N"）
+     */
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "UGC|TriggerZone")
+    void OnTriggerZoneExit(const FString& ProgramID);
+    virtual void OnTriggerZoneExit_Implementation(const FString& ProgramID) {}
+
+    /** LLM 请求成功，ResponseJSON 为完整响应体，Lua 负责解析 */
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "UGC|LLM")
+    void OnLLMResponse(const FString& ResponseJSON);
+    virtual void OnLLMResponse_Implementation(const FString& ResponseJSON) {}
+
+    /** LLM 请求失败 */
+    UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "UGC|LLM")
+    void OnLLMError(const FString& ErrorMessage);
+    virtual void OnLLMError_Implementation(const FString& ErrorMessage) {}
+
 protected:
     /** F9 → 切换编辑器 InputAction */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input|UGC")

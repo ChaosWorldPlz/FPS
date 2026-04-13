@@ -34,16 +34,9 @@ local _onResult   = nil  -- 结果回调 function(success, message)
 function Gateway:Init(playerController)
     _pc         = playerController
     _httpClient = playerController:GetUGCHttpClient()
-
-    -- 覆盖 C++ BlueprintNativeEvent，接管 HTTP 回调
-    _httpClient.OnMessageComplete = function(self, responseJSON)
-        Gateway:OnResponse(responseJSON)
-    end
-
-    _httpClient.OnMessageError = function(self, errorMsg)
-        Gateway:OnError(errorMsg)
-    end
-
+    -- 回调路由：UGCHttpClient → AUGCPlayerController::OnLLMResponse/OnLLMError
+    --           → UGCPlayerController.lua:OnLLMResponse/OnLLMError
+    --           → Gateway:OnResponse/OnError（在 UGCPlayerController.lua 里显式调用）
     print("[LLMGateway] 初始化完成")
 end
 

@@ -1,21 +1,66 @@
 --[[
     WBP_UGCNodePinRow.lua
-    单条引脚行
+    单条引脚行（同时支持 exec 引脚连线行 和 参数输入行）
 
     蓝图 Widget 结构（WBP_UGCNodePinRow）：
     水平框 HorizontalBox
       内边距 Padding = 4,2,4,2
-      ├─ 图像 Image  [w_img_pin_in]    宽高=10×10  颜色=#FFFFFF  （输入锚点）
-      ├─ 文本块 TextBlock [w_text_label]  槽位-尺寸=填充Fill
-      └─ 图像 Image  [w_img_pin_out]   宽高=10×10  颜色=#FFFFFF  （输出锚点）
+      ├─ 图像 Image           [w_img_pin_in]   宽高=10×10  颜色=#FFFFFF  （输入锚点）
+      ├─ 文本块 TextBlock      [w_text_label]   槽位-尺寸=填充Fill
+      ├─ 可编辑文本框 EditableTextBox [w_text_input]  槽位-尺寸=填充Fill  默认 Hidden
+      │    提示文字="值"  字体大小=11  内边距=2,0,2,0
+      └─ 图像 Image           [w_img_pin_out]  宽高=10×10  颜色=#FFFFFF  （输出锚点）
 
-    调用方需先调 InitPin，再由编辑器通过 GetPinInAbsPos / GetPinOutAbsPos 拿坐标。
+    ★ w_text_input 需在 UE 蓝图编辑器里手动添加（在 w_text_label 和 w_img_pin_out 之间）。
+      若 Blueprint 中没有该控件，参数行将回退为纯标签显示（向后兼容）。
+
+    用法：
+      InitPin(nodeID, pinName, isInput, editor)   → exec 引脚行
+      InitParam(nodeData, paramName)               → 参数输入行
 ]]
+
+local LOG_TAG = "[WBP_UGCNodePinRow]"
+local function Log(msg) print(LOG_TAG .. " " .. tostring(msg)) end
+
+local VISIBLE    = UE.ESlateVisibility.Visible
+local HIDDEN     = UE.ESlateVisibility.Hidden
+local COLLAPSED  = UE.ESlateVisibility.Collapsed
 
 local M = UnLua.Class()
 
+local function setVisibility(widget, visibility)
+    if widget then
+        widget:SetVisibility(visibility)
+    end
+end
+
+local function getLabelContainer(self)
+    local parent = nil
+    if self and self.w_text_label and self.w_text_label.GetParent then
+        parent = self.w_text_label:GetParent()
+    end
+    if not parent and self and self.w_text_input and self.w_text_input.GetParent then
+        parent = self.w_text_input:GetParent()
+    end
+    return parent
+end
+
+local function setLabelContainerVisibility(self, visibility)
+    local parent = getLabelContainer(self)
+    if parent and parent.SetVisibility then
+        parent:SetVisibility(visibility)
+    end
+end
+
+local function setLabelContainerOffset(self, offsetX)
+    local parent = getLabelContainer(self)
+    if parent and parent.SetRenderTranslation then
+        parent:SetRenderTranslation(UE.FVector2D(offsetX or 0, 0))
+    end
+end
+
 --============================================================
--- 初始化
+-- 初始化：exec 引脚行
 --============================================================
 
 --- @param nodeID  string   所属节点 ID
@@ -28,24 +73,78 @@ function M:InitPin(nodeID, pinName, isInput, editor)
     self._isInput = isInput
     self._editor  = editor
 
-    -- 按引脚方向显示/隐藏锚点
-    if self.w_img_pin_in then
-        self.w_img_pin_in:SetVisibility(
-            isInput == true
-            and UE.ESlateVisibility.Visible
-            or  UE.ESlateVisibility.Hidden)
-    end
-    if self.w_img_pin_out then
-        self.w_img_pin_out:SetVisibility(
-            isInput == false
-            and UE.ESlateVisibility.Visible
-            or  UE.ESlateVisibility.Hidden)
+    setVisibility(self.w_img_pin_in,  isInput == true  and VISIBLE or HIDDEN)
+    setVisibility(self.w_img_pin_out, isInput == false and VISIBLE or HIDDEN)
+    setLabelContainerVisibility(self, VISIBLE)
+    setLabelContainerOffset(self, isInput == true and 8 or 0)
+    setVisibility(self.w_text_input, COLLAPSED)
+    setVisibility(self.w_text_label, VISIBLE)
+
+    if self.w_text_label then
+        self.w_text_label:SetJustification(
+            isInput == false and UE.ETextJustify.Right or UE.ETextJustify.Left)
     end
 
-    -- 绑定点击
-    local anchor = isInput and self.w_img_pin_in or self.w_img_pin_out
-    -- Image 没有 OnClicked，使用父行的 OnMouseButtonDown（由外层 Button 包裹）
-    -- 实际点击由 WBP_UGCNode 层的 Button 路由过来，见 OnPinAnchorClicked
+    -- Image 没有 OnClicked，实际点击由 WBP_UGCNode 层路由，见 OnPinAnchorClicked
+end
+
+--============================================================
+-- 初始化：参数输入行
+--============================================================
+
+--- 将本行配置为参数输入行：隐藏引脚锚点，显示 EditableTextBox
+--- @param nodeData   table  节点数据 {id, type, pos, params}（直接引用，修改即生效）
+--- @param paramName  string 参数键名
+--- @param paramLabel string 参数显示名
+--- @param defaultVal any    默认值
+function M:InitParam(nodeData, paramName, paramLabel, defaultVal)
+    self._nodeData  = nodeData
+    self._paramName = paramName
+    self._isInput   = nil  -- 非引脚行，不参与连线
+
+    setVisibility(self.w_img_pin_in,  HIDDEN)
+    setVisibility(self.w_img_pin_out, HIDDEN)
+    setLabelContainerVisibility(self, VISIBLE)
+    setLabelContainerOffset(self, 12)
+
+    if self.w_text_label then
+        self.w_text_label:SetText(paramLabel or paramName or "参数")
+        self.w_text_label:SetJustification(UE.ETextJustify.Left)
+        setVisibility(self.w_text_label, VISIBLE)
+    end
+
+    -- 显示输入框并填入当前参数值；你蓝图里 label/input 在同一个 VerticalBox 中，
+    -- 这样会形成更接近 UE 节点细节参数行的“名称在上、值在下”。
+    if self.w_text_input then
+        nodeData.params = nodeData.params or {}
+        local val = nodeData.params[paramName]
+        if val == nil then
+            val = defaultVal
+        end
+        self.w_text_input:SetText(tostring(val or ""))
+        setVisibility(self.w_text_input, VISIBLE)
+        if self.w_text_input.SetIsEnabled then
+            self.w_text_input:SetIsEnabled(true)
+        end
+        if self.w_text_input.SetIsReadOnly then
+            self.w_text_input:SetIsReadOnly(false)
+        end
+        if self.w_text_input.OnTextCommitted and not self._inputCommittedBound then
+            self.w_text_input.OnTextCommitted:Add(self, M.OnInputCommitted)
+            self._inputCommittedBound = true
+        end
+    end
+    -- 若 w_text_input 不存在（Blueprint 未添加该控件），回退为纯标签显示（由调用方兜底）
+end
+
+--- EditableTextBox OnTextCommitted 回调：将新值写回 nodeData.params
+--- @param text         string      用户输入的新文本
+--- @param commitMethod ETextCommit 提交触发方式（Enter / 失去焦点 等）
+function M:OnInputCommitted(text, commitMethod)
+    if self._nodeData and self._paramName then
+        self._nodeData.params[self._paramName] = tostring(text)
+        Log("参数写回: " .. tostring(self._paramName) .. " = " .. tostring(text))
+    end
 end
 
 --- 由 WBP_UGCNode 在用户点击该行锚点区域时调用

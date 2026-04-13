@@ -174,6 +174,94 @@ function Registry:RegisterAll()
         end
     })
 
+    -- --------------------------------------------------------
+    -- 场景操作（放置 / 移动 / 删除 Actor）
+    -- --------------------------------------------------------
+
+    self:Register("place_object", {
+        desc = "在场景中放置一个预制体 Actor。可用预制体：Box（方块）、Sphere（球体）、Cylinder（圆柱）、Ramp（斜坡）、SpawnPoint（出生点）、ExtractionZone（撤离点）、TriggerZone（触发区）、WeaponSpawn（武器生成点）",
+        params = {
+            { name = "prefab", type = "string", desc = "预制体名称，区分大小写", required = true },
+            { name = "x",      type = "number", desc = "世界坐标 X（cm）",      required = true },
+            { name = "y",      type = "number", desc = "世界坐标 Y（cm）",      required = true },
+            { name = "z",      type = "number", desc = "世界坐标 Z（cm），默认 0", required = false },
+        },
+        func = function(p)
+            if not p.prefab or p.x == nil or p.y == nil then
+                return false, "缺少参数 prefab / x / y"
+            end
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local loc = UE.FVector(tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0)
+            local sceneID, actor = SceneData:CreateActor(tostring(p.prefab), loc)
+            if not sceneID then
+                return false, "放置失败，预制体名称可能不合法或场景已满"
+            end
+            return true, string.format("已放置 %s，场景 ID=%d，坐标=(%.0f,%.0f,%.0f)",
+                p.prefab, sceneID, p.x, p.y, tonumber(p.z) or 0)
+        end
+    })
+
+    self:Register("move_object", {
+        desc = "移动场景中已有的 Actor 到新坐标。scene_id 从 list_objects 获取",
+        params = {
+            { name = "scene_id", type = "number", desc = "Actor 的场景 ID（整数）", required = true },
+            { name = "x",        type = "number", desc = "目标坐标 X（cm）",       required = true },
+            { name = "y",        type = "number", desc = "目标坐标 Y（cm）",       required = true },
+            { name = "z",        type = "number", desc = "目标坐标 Z（cm）",       required = false },
+        },
+        func = function(p)
+            if p.scene_id == nil or p.x == nil or p.y == nil then
+                return false, "缺少参数 scene_id / x / y"
+            end
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local entry = SceneData:QueryActor(tonumber(p.scene_id))
+            if not entry then
+                return false, "找不到 scene_id=" .. tostring(p.scene_id)
+            end
+            local loc = UE.FVector(tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0)
+            local newT = UE.UKismetMathLibrary.MakeTransform(
+                loc, UE.FRotator(0,0,0), UE.FVector(1,1,1))
+            local ok = SceneData:ModifyActor(tonumber(p.scene_id), newT)
+            return ok, ok and string.format("Actor %d 已移动到 (%.0f,%.0f,%.0f)",
+                p.scene_id, p.x, p.y, tonumber(p.z) or 0) or "移动失败"
+        end
+    })
+
+    self:Register("delete_object", {
+        desc = "删除场景中指定 ID 的 Actor。scene_id 从 list_objects 获取",
+        params = {
+            { name = "scene_id", type = "number", desc = "Actor 的场景 ID（整数）", required = true },
+        },
+        func = function(p)
+            if p.scene_id == nil then return false, "缺少参数 scene_id" end
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local ok = SceneData:DeleteActor(tonumber(p.scene_id))
+            return ok, ok and "Actor " .. tostring(p.scene_id) .. " 已删除" or "删除失败，ID 不存在"
+        end
+    })
+
+    self:Register("list_objects", {
+        desc = "列出场景中所有已放置的 Actor，返回每个的 scene_id、预制体名称和坐标",
+        params = {},
+        func = function(p)
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local EditorBridge = require("Gameplay.UGC.UGCEditorCore"):GetBridge()
+            local lines = {}
+            SceneData:ForEach(function(entry)
+                local x, y, z = 0, 0, 0
+                if EditorBridge and entry.actor then
+                    local t = EditorBridge:GetActorTransform(entry.actor)
+                    local loc, _, _ = UE.UKismetMathLibrary.BreakTransform(t)
+                    x, y, z = loc.X, loc.Y, loc.Z
+                end
+                table.insert(lines, string.format("ID=%d prefab=%s pos=(%.0f,%.0f,%.0f)",
+                    entry.sceneID, tostring(entry.prefabName), x, y, z))
+            end)
+            if #lines == 0 then return true, "场景为空" end
+            return true, table.concat(lines, "\n")
+        end
+    })
+
 end
 
 --============================================================

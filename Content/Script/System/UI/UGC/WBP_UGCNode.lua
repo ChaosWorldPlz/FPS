@@ -91,15 +91,29 @@ function M:BuildContent(def, params)
         self._pinRows[pinName] = row
     end
 
+    local function addParamRow(p)
+        local row = UE.UWidgetBlueprintLibrary.Create(pc, cls, pc)
+        if not row then return end
+
+        if row.InitParam then
+            row:InitParam(self._data, p.name, p.label, p.default)
+        else
+            local val = (params and params[p.name]) or p.default
+            row:SetLabel(p.label .. ": " .. tostring(val))
+            row:InitPin(self._data.id, p.name, nil, self._editor)
+        end
+
+        self.w_vbox_content:AddChild(row)
+        self._pinRows[p.name] = row
+    end
+
     if def.exec_in        then addPinRow("exec_in",        "▶ 执行",  true,  false) end
     if def.exec_out       then addPinRow("exec_out",       "执行 ▶",  false, true)  end
     if def.exec_out_true  then addPinRow("exec_out_true",  "True ▶",  false, true)  end
     if def.exec_out_false then addPinRow("exec_out_false", "False ▶", false, true)  end
 
     for _, p in ipairs(def.params or {}) do
-        local val = (params and params[p.name]) or p.default
-        -- 参数行：纯标签显示，无引脚锚点（isInput=nil）
-        addPinRow(p.name, p.label .. ": " .. tostring(val), nil, false)
+        addParamRow(p)
     end
 end
 

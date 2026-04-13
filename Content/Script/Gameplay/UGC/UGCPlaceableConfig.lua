@@ -22,6 +22,8 @@ return {
     { id="ExtractionZone", label="撤离点", category="关卡功能", path="/Game/_UGC/Placeables/BP_Placeable_Extraction.BP_Placeable_Extraction_C" },
     { id="TriggerZone",    label="触发区", category="关卡功能", path="/Game/_UGC/Placeables/BP_Placeable_TriggerZone.BP_Placeable_TriggerZone_C" },
 
+    -- 功能Actor
+    { id="TriggerZone",      label="触发区",   category="功能Actor",   path="/Game/_UGC/Placeables/BP_Placeable_TriggerZone.BP_Placeable_TriggerZone_C" },
     -- 武器道具
     { id="WeaponSpawn", label="武器生成", category="武器道具", path="/Game/_UGC/Placeables/BP_Placeable_WeaponSpawn.BP_Placeable_WeaponSpawn_C" },
 }

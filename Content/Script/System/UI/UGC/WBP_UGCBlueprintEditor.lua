@@ -652,7 +652,107 @@ function M:OnClickClose()
 end
 
 function M:OnClickCompile()
-    self:SetStatus("编译成功（执行引擎 Day 4 实现）")
+    local g      = getG()
+    local nodes  = g.nodes
+    local conns  = g.connections
+
+    -- 节点总数
+    local nodeCount = 0
+    for _ in pairs(nodes) do nodeCount = nodeCount + 1 end
+
+    if nodeCount == 0 then
+        self:SetStatus("编译: 空图（无节点）")
+        return
+    end
+
+    local errors   = {}
+    local warnings = {}
+
+    -- ① 找事件节点（执行入口）
+    local eventNodes = {}
+    for id, n in pairs(nodes) do
+        local def = NodeRegistry.Definitions[n.type]
+        if def and def.category == "事件" then
+            table.insert(eventNodes, id)
+        end
+    end
+    if #eventNodes == 0 then
+        table.insert(errors, "没有事件节点（图缺少执行入口）")
+    end
+
+    -- ② 建连线索引，BFS 找从事件节点可达的节点
+    local connOut = {}  -- [fromID][fromPin] = toID
+    for _, c in ipairs(conns) do
+        if not connOut[c.from_id] then connOut[c.from_id] = {} end
+        connOut[c.from_id][c.from_pin] = c.to_id
+    end
+
+    local reachable = {}
+    local queue     = {}
+    for _, eid in ipairs(eventNodes) do
+        if not reachable[eid] then
+            reachable[eid] = true
+            table.insert(queue, eid)
+        end
+    end
+    local head = 1
+    while head <= #queue do
+        local cur = queue[head]; head = head + 1
+        local outs = connOut[cur]
+        if outs then
+            for _, toID in pairs(outs) do
+                if not reachable[toID] then
+                    reachable[toID] = true
+                    table.insert(queue, toID)
+                end
+            end
+        end
+    end
+
+    -- ③ 孤立节点警告（事件节点本身不算孤立）
+    for id, n in pairs(nodes) do
+        if not reachable[id] then
+            local def   = NodeRegistry.Definitions[n.type]
+            local label = (def and def.label) or n.type
+            table.insert(warnings, "孤立节点: " .. label .. " (" .. id .. ")")
+        end
+    end
+
+    -- ④ Branch 节点：条件引用合法性
+    for id, n in pairs(nodes) do
+        if n.type == "Branch" then
+            local condID = (n.params or {}).condition_node or ""
+            if condID == "" then
+                table.insert(errors, "Branch (" .. id .. "): 未指定 condition_node")
+            elseif not nodes[condID] then
+                table.insert(errors,
+                    "Branch (" .. id .. "): 条件节点 " .. condID .. " 不存在")
+            end
+        end
+    end
+
+    -- ⑤ 汇报
+    if #errors > 0 then
+        local summary = errors[1]
+        if #errors > 1 then
+            summary = summary .. string.format("…（共 %d 个错误）", #errors)
+        end
+        self:SetStatus("编译错误: " .. summary)
+        Log(string.format("编译失败 %d 错误 %d 警告", #errors, #warnings))
+    elseif #warnings > 0 then
+        local summary = warnings[1]
+        if #warnings > 1 then
+            summary = summary .. string.format("…（共 %d 个警告）", #warnings)
+        end
+        self:SetStatus(string.format("编译通过（%d 节点，%d 警告）: %s",
+            nodeCount, #warnings, summary))
+        Log(string.format("编译通过 0 错误 %d 警告", #warnings))
+    else
+        self:SetStatus(string.format(
+            "编译成功 — %d 节点，%d 个事件入口",
+            nodeCount, #eventNodes))
+        Log(string.format("编译成功 %d 节点", nodeCount))
+    end
 end
 
 function M:OnClickSave()

@@ -319,6 +319,19 @@ function EditorCore:GetState()
     return _currentState
 end
 
+--- 对 SceneData 中所有 Actor 调用 SetDebugVisible（pcall 保护，非 TriggerZone 自动忽略）
+local function setAllTriggerZoneDebugVisible(visible)
+    local ok, SceneData = pcall(require, "Gameplay.UGC.UGCSceneData")
+    if not ok or not SceneData then return end
+    local actors = SceneData:GetAllActors()
+    if not actors then return end
+    for _, entry in pairs(actors) do
+        if entry.actor then
+            pcall(function() entry.actor:SetDebugVisible(visible) end)
+        end
+    end
+end
+
 function EditorCore:EnterEditMode()
     if _currentState == State.Edit then return end
     _currentState  = State.Edit
@@ -330,6 +343,9 @@ function EditorCore:EnterEditMode()
     end
 
     UIManager:OpenWindow("WBP_UGCEditor")
+
+    -- 显示所有 TriggerZone 的编辑模式可视化方块
+    setAllTriggerZoneDebugVisible(true)
 
     if _onStateChanged then _onStateChanged(State.Edit) end
     print("[UGCEditorCore] 进入编辑模式")
@@ -348,6 +364,9 @@ function EditorCore:EnterPlayMode()
     end
 
     UIManager:CloseWindow("WBP_UGCEditor")
+
+    -- 隐藏所有 TriggerZone 的编辑模式可视化方块
+    setAllTriggerZoneDebugVisible(false)
 
     if _onStateChanged then _onStateChanged(State.Play) end
     print("[UGCEditorCore] 进入试玩模式")
@@ -397,6 +416,7 @@ function EditorCore:SelectPrefab(prefabName)
     _ghostActor = _bridge:SpawnPlaceable(path, spawnLoc, UE.FRotator(0, 0, 0))
     if _ghostActor then
         _bridge:SetActorHighlight(_ghostActor, true)   -- 发光轮廓表示是预览
+        pcall(function() _ghostActor:SetDebugVisible(true) end)  -- TriggerZone 预览时可见
     end
     print("[UGCEditorCore] 放置模式（Ghost）: " .. prefabName)
 end
@@ -484,6 +504,7 @@ function EditorCore:OnViewportClick(screenX, screenY)
             _ghostActor = _bridge:SpawnPlaceable(continuePath, spawnLoc, UE.FRotator(0, 0, 0))
             if _ghostActor then
                 _bridge:SetActorHighlight(_ghostActor, true)
+                pcall(function() _ghostActor:SetDebugVisible(true) end)  -- TriggerZone 预览时可见
             end
             _pendingPrefab = prefabName
         end

@@ -7,6 +7,17 @@
 #include "Interfaces/IHttpRequest.h"
 #include "UGCHttpClient.generated.h"
 
+/** 可选的 LLM 模型（下拉单选，BuildRequestBody 负责转成实际 model string） */
+UENUM(BlueprintType)
+enum class EUGCLLMModel : uint8
+{
+    DeepSeek_Chat      UMETA(DisplayName = "DeepSeek Chat"),
+    DeepSeek_Reasoner  UMETA(DisplayName = "DeepSeek Reasoner"),
+    Qwen_Plus          UMETA(DisplayName = "Qwen Plus"),
+    Qwen_Turbo         UMETA(DisplayName = "Qwen Turbo"),
+    Qwen_Max           UMETA(DisplayName = "Qwen Max"),
+};
+
 /**
  * UUGCHttpClient
  *
@@ -39,9 +50,9 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UGC|LLM|Config")
     FString APIEndpoint = TEXT("https://api.deepseek.com/v1/chat/completions");
 
-    /** 使用的模型 ID */
+    /** 使用的模型（下拉选择） */
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UGC|LLM|Config")
-    FString ModelID = TEXT("claude-sonnet-4-6");
+    EUGCLLMModel Model = EUGCLLMModel::DeepSeek_Chat;
 
     /** 最大输出 Token 数 */
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UGC|LLM|Config")
@@ -51,9 +62,18 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "UGC|LLM|Config",
         meta = (MultiLine = true))
     FString SystemPrompt = TEXT(
-        "你是一个游戏内的 UGC 助手，帮助玩家通过自然语言配置游戏规则和角色技能。"
-        "请根据用户的描述选择合适的函数调用来实现他们的需求。"
-        "回复时优先使用函数调用，只有无法用函数实现时才用文字回复。"
+        "你是一个游戏内的 UGC 关卡编辑助手。玩家可以用自然语言让你操作游戏场景。\n"
+        "你拥有以下能力：\n"
+        "- 场景操作：place_object（放置预制体）、move_object（移动 Actor）、delete_object（删除 Actor）、list_objects（列出场景内容）\n"
+        "- 角色属性：set_attribute / get_attribute（Health / MaxHealth / Armor / MovementSpeed / Stamina）\n"
+        "- 游戏规则：set_rule / get_rule（RoundTime / RespawnDelay / FriendlyFire / GravityScale）\n"
+        "- 武器：spawn_weapon（在指定坐标生成武器拾取物）\n"
+        "- GAS 技能：grant_ability / remove_ability\n"
+        "规则：\n"
+        "1. 优先使用函数调用完成任务，不要只用文字描述。\n"
+        "2. 坐标单位是厘米（cm），100 cm = 1 米。\n"
+        "3. 不确定 scene_id 时先调用 list_objects 查询。\n"
+        "4. 只有确实无法用函数实现时才纯文字回复。"
     );
 
     //-------------------------------------------------------------------

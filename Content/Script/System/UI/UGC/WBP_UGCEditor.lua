@@ -81,6 +81,7 @@ function M:Construct()
         { "w_btn_Undo",      M.OnClickUndo },
         { "w_btn_Blueprint",       M.OnClickBlueprint },
         { "w_btn_Blueprint_Actor", M.OnClickActorBlueprint },
+        { "w_btn_Chat",            M.OnClickChat },
     }) do
         if not bindButton(self, pair[1], pair[2]) then
             missingCount = missingCount + 1
@@ -436,6 +437,16 @@ function M:OnClickActorBlueprint()
         self:SetStatus(title .. " 已打开")
     end, 1)
     self:SetStatus("正在打开 " .. title .. "…")
+end
+
+--- 打开 AI 聊天窗口
+function M:OnClickChat()
+    local pc = self:GetOwningPlayer()
+    if not pc then return end
+    pc:ScheduleCallback(function()
+        local UIManager = require("Gameplay.Core.UIManager")
+        UIManager:ToggleWindow("WBP_UGCChat")
+    end, 1)
 end
 
 --- 根据是否有选中 Actor 控制「配置逻辑」按钮可见性

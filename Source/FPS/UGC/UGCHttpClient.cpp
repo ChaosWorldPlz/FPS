@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "UGCHttpClient.h"
+#include "UGCPlayerController.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Dom/JsonObject.h"
@@ -69,6 +70,19 @@ void UUGCHttpClient::CancelRequest()
 // 构建请求体
 // -----------------------------------------------------------------------
 
+static FString GetModelString(EUGCLLMModel InModel)
+{
+    switch (InModel)
+    {
+        case EUGCLLMModel::DeepSeek_Chat:     return TEXT("deepseek-chat");
+        case EUGCLLMModel::DeepSeek_Reasoner: return TEXT("deepseek-reasoner");
+        case EUGCLLMModel::Qwen_Plus:         return TEXT("qwen-plus");
+        case EUGCLLMModel::Qwen_Turbo:        return TEXT("qwen-turbo");
+        case EUGCLLMModel::Qwen_Max:          return TEXT("qwen-max");
+        default:                              return TEXT("deepseek-chat");
+    }
+}
+
 FString UUGCHttpClient::BuildRequestBody(const FString& UserMessage, const FString& ToolsJSON) const
 {
     // OpenAI 兼容格式（DeepSeek / Qwen 等均支持）
@@ -76,6 +90,7 @@ FString UUGCHttpClient::BuildRequestBody(const FString& UserMessage, const FStri
 
     FString SafeUserMsg = UserMessage.Replace(TEXT("\""), TEXT("\\\""));
     FString SafeSystem  = SystemPrompt.Replace(TEXT("\""), TEXT("\\\""));
+    FString ModelStr    = GetModelString(Model);
 
     FString ToolsPart = ToolsJSON.IsEmpty() ? TEXT("") :
         FString::Printf(TEXT(",\"tools\":%s,\"tool_choice\":\"auto\""), *ToolsJSON);
@@ -90,7 +105,7 @@ FString UUGCHttpClient::BuildRequestBody(const FString& UserMessage, const FStri
         TEXT("]")
         TEXT("%s")
         TEXT("}"),
-        *ModelID,
+        *ModelStr,
         MaxTokens,
         *SafeSystem,
         *SafeUserMsg,
@@ -126,12 +141,19 @@ void UUGCHttpClient::OnHttpResponse(FHttpRequestPtr Request, FHttpResponsePtr Re
     {
         FString Err = FString::Printf(TEXT("HTTP %d: %s"), StatusCode, *ResponseBody);
         UE_LOG(LogTemp, Error, TEXT("[UGCHttpClient] %s"), *Err);
-        OnMessageError(Err);
+        // 通过 PC NativeEvent 路由，UnLua 会拦截并调用 Lua 覆盖
+        if (AUGCPlayerController* PC = Cast<AUGCPlayerController>(GetOwner()))
+        {
+            PC->OnLLMError(Err);
+        }
         return;
     }
 
-    // 成功：将完整 JSON 传给 Lua 解析
-    OnMessageComplete(ResponseBody);
+    // 成功：路由到 PC NativeEvent，Lua UGCPlayerController 负责转发给 LLMGateway
+    if (AUGCPlayerController* PC = Cast<AUGCPlayerController>(GetOwner()))
+    {
+        PC->OnLLMResponse(ResponseBody);
+    }
 }
 
 // -----------------------------------------------------------------------

@@ -176,6 +176,11 @@ function SceneData:CreateActor(prefabName, location, rotation)
     self:PushUndo({ op = "Create", sceneID = sceneID })
     _redoStack = {}
 
+    -- 如果 Actor 支持 SetProgramID（即 AUGCTriggerZone），赋值关联程序
+    pcall(function() actor:SetProgramID("actor_prog_" .. tostring(sceneID)) end)
+    -- 编辑模式下新放置的 TriggerZone 立即显示可视化方块（非 TriggerZone 的 pcall 静默忽略）
+    pcall(function() actor:SetDebugVisible(true) end)
+
     print("[UGCSceneData] CreateActor: " .. prefabName .. " SceneID=" .. sceneID)
     return sceneID, actor
 end
@@ -243,6 +248,11 @@ function SceneData:ForEach(callback)
     for _, entry in pairs(_actors) do
         callback(entry)
     end
+end
+
+--- 返回全部 Actor 表（供 EditorCore:setAllTriggerZoneDebugVisible 等使用）
+function SceneData:GetAllActors()
+    return _actors
 end
 
 --============================================================

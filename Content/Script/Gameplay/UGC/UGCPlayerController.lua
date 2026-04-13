@@ -8,10 +8,11 @@
     - 提供 SendToLLM(message, callback) 快捷接口供 UI 调用
 ]]
 
-local UIManager    = require("Gameplay.Core.UIManager")
-local UGCRegistry  = require("Gameplay.UGC.UGCFunctionRegistry")
-local LLMGateway   = require("Gameplay.UGC.LLMGateway")
-local EditorCore   = require("Gameplay.UGC.UGCEditorCore")
+local UIManager      = require("Gameplay.Core.UIManager")
+local UGCRegistry    = require("Gameplay.UGC.UGCFunctionRegistry")
+local LLMGateway     = require("Gameplay.UGC.LLMGateway")
+local EditorCore     = require("Gameplay.UGC.UGCEditorCore")
+local ProgramRunner  = require("Gameplay.UGC.UGCProgramRunner")
 
 local M = UnLua.Class("Gameplay.PlayerController")
 local Base = require("Gameplay.PlayerController")
@@ -28,6 +29,12 @@ function M:ReceiveBeginPlay()
     UGCRegistry:Init(self)
     LLMGateway:Init(self)
     EditorCore:Init(self)
+    ProgramRunner:Init(self)
+
+    -- 延迟 5 帧后触发 Event_OnGameStart（等所有蓝图加载完毕）
+    self:ScheduleCallback(function()
+        ProgramRunner:TriggerGameStart()
+    end, 5)
 
     print("[UGCPlayerController] UGC 层初始化完成")
 end
@@ -89,6 +96,40 @@ function M:ScheduleCallback(fn, frames)
     table.insert(_pendingCallbacks, { fn = fn, framesLeft = frames or 3 })
 end
 
+--============================================================
+-- LLM 回调（BlueprintNativeEvent 覆盖，UGCHttpClient → PC → LLMGateway）
+--============================================================
+
+function M:OnLLMResponse(responseJSON)
+    LLMGateway:OnResponse(tostring(responseJSON))
+end
+
+function M:OnLLMError(errorMsg)
+    LLMGateway:OnError(tostring(errorMsg))
+end
+
+--============================================================
+-- TriggerZone 事件回调（BlueprintNativeEvent 覆盖）
+--============================================================
+
+--- Pawn 进入 TriggerZone 时由 C++ AUGCTriggerZone 调用
+function M:OnTriggerZoneEnter(programID)
+    local id = tostring(programID)
+    print("[UGCPlayerController] TriggerZone Enter: " .. id)
+    ProgramRunner:RunProgram(id, "Event_OnEnter")
+end
+
+--- Pawn 离开 TriggerZone 时由 C++ AUGCTriggerZone 调用
+function M:OnTriggerZoneExit(programID)
+    local id = tostring(programID)
+    print("[UGCPlayerController] TriggerZone Exit: " .. id)
+    ProgramRunner:RunProgram(id, "Event_OnExit")
+end
+
+--============================================================
+-- Tick
+--============================================================
+
 -- Tick：编辑模式下驱动 Ghost 跟随 / 选中 Actor 拖拽
 function M:ReceiveTick(deltaTime)
     -- 延迟回调：每帧倒计时，归零时执行
@@ -100,6 +141,9 @@ function M:ReceiveTick(deltaTime)
             table.remove(_pendingCallbacks, i)
         end
     end
+
+    -- ProgramRunner 定时器（Event_OnInterval）
+    ProgramRunner:Tick(deltaTime)
 
     -- 蓝图编辑器：节点拖拽 + 连线更新（独立于关卡编辑器状态）
     if _bpEditor then
