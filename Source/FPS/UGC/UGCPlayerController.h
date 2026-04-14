@@ -54,6 +54,10 @@ public:
     void ToggleEditor();
     virtual void ToggleEditor_Implementation() {}
 
+    /** 复制文本到系统剪贴板（供 Lua Widget 调用） */
+    UFUNCTION(BlueprintCallable, Category = "UGC|Utility")
+    void CopyToClipboard(const FString& Text);
+
     /** 编辑模式鼠标左键点击，Lua 可覆盖 */
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "UGC")
     void EditorClick();

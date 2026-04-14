@@ -25,7 +25,8 @@ public class FPS : ModuleRules
 			"UnLua",
 			"HTTP",
 			"Json",
-			"DesktopPlatform"
+			"DesktopPlatform",
+			"ApplicationCore"
 		});
 	}
 }

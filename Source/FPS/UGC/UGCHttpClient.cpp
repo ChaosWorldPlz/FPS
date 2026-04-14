@@ -88,8 +88,18 @@ FString UUGCHttpClient::BuildRequestBody(const FString& UserMessage, const FStri
     // OpenAI 兼容格式（DeepSeek / Qwen 等均支持）
     // 结构：{ model, max_tokens, messages: [{system},{user}], tools: [...] }
 
-    FString SafeUserMsg = UserMessage.Replace(TEXT("\""), TEXT("\\\""));
-    FString SafeSystem  = SystemPrompt.Replace(TEXT("\""), TEXT("\\\""));
+    // 顺序重要：先转义反斜杠本身，再转义其他字符
+    auto EscapeJSON = [](const FString& In) -> FString
+    {
+        return In
+            .Replace(TEXT("\\"), TEXT("\\\\"))
+            .Replace(TEXT("\""), TEXT("\\\""))
+            .Replace(TEXT("\n"), TEXT("\\n"))
+            .Replace(TEXT("\r"), TEXT("\\r"))
+            .Replace(TEXT("\t"), TEXT("\\t"));
+    };
+    FString SafeUserMsg = EscapeJSON(UserMessage);
+    FString SafeSystem  = EscapeJSON(SystemPrompt);
     FString ModelStr    = GetModelString(Model);
 
     FString ToolsPart = ToolsJSON.IsEmpty() ? TEXT("") :

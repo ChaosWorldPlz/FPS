@@ -6,6 +6,7 @@
 #include "UGCEditorBridge.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
+#include "HAL/PlatformApplicationMisc.h"
 
 AUGCPlayerController::AUGCPlayerController()
 {
@@ -28,6 +29,11 @@ void AUGCPlayerController::SetupInputComponent()
             EIC->BindAction(EditorClickAction, ETriggerEvent::Started, this,
                 &AUGCPlayerController::HandleEditorClickInput);
     }
+}
+
+void AUGCPlayerController::CopyToClipboard(const FString& Text)
+{
+    FPlatformApplicationMisc::ClipboardCopy(*Text);
 }
 
 void AUGCPlayerController::HandleToggleEditorInput()

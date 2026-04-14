@@ -81,7 +81,7 @@ function M:Construct()
         { "w_btn_Undo",      M.OnClickUndo },
         { "w_btn_Blueprint",       M.OnClickBlueprint },
         { "w_btn_Blueprint_Actor", M.OnClickActorBlueprint },
-        { "w_btn_Chat",            M.OnClickChat },
+        { "w_btn_aichat",          M.OnClickChat },
     }) do
         if not bindButton(self, pair[1], pair[2]) then
             missingCount = missingCount + 1
