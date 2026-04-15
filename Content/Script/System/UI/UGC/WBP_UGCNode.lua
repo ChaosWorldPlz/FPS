@@ -18,6 +18,11 @@
                 └─ 垂直框 VerticalBox [w_vbox_content]
                      内边距 Padding = 4,4,4,4
                      （引脚行动态填充）
+
+    点击路由（OnPreviewMouseButtonDown，比子控件优先）：
+      ① 点中引脚锚点 Image → OnPinAnchorClicked → 编辑器连线逻辑
+      ② 点中标题按钮区域  → CaptureMouse → OnMouseMove 拖拽节点
+      ③ 其他（参数输入框）→ Unhandled，透传给子控件
 ]]
 
 local NodeRegistry = require("System.UI.UGC.UGCNodeRegistry")
@@ -38,9 +43,7 @@ end
 --============================================================
 
 function M:Construct()
-    if self.w_btn_title and self.w_btn_title.OnPressed then
-        self.w_btn_title.OnPressed:Add(self, M.OnTitlePressed)
-    end
+    -- 点击路由全部由 OnPreviewMouseButtonDown 处理，此处无需绑定任何委托
 end
 
 --============================================================
@@ -78,7 +81,6 @@ function M:BuildContent(def, params)
     local cls = getPinRowClass()
     if not pc or not cls then return end
 
-    -- isInput: true=输入引脚, false=输出引脚
     local function addPinRow(pinName, label, isInput, rightAlign)
         local row = UE.UWidgetBlueprintLibrary.Create(pc, cls, pc)
         if not row then return end
@@ -94,7 +96,6 @@ function M:BuildContent(def, params)
     local function addParamRow(p)
         local row = UE.UWidgetBlueprintLibrary.Create(pc, cls, pc)
         if not row then return end
-
         if row.InitParam then
             row:InitParam(self._data, p.name, p.label, p.default)
         else
@@ -102,7 +103,6 @@ function M:BuildContent(def, params)
             row:SetLabel(p.label .. ": " .. tostring(val))
             row:InitPin(self._data.id, p.name, nil, self._editor)
         end
-
         self.w_vbox_content:AddChild(row)
         self._pinRows[p.name] = row
     end
@@ -121,9 +121,6 @@ end
 -- 对外接口
 --============================================================
 
---- 根据引脚名获取对应的引脚行 Widget
---- @param pinName string
---- @return WBP_UGCNodePinRow | nil
 function M:GetPinRow(pinName)
     return self._pinRows and self._pinRows[pinName]
 end
@@ -132,17 +129,107 @@ function M:GetNodeID()  return self._data and self._data.id     end
 function M:GetParams()  return self._data and self._data.params end
 
 --============================================================
--- 标题栏拖拽
+-- 命中测试辅助
+--   判断屏幕坐标 (sx, sy) 是否落在某个控件的包围盒内
+--   Hidden / Collapsed / HitTestInvisible 控件直接跳过
 --============================================================
 
-function M:OnTitlePressed()
-    if not self._editor or not self._data then return end
-    local pc = self:GetOwningPlayer()
-    if not pc then return end
-    local ok, sx, sy = pc:GetMousePosition()
-    if ok then
-        self._editor:BeginNodeDrag(self._data.id, sx, sy)
+local function hitTest(w, sx, sy)
+    if not w then return false end
+    -- 跳过不可见 / 不接受命中的控件
+    local vok, vis = pcall(function() return w:GetVisibility() end)
+    if not vok then return false end
+    if vis == UE.ESlateVisibility.Hidden
+    or vis == UE.ESlateVisibility.Collapsed
+    or vis == UE.ESlateVisibility.HitTestInvisible then
+        return false
     end
+    -- 几何包围盒检测
+    local gok, geo = pcall(function() return w:GetCachedGeometry() end)
+    if not gok then return false end
+    local size = UE.USlateBlueprintLibrary.GetLocalSize(geo)
+    if size.X == 0 and size.Y == 0 then return false end
+    local lp = UE.USlateBlueprintLibrary.AbsoluteToLocal(geo, UE.FVector2D(sx, sy))
+    return lp.X >= 0 and lp.X <= size.X and lp.Y >= 0 and lp.Y <= size.Y
+end
+
+--============================================================
+-- 点击路由（OnPreviewMouseButtonDown：比子控件优先触发）
+--============================================================
+
+function M:OnPreviewMouseButtonDown(geometry, pointerEvent)
+    if not self._editor or not self._data then
+        return UE.UWidgetBlueprintLibrary.Unhandled()
+    end
+
+    local ok, pos = pcall(function()
+        return UE.UKismetInputLibrary.PointerEvent_GetScreenSpacePosition(pointerEvent)
+    end)
+    if not ok or not pos then
+        return UE.UWidgetBlueprintLibrary.Unhandled()
+    end
+    local sx, sy = pos.X, pos.Y
+
+    -- ① 引脚锚点点击 → 触发连线
+    --    只检查 exec 引脚行（_isInput ~= nil），参数行（_isInput == nil）跳过
+    if self._pinRows then
+        for _, row in pairs(self._pinRows) do
+            if row and row._isInput ~= nil then
+                if hitTest(row.w_img_pin_in,  sx, sy)
+                or hitTest(row.w_img_pin_out, sx, sy) then
+                    row:OnPinAnchorClicked()
+                    return UE.UWidgetBlueprintLibrary.Handled()
+                end
+            end
+        end
+    end
+
+    -- ② 标题区域点击 → 拖拽节点
+    if hitTest(self.w_btn_title, sx, sy) then
+        self._isDraggingLocal  = true
+        self._dragStartScreen  = { x = sx, y = sy }
+        self._dragStartNodePos = { x = self._data.pos.x, y = self._data.pos.y }
+        local reply = UE.UWidgetBlueprintLibrary.Handled()
+        reply = UE.UWidgetBlueprintLibrary.CaptureMouse(reply, self)
+        return reply
+    end
+
+    -- ③ 其他区域（参数输入框等）→ 不消费，透传给子控件
+    return UE.UWidgetBlueprintLibrary.Unhandled()
+end
+
+--============================================================
+-- 拖拽：OnMouseMove / OnMouseButtonUp
+--============================================================
+
+function M:OnMouseMove(geometry, pointerEvent)
+    if not self._isDraggingLocal or not self._editor or not self._data then
+        return UE.UWidgetBlueprintLibrary.Unhandled()
+    end
+    local ok, pos = pcall(function()
+        return UE.UKismetInputLibrary.PointerEvent_GetScreenSpacePosition(pointerEvent)
+    end)
+    if not ok or not pos then return UE.UWidgetBlueprintLibrary.Handled() end
+
+    local screenDX = pos.X - self._dragStartScreen.x
+    local screenDY = pos.Y - self._dragStartScreen.y
+    local cdx, cdy = self._editor:ScreenDeltaToCanvas(screenDX, screenDY)
+    self._editor:MoveNodeTo(
+        self._data.id,
+        self._dragStartNodePos.x + cdx,
+        self._dragStartNodePos.y + cdy
+    )
+    return UE.UWidgetBlueprintLibrary.Handled()
+end
+
+function M:OnMouseButtonUp(geometry, pointerEvent)
+    if self._isDraggingLocal then
+        self._isDraggingLocal = false
+        local reply = UE.UWidgetBlueprintLibrary.Handled()
+        reply = UE.UWidgetBlueprintLibrary.ReleaseMouseCapture(reply)
+        return reply
+    end
+    return UE.UWidgetBlueprintLibrary.Unhandled()
 end
 
 return M

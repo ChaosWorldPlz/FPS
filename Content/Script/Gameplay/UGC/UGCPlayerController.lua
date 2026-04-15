@@ -145,23 +145,10 @@ function M:ReceiveTick(deltaTime)
     -- ProgramRunner 定时器（Event_OnInterval）
     ProgramRunner:Tick(deltaTime)
 
-    -- 蓝图编辑器：节点拖拽 + 连线更新（独立于关卡编辑器状态）
+    -- 蓝图编辑器：连线更新（节点拖拽已改为节点 Widget 自管理，Tick 只负责刷新连线）
     if _bpEditor then
         local ok, x, y = self:GetMousePosition()
         if ok then
-            local bridge    = EditorCore:GetBridge()
-            local mouseDown = bridge and bridge:IsMouseButtonDown() or false
-
-            -- 节点拖拽
-            if _bpEditor:IsDraggingNode() then
-                if mouseDown then
-                    _bpEditor:OnDragTick(x, y)
-                else
-                    _bpEditor:EndNodeDrag()
-                end
-            end
-
-            -- 连线绘制（含待连预览线，每帧更新）
             _bpEditor:UpdateWires(x, y)
         end
     end

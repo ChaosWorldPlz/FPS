@@ -269,6 +269,7 @@ function M:PlaceNode(canvasX, canvasY, nodeType)
         slot:SetAutoSize(true)
         slot:SetAlignment(UE.FVector2D(0.5, 0.5))
         slot:SetPosition(UE.FVector2D(px, py))
+        nodeData.canvasSlot = slot   -- 缓存 slot，MoveNodeTo 直接复用，避免二次 SlotAsCanvasSlot 失败
         Log(string.format("SetPosition %.1f,%.1f", px, py))
     else
         Warn("PlaceNode: 未获取到 CanvasSlot，节点可能不可见")
@@ -321,7 +322,8 @@ function M:OpenGraph(programID, title, graphData)
                 if not ok then
                     Log("RemoveFromParent 失败（widget 已失效），跳过")
                 end
-                node.widget = nil
+                node.widget      = nil
+                node.canvasSlot  = nil   -- 同步清除缓存的 slot 引用，防止下次 OpenGraph 访问死亡 UObject
             end
         end
     end
@@ -381,6 +383,7 @@ function M:OpenGraph(programID, title, graphData)
                     self.w_canvas_main:AddChild(widget)
                     local slot = UE.UWidgetLayoutLibrary.SlotAsCanvasSlot(widget)
                     if slot then
+                        nodeData.canvasSlot = slot   -- 缓存供 MoveNodeTo 使用
                         slot:SetAutoSize(true)
                         slot:SetAlignment(UE.FVector2D(0.5, 0.5))
                         slot:SetPosition(UE.FVector2D(
@@ -592,10 +595,14 @@ end
 
 function M:BeginNodeDrag(nodeID, sx, sy)
     local node = getG().nodes[nodeID]
-    if not node then return end
+    if not node then
+        Warn("BeginNodeDrag: 节点不存在 " .. tostring(nodeID) .. " (activeID=" .. _activeID .. ")")
+        return
+    end
     _dragNodeID       = nodeID
     _dragStartMouse   = { x=sx, y=sy }
     _dragStartNodePos = { x=node.pos.x, y=node.pos.y }
+    Debug("BeginNodeDrag: " .. nodeID .. " at " .. string.format("%.0f,%.0f", sx, sy))
 end
 
 function M:OnDragTick(sx, sy)
@@ -620,13 +627,24 @@ end
 
 function M:MoveNodeTo(nodeID, cx, cy)
     local node = getG().nodes[nodeID]
-    if not node or not node.widget then return end
+    if not node or not node.widget then
+        Warn("MoveNodeTo: 找不到节点或 widget 为空: " .. tostring(nodeID))
+        return
+    end
     node.pos.x = cx
     node.pos.y = cy
-    local slot = UE.UWidgetLayoutLibrary.SlotAsCanvasSlot(node.widget)
-    if slot then
-        slot:SetPosition(UE.FVector2D(cx + _panOffset.x, cy + _panOffset.y))
+    -- 优先用 PlaceNode / OpenGraph 缓存的 slot；若无则重新获取并缓存
+    local slot = node.canvasSlot
+    if not slot then
+        slot = UE.UWidgetLayoutLibrary.SlotAsCanvasSlot(node.widget)
+        if slot then
+            node.canvasSlot = slot
+        else
+            Warn("MoveNodeTo: SlotAsCanvasSlot 返回 nil，节点 " .. nodeID .. " 无法移动")
+            return
+        end
     end
+    slot:SetPosition(UE.FVector2D(cx + _panOffset.x, cy + _panOffset.y))
 end
 
 --============================================================
@@ -792,6 +810,25 @@ end
 
 function M:SetStatus(msg)
     if self.w_text_status then self.w_text_status:SetText(msg) end
+end
+
+--- 将屏幕像素 delta 转换为画布本地坐标 delta（消除 DPI 缩放影响）
+--- 由 WBP_UGCNode:OnMouseMove 调用
+function M:ScreenDeltaToCanvas(screenDX, screenDY)
+    if not self.w_canvas_main then return screenDX, screenDY end
+    local ok, geo = pcall(function() return self.w_canvas_main:GetCachedGeometry() end)
+    if not ok or not geo then return screenDX, screenDY end
+    -- AbsoluteToLocal(零点) 和 AbsoluteToLocal(零点+delta) 之差即为 canvas 单位 delta
+    local ok2, origin = pcall(function()
+        return UE.USlateBlueprintLibrary.AbsoluteToLocal(geo, UE.FVector2D(0, 0))
+    end)
+    local ok3, point = pcall(function()
+        return UE.USlateBlueprintLibrary.AbsoluteToLocal(geo, UE.FVector2D(screenDX, screenDY))
+    end)
+    if ok2 and ok3 and origin and point then
+        return point.X - origin.X, point.Y - origin.Y
+    end
+    return screenDX, screenDY
 end
 
 function M:GetActiveID()        return _activeID             end
