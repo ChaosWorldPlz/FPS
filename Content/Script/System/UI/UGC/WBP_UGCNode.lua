@@ -171,15 +171,12 @@ function M:OnPreviewMouseButtonDown(geometry, pointerEvent)
     local sx, sy = pos.X, pos.Y
 
     -- ① 引脚锚点点击 → 触发连线
-    --    只检查 exec 引脚行（_isInput ~= nil），参数行（_isInput == nil）跳过
+    --    命中测试在 PinRow 内部执行（self.w_img_pin_in 跨 widget 访问可能为 nil）
     if self._pinRows then
         for _, row in pairs(self._pinRows) do
-            if row and row._isInput ~= nil then
-                if hitTest(row.w_img_pin_in,  sx, sy)
-                or hitTest(row.w_img_pin_out, sx, sy) then
-                    row:OnPinAnchorClicked()
-                    return UE.UWidgetBlueprintLibrary.Handled()
-                end
+            if row and row.HitTestPinAnchors and row:HitTestPinAnchors(sx, sy) then
+                row:OnPinAnchorClicked()
+                return UE.UWidgetBlueprintLibrary.Handled()
             end
         end
     end
@@ -210,6 +207,10 @@ function M:OnMouseMove(geometry, pointerEvent)
         return UE.UKismetInputLibrary.PointerEvent_GetScreenSpacePosition(pointerEvent)
     end)
     if not ok or not pos then return UE.UWidgetBlueprintLibrary.Handled() end
+
+    -- 同步 Slate 绝对坐标到编辑器缓存，用于 UpdateWires 的非全屏偏移修正
+    self._editor._slateMX = pos.X
+    self._editor._slateMY = pos.Y
 
     local screenDX = pos.X - self._dragStartScreen.x
     local screenDY = pos.Y - self._dragStartScreen.y

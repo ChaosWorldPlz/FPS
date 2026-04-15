@@ -147,9 +147,37 @@ function M:OnInputCommitted(text, commitMethod)
     end
 end
 
+--============================================================
+-- 引脚命中测试（供 WBP_UGCNode 调用，在 PinRow 内部执行避免跨 widget 访问 nil）
+--============================================================
+
+--- 判断屏幕绝对坐标 (sx, sy) 是否命中本行任意可见引脚锚点
+--- @return boolean
+function M:HitTestPinAnchors(sx, sy)
+    if self._isInput == nil then return false end  -- 参数行，不参与连线
+
+    local function hit(w)
+        if not w then return false end
+        local vok, vis = pcall(function() return w:GetVisibility() end)
+        if not vok then return false end
+        if vis == UE.ESlateVisibility.Hidden
+        or vis == UE.ESlateVisibility.Collapsed
+        or vis == UE.ESlateVisibility.HitTestInvisible then return false end
+        local gok, geo = pcall(function() return w:GetCachedGeometry() end)
+        if not gok then return false end
+        local size = UE.USlateBlueprintLibrary.GetLocalSize(geo)
+        if size.X == 0 and size.Y == 0 then return false end
+        local lp = UE.USlateBlueprintLibrary.AbsoluteToLocal(geo, UE.FVector2D(sx, sy))
+        return lp.X >= 0 and lp.X <= size.X and lp.Y >= 0 and lp.Y <= size.Y
+    end
+
+    return hit(self.w_img_pin_in) or hit(self.w_img_pin_out)
+end
+
 --- 由 WBP_UGCNode 在用户点击该行锚点区域时调用
 function M:OnPinAnchorClicked()
     if self._editor and self._nodeID and self._pinName then
+        -- isOutput = (isInput == false)，即输出引脚传 true，输入引脚传 false
         self._editor:OnPinClicked(self._nodeID, self._pinName, self._isInput == false)
     end
 end

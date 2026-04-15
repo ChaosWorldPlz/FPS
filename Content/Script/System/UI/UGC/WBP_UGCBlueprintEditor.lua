@@ -165,12 +165,26 @@ end
 -- 拖拽放置
 --============================================================
 
+function M:OnMouseMove(geometry, pointerEvent)
+    -- 缓存 Slate 绝对坐标（PointerEvent 坐标空间），用于 UpdateWires 非全屏偏移修正
+    local ok, pos = pcall(function()
+        return UE.UKismetInputLibrary.PointerEvent_GetScreenSpacePosition(pointerEvent)
+    end)
+    if ok and pos then
+        self._slateMX = pos.X
+        self._slateMY = pos.Y
+    end
+    return UE.UWidgetBlueprintLibrary.Unhandled()
+end
+
 function M:OnDragOver(geometry, pointerEvent, operation)
-    -- 在 OnDragOver 里缓存坐标，比 UpdateWires 更贴近 Drop 时刻
-    local pc = self:GetOwningPlayer()
-    if pc then
-        local ok, x, y = pc:GetMousePosition()
-        if ok then self._cachedMouseX = x; self._cachedMouseY = y end
+    -- 从 PointerEvent 缓存 Slate 绝对坐标（替代 PC:GetMousePosition 的视口本地坐标）
+    local ok, pos = pcall(function()
+        return UE.UKismetInputLibrary.PointerEvent_GetScreenSpacePosition(pointerEvent)
+    end)
+    if ok and pos then
+        self._slateMX = pos.X
+        self._slateMY = pos.Y
     end
     Debug("OnDragOver tag=" .. (operation and tostring(operation.Tag) or "nil"))
     return true
@@ -531,8 +545,13 @@ end
 --============================================================
 
 function M:UpdateWires(mouseAbsX, mouseAbsY)
-    self._cachedMouseX = mouseAbsX
-    self._cachedMouseY = mouseAbsY
+    -- 优先使用从 PointerEvent 缓存的 Slate 绝对坐标（修正非全屏模式下的坐标偏移）
+    -- PC:GetMousePosition() 返回视口本地像素，AbsoluteToLocal 需要 Slate 绝对坐标，
+    -- 全屏时两者一致，窗口模式时有偏移。PointerEvent 坐标与 AbsoluteToLocal 同一坐标系。
+    local mx = self._slateMX or mouseAbsX
+    local my = self._slateMY or mouseAbsY
+    self._cachedMouseX = mx
+    self._cachedMouseY = my
 
     if not self.w_wire_overlay then return end
     if not self.w_canvas_main  then return end
@@ -558,7 +577,7 @@ function M:UpdateWires(mouseAbsX, mouseAbsY)
                 if startAbs and endAbs then
                     local s = absToCanvas(startAbs)
                     local e = absToCanvas(endAbs)
-                    self.w_wire_overlay:AddWire(s.X, s.Y, e.X, e.Y, 1, 1, 1, 1, 2.0)
+                    self.w_wire_overlay:AddWire(s, e, 1, 1, 1, 1, 2.0)
                 end
             end
         end
@@ -577,7 +596,7 @@ function M:UpdateWires(mouseAbsX, mouseAbsY)
                     or  row:GetPinInAbsPos()
                 if pinAbs then
                     local s = absToCanvas(pinAbs)
-                    local e = absToCanvas(UE.FVector2D(mouseAbsX, mouseAbsY))
+                    local e = absToCanvas(UE.FVector2D(mx, my))
                     self.w_wire_overlay:SetPendingWire(s, e, true)
                 end
             end
@@ -645,6 +664,7 @@ function M:MoveNodeTo(nodeID, cx, cy)
         end
     end
     slot:SetPosition(UE.FVector2D(cx + _panOffset.x, cy + _panOffset.y))
+    _isDirtyWires = true   -- 节点移动后连线需要重绘
 end
 
 --============================================================
