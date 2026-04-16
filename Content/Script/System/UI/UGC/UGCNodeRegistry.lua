@@ -140,6 +140,29 @@ R.Definitions = {
             { name="seconds", label="秒数", default="1" }
         }
     },
+    PCG_Generate = {
+        label    = "PCG生成",
+        category = "动作",
+        color    = COLOR_ACTION,
+        exec_in  = true,
+        exec_out = true,
+        params   = {
+            { name="x",          label="X",            default="0"    },
+            { name="y",          label="Y",            default="0"    },
+            { name="z",          label="Z",            default="0"    },
+            { name="radius",     label="半径",         default="1000" },
+            { name="seed",       label="种子",         default="0"    },
+            { name="graph_path", label="Graph路径(选填)", default=""     },
+        }
+    },
+    PCG_Clear = {
+        label    = "PCG清除全部",
+        category = "动作",
+        color    = COLOR_ACTION,
+        exec_in  = true,
+        exec_out = true,
+        params   = {}
+    },
 }
 
 -- 按 category 分组，供侧边栏展示

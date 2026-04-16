@@ -24,7 +24,7 @@ local parseValue  -- 前向声明
 local function parseString(s, i)
     i = i + 1  -- 跳过 "
     local buf = {}
-    local escMap = { ['"']='"', ['\\']='\\', ['/']='\/', ['n']='\n', ['r']='\r', ['t']='\t', ['b']='\b', ['f']='\f' }
+    local escMap = { ['"']='"', ['\\']='\\', ['/']=  '/', ['n']='\n', ['r']='\r', ['t']='\t', ['b']='\b', ['f']='\f' }
     while i <= #s do
         local c = s:sub(i, i)
         if c == '"' then

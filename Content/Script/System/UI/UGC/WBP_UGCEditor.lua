@@ -23,7 +23,11 @@
 ]]
 
 local EditorCore      = require("Gameplay.UGC.UGCEditorCore")
-local PrefabRegistry  = require("Gameplay.UGC.UGCPrefabRegistry")
+local _ok, PrefabRegistry = pcall(require, "Gameplay.UGC.UGCPrefabRegistry")
+if not _ok then
+    print("[WBP_UGCEditor] 警告: 顶层 require UGCPrefabRegistry 失败: " .. tostring(PrefabRegistry))
+    PrefabRegistry = nil
+end
 
 local M = UnLua.Class()
 
@@ -165,7 +169,20 @@ function M:BuildPrefabList()
         return
     end
 
-    local cats = PrefabRegistry.Categories or {}
+    -- 懒加载：模块顶层 require 在 Widget 加载时可能失败，这里兜底
+    local PrefabReg = PrefabRegistry
+    if not PrefabReg then
+        local ok, reg = pcall(require, "Gameplay.UGC.UGCPrefabRegistry")
+        if ok and reg then
+            PrefabReg = reg
+        else
+            Warn("BuildPrefabList: 无法加载 UGCPrefabRegistry: " .. tostring(reg))
+            self:SetStatus("预制体注册表加载失败")
+            return
+        end
+    end
+
+    local cats = PrefabReg.Categories or {}
     Log(string.format("BuildPrefabList: %d 个分类", #cats))
 
     if #cats == 0 then

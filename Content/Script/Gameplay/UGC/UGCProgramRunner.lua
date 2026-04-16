@@ -206,6 +206,23 @@ function Runner:_executeNode(nodeID, nodeMap, connMap, ctx, depth)
         if not ok then Warn("Spawn_Weapon 失败: " .. tostring(msg)) end
         self:_executeFrom(nodeID, "exec_out", nodeMap, connMap, ctx, depth)
 
+    elseif t == "PCG_Generate" then
+        local ok, msg = UGCRegistry:Call("pcg_generate", {
+            x          = tonumber(p.x) or 0,
+            y          = tonumber(p.y) or 0,
+            z          = tonumber(p.z) or 0,
+            radius     = tonumber(p.radius) or 1000,
+            seed       = tonumber(p.seed) or 0,
+            graph_path = tostring(p.graph_path or ""),
+        })
+        if not ok then Warn("PCG_Generate 失败: " .. tostring(msg)) end
+        self:_executeFrom(nodeID, "exec_out", nodeMap, connMap, ctx, depth)
+
+    elseif t == "PCG_Clear" then
+        local ok, msg = UGCRegistry:Call("pcg_clear", {})
+        if not ok then Warn("PCG_Clear 失败: " .. tostring(msg)) end
+        self:_executeFrom(nodeID, "exec_out", nodeMap, connMap, ctx, depth)
+
     elseif t == "Print_Message" then
         local msg = tostring(p.msg or "")
         Log("PrintMsg: " .. msg)

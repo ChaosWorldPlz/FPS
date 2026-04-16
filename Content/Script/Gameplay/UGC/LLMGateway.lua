@@ -28,29 +28,74 @@ local _pc         = nil
 local _httpClient = nil
 local _onResult   = nil  -- 结果回调 function(success, message)
 
--- 多轮对话历史（2026-04-16 新增）
+-- 多轮对话历史
 -- 每轮 = 1 条 user + 1 条 assistant（可能含 tool_calls + tool results）
 -- FIFO 策略：超过 MAX_HISTORY_ROUNDS 轮时丢弃最早的
 local _history = {}
 local MAX_HISTORY_ROUNDS = 20  -- 保留最近 20 轮对话
+
+-- 持久化路径（Init 时确定）
+local _historyPath = nil
+
+local function _getSavedDir()
+    return UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
+end
+
+local function _ensureDir()
+    pcall(function() UE.UKismetSystemLibrary.MakeDirectory(_getSavedDir()) end)
+end
 
 --============================================================
 -- 初始化
 --============================================================
 
 function Gateway:Init(playerController)
-    _pc         = playerController
-    _httpClient = playerController:GetUGCHttpClient()
-    _history    = {}
-    -- 回调路由：UGCHttpClient → AUGCPlayerController::OnLLMResponse/OnLLMError
-    --           → UGCPlayerController.lua:OnLLMResponse/OnLLMError
-    --           → Gateway:OnResponse/OnError（在 UGCPlayerController.lua 里显式调用）
-    print("[LLMGateway] 初始化完成")
+    _pc          = playerController
+    _httpClient  = playerController:GetUGCHttpClient()
+    _historyPath = _getSavedDir() .. "chat_history.json"
+    -- 尝试恢复持久化历史；失败则新建
+    if not Gateway:LoadHistory() then
+        _history = {}
+    end
+    print("[LLMGateway] 初始化完成，历史条数: " .. #_history)
+end
+
+--- 持久化 LLM 对话历史到文件
+function Gateway:SaveHistory()
+    if not _historyPath then return end
+    _ensureDir()
+    local f = io.open(_historyPath, "w")
+    if f then
+        f:write(json.encode(_history))
+        f:close()
+    end
+end
+
+--- 从文件恢复 LLM 对话历史，返回 bool
+function Gateway:LoadHistory()
+    if not _historyPath then return false end
+    local f = io.open(_historyPath, "r")
+    if not f then return false end
+    local content = f:read("*a")
+    f:close()
+    local h = json.decode(content)
+    if type(h) == "table" then
+        _history = h
+        return true
+    end
+    return false
 end
 
 --- 清空对话历史（场景重置时调用）
 function Gateway:ClearHistory()
     _history = {}
+    -- 同步删除持久化文件
+    if _historyPath then
+        pcall(function()
+            local f = io.open(_historyPath, "w")
+            if f then f:write("[]"); f:close() end
+        end)
+    end
     print("[LLMGateway] 对话历史已清空")
 end
 
@@ -227,6 +272,7 @@ function Gateway:OnResponse(responseJSON)
     local summary = table.concat(messages, "\n")
     if _onResult then _onResult(allOk, summary) end
     _onResult = nil
+    Gateway:SaveHistory()
 end
 
 function Gateway:OnError(errorMsg)
@@ -235,6 +281,7 @@ function Gateway:OnError(errorMsg)
         _onResult(false, "请求失败: " .. tostring(errorMsg))
         _onResult = nil
     end
+    Gateway:SaveHistory()
 end
 
 --============================================================

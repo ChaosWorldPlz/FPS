@@ -315,17 +315,28 @@ function Registry:RegisterAll()
             if not pcgBridge then
                 return false, "PCG Bridge 组件不可用"
             end
-            local loc = UE.FVector(tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0)
+            local x, y, z = tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0
+            local loc = UE.FVector(x, y, z)
             local radius = tonumber(p.radius) or 0
             local seed = tonumber(p.seed) or 0
             local graphPath = tostring(p.graph_path or "")
             local actor = pcgBridge:Generate(loc, radius, seed, graphPath)
-            if actor then
-                return true, string.format("PCG 生成完成，中心=(%.0f,%.0f,%.0f) 半径=%.0f",
-                    p.x, p.y, tonumber(p.z) or 0, radius > 0 and radius or 1000)
-            else
+            if not actor then
                 return false, "PCG 生成失败，请检查 PCG Graph 配置"
             end
+            -- 登记到 SceneData，让保存/加载和场景清空能感知 PCG 生成物
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local sceneID = SceneData:RegisterExternalActor(actor, "PCG_Generated", {
+                kind       = "pcg",
+                x          = x,
+                y          = y,
+                z          = z,
+                radius     = radius,
+                seed       = seed,
+                graph_path = graphPath,
+            })
+            return true, string.format("PCG 生成完成 SceneID=%s 中心=(%.0f,%.0f,%.0f) 半径=%.0f",
+                tostring(sceneID), x, y, z, radius > 0 and radius or 1000)
         end
     })
 
@@ -339,9 +350,69 @@ function Registry:RegisterAll()
             end
             local count = pcgBridge:GetActiveCount()
             pcgBridge:CleanupAll()
+            -- 同步移除 SceneData 中的 PCG 条目（Actor 已被 Bridge 销毁）
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            SceneData:UnregisterExternalByKind("pcg")
             return true, "已清除 " .. count .. " 个 PCG 生成组"
         end
     })
+
+    -- --------------------------------------------------------
+    -- 场景生成器（2026-04-17 新增）
+    -- 暴露给 LLM：generate_<name>（每个生成器一个独立函数）+ list_generators + delete_batch
+    -- --------------------------------------------------------
+
+    self:Register("list_generators", {
+        desc = "列出所有可用的批量场景生成器（CoverField/Room/Wall 等），返回名字+一句中文描述+必填参数。在调用 generate_xxx 之前先用此函数了解能力。",
+        params = {},
+        func = function(p)
+            local Generators = require("Gameplay.UGC.Generators.Init")
+            local list = Generators:GetSchemas()
+            if #list == 0 then return true, "（暂无注册的生成器）" end
+            local lines = {}
+            for _, g in ipairs(list) do
+                local req = {}
+                for _, pa in ipairs(g.params or {}) do
+                    if pa.required then req[#req+1] = pa.name end
+                end
+                table.insert(lines, string.format("- %s: %s [必填: %s]",
+                    g.name, g.desc or "", table.concat(req, ",")))
+            end
+            return true, table.concat(lines, "\n")
+        end
+    })
+
+    self:Register("delete_batch", {
+        desc = "按 batch_id 整批删除某次生成器调用产生的所有 Actor",
+        params = {
+            { name="batch_id", type="string", desc="generate_xxx 返回结果中的 batch_id", required=true },
+        },
+        func = function(p)
+            if not p.batch_id then return false, "缺少 batch_id" end
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local n = SceneData:DeleteBatch(tostring(p.batch_id))
+            return true, string.format("已删除 batch %s，共 %d 个 Actor", p.batch_id, n)
+        end
+    })
+
+    self:Register("list_batches", {
+        desc = "列出当前所有由生成器创建的 batch（id 与每批数量），方便挑选要清理的批次",
+        params = {},
+        func = function(p)
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local batches = SceneData:ListBatches()
+            if #batches == 0 then return true, "（无活跃 batch）" end
+            local lines = {}
+            for _, b in ipairs(batches) do
+                table.insert(lines, string.format("- %s（%d 个）", b.id, b.count))
+            end
+            return true, table.concat(lines, "\n")
+        end
+    })
+
+    -- 把 Generators 注册表里所有 Gen_* 自动暴露成 generate_<name> 函数
+    local Generators = require("Gameplay.UGC.Generators.Init")
+    Generators:ExportFunctions(self)
 
 end
 
@@ -360,12 +431,12 @@ function Registry:Call(name, params)
         return false, "Bridge 未初始化"
     end
 
-    local ok, result = pcall(def.func, params or {})
+    local ok, r1, r2 = pcall(def.func, params or {})
     if not ok then
-        print("[UGCRegistry] 执行出错: " .. tostring(result))
-        return false, "执行异常: " .. tostring(result)
+        print("[UGCRegistry] 执行出错: " .. tostring(r1))
+        return false, "执行异常: " .. tostring(r1)
     end
-    return result
+    return r1, r2
 end
 
 --============================================================

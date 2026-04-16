@@ -29,6 +29,8 @@ local _undoStack  = {}    -- 撤销栈，最多 5 条
 local _redoStack  = {}    -- 重做栈
 local _scripts    = {}    -- 蓝图脚本：{["_level"]=graphData, [sceneID]=graphData, ...}
 local _isDirty    = false -- 脏标记：有未保存的修改时为 true
+local _batches    = {}    -- batchID(string) → { sceneID1, sceneID2, ... } 整批生成追踪
+local _nextBatch  = 1
 
 local UNDO_MAX = 5
 local ACTOR_MAX = 50
@@ -45,6 +47,8 @@ function SceneData:Init(editorBridge)
     _redoStack = {}
     _scripts   = {}
     _isDirty   = false
+    _batches   = {}
+    _nextBatch = 1
     print("[UGCSceneData] 初始化完成")
 end
 
@@ -62,6 +66,8 @@ function SceneData:Clear()
     _redoStack  = {}
     _scripts    = {}
     _isDirty    = false
+    _batches    = {}
+    _nextBatch  = 1
 
     -- ★ 强制完整 GC：
     --   _actors = {} 令所有 actor userdata 成孤儿，但 Lua 增量 GC 不会立刻回收。
@@ -239,6 +245,110 @@ function SceneData:CreateActorWithTransform(prefabName, transform)
 
     print("[UGCSceneData] CreateActorWithTransform: " .. prefabName .. " SceneID=" .. sceneID)
     return sceneID, actor
+end
+
+--- 登记一个由外部系统（如 PCG）生成的 Actor
+--- 与 CreateActor 区别：不走 PrefabRegistry，不进撤销栈，不调用 Spawn
+--- 用途：让 PCG 等外部生成的 Actor 也能被 SceneData 追踪、清除、序列化
+--- @param actor       AActor   已存在的 Actor 实例
+--- @param prefabName  string   逻辑名（如 "PCG_Generated"），仅用于显示/调试
+--- @param metadata    table    重建所需元数据（如 PCG: {kind="pcg", graph_path=..., x,y,z, radius, seed}）
+--- @return sceneID    int      分配的场景 ID
+function SceneData:RegisterExternalActor(actor, prefabName, metadata)
+    if not actor then
+        print("[UGCSceneData] RegisterExternalActor: actor 为 nil")
+        return nil
+    end
+
+    local sceneID = _nextID
+    _nextID = _nextID + 1
+
+    _actors[sceneID] = {
+        actor      = actor,
+        prefabName = prefabName or "External",
+        sceneID    = sceneID,
+        actorId    = "actor_" .. sceneID,
+        programId  = "actor_prog_" .. sceneID,
+        external   = true,
+        metadata   = metadata or {},
+    }
+    _isDirty = true
+
+    print(string.format("[UGCSceneData] RegisterExternalActor: %s SceneID=%d",
+        tostring(prefabName), sceneID))
+    return sceneID
+end
+
+--- 仅从追踪表移除外部 Actor 条目，不调用 DestroyActor
+--- 用途：当外部模块（如 PCG Bridge）已自行销毁 Actor 后，同步清理 SceneData 索引
+--- @param kind  string|nil  仅移除 metadata.kind 匹配的条目；nil = 移除所有 external 条目
+--- @return removed int  实际移除的条目数
+function SceneData:UnregisterExternalByKind(kind)
+    local removed = 0
+    for sceneID, entry in pairs(_actors) do
+        if entry.external then
+            if (not kind) or ((entry.metadata or {}).kind == kind) then
+                _actors[sceneID] = nil
+                removed = removed + 1
+            end
+        end
+    end
+    if removed > 0 then
+        _isDirty = true
+        print(string.format("[UGCSceneData] UnregisterExternalByKind(%s): 移除 %d 个条目",
+            tostring(kind or "*"), removed))
+    end
+    return removed
+end
+
+--============================================================
+-- 整批生成（Batch）
+-- 由 Generators 调用：BeginBatch → 多次 CreateActor + AddToBatch → 后续可整批 DeleteBatch
+--============================================================
+
+function SceneData:BeginBatch()
+    local id = "batch_" .. _nextBatch
+    _nextBatch = _nextBatch + 1
+    _batches[id] = {}
+    return id
+end
+
+function SceneData:AddToBatch(batchID, sceneID)
+    if not batchID or not sceneID then return end
+    local list = _batches[batchID]
+    if not list then return end
+    list[#list+1] = sceneID
+end
+
+function SceneData:GetBatchActors(batchID)
+    return _batches[batchID]
+end
+
+--- 整批删除：返回实际删除数量
+function SceneData:DeleteBatch(batchID)
+    local list = _batches[batchID]
+    if not list then
+        print("[UGCSceneData] DeleteBatch: 不存在 " .. tostring(batchID))
+        return 0
+    end
+    local n = 0
+    for _, sceneID in ipairs(list) do
+        if _actors[sceneID] and self:DeleteActor(sceneID) then
+            n = n + 1
+        end
+    end
+    _batches[batchID] = nil
+    print(string.format("[UGCSceneData] DeleteBatch %s 完成，删除 %d 个 Actor", batchID, n))
+    return n
+end
+
+function SceneData:ListBatches()
+    local out = {}
+    for id, list in pairs(_batches) do
+        out[#out+1] = { id = id, count = #list }
+    end
+    table.sort(out, function(a, b) return a.id < b.id end)
+    return out
 end
 
 --- 删除指定 Actor
@@ -445,7 +555,7 @@ function SceneData:SerializeToJSON()
             local t             = _bridge:GetActorTransform(entry.actor)
             local loc, rot, scl = UE.UKismetMathLibrary.BreakTransform(t)
 
-            table.insert(actorList, {
+            local rec = {
                 sceneID   = sceneID,
                 actorId   = entry.actorId   or ("actor_" .. sceneID),
                 programId = entry.programId or ("actor_prog_" .. sceneID),
@@ -453,7 +563,13 @@ function SceneData:SerializeToJSON()
                 t         = { loc.X, loc.Y, loc.Z,
                               rot.Pitch, rot.Yaw, rot.Roll,
                               scl.X, scl.Y, scl.Z },
-            })
+            }
+            -- 外部生成 Actor（PCG 等）：写入元数据，加载时由对应模块重放
+            if entry.external then
+                rec.external = true
+                rec.metadata = entry.metadata or {}
+            end
+            table.insert(actorList, rec)
         end
     end
 
@@ -480,12 +596,33 @@ function SceneData:DeserializeFromJSON(json)
 
     -- v1 格式（旧版）：actors 为整数 id
     -- v2 格式：actors 含 actorId / programId 字符串
+    -- v2+：a.external=true 时表示外部生成（PCG 等），由 metadata.kind 路由到对应模块重放
     for _, a in ipairs(data.actors or {}) do
         local sceneID  = a.sceneID or a.id   -- 兼容 v1 的 "id" 字段
         local prefab   = a.prefab or a.prefabName
         local nums     = a.t or {}
 
-        if sceneID and prefab and #nums == 9 then
+        if a.external and a.metadata then
+            -- 外部 Actor 重放：当前支持 PCG，后续可扩展其他类型
+            local md = a.metadata
+            if md.kind == "pcg" then
+                local UGCRegistry = require("Gameplay.UGC.UGCFunctionRegistry")
+                local ok, msg = UGCRegistry:Call("pcg_generate", {
+                    x          = tonumber(md.x) or 0,
+                    y          = tonumber(md.y) or 0,
+                    z          = tonumber(md.z) or 0,
+                    radius     = tonumber(md.radius) or 1000,
+                    seed       = tonumber(md.seed) or 0,
+                    graph_path = tostring(md.graph_path or ""),
+                })
+                if not ok then
+                    print("[UGCSceneData] PCG 重放失败 SceneID=" .. tostring(sceneID) .. ": " .. tostring(msg))
+                end
+            else
+                print("[UGCSceneData] 未知外部 Actor 类型: " .. tostring(md.kind))
+            end
+
+        elseif sceneID and prefab and #nums == 9 then
             local loc       = UE.FVector(nums[1], nums[2], nums[3])
             local rot       = UE.FRotator(nums[4], nums[5], nums[6])
             local scl       = UE.FVector(nums[7], nums[8], nums[9])

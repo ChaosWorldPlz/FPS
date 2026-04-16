@@ -305,10 +305,32 @@ function EditorCore:Init(playerController)
     _pc     = playerController
     _bridge = playerController:GetUGCEditorBridge()
 
+    if not _bridge then
+        print("[UGCEditorCore] 警告: GetUGCEditorBridge() 返回 nil，编辑器功能不可用！请确认 BP_UGCPlayerController 继承自 AUGCPlayerController")
+        return
+    end
+
     SceneData:Init(_bridge)
     PrefabRegistry:LoadDynamic(_bridge)   -- 扫描 Placeables 目录 + 加载自定义 JSON
 
     print("[UGCEditorCore] 初始化完成")
+end
+
+--- 内部：确保 _bridge 有效；若为 nil 则尝试从 _pc 懒初始化，仍失败返回 false
+local function _ensureBridge()
+    if _bridge then return true end
+    if not _pc then
+        print("[UGCEditorCore] _bridge 为 nil 且 _pc 未初始化，请先调用 Init()")
+        return false
+    end
+    _bridge = _pc:GetUGCEditorBridge()
+    if not _bridge then
+        print("[UGCEditorCore] 懒初始化失败：GetUGCEditorBridge() 仍返回 nil")
+        return false
+    end
+    print("[UGCEditorCore] _bridge 懒初始化成功")
+    SceneData:Init(_bridge)
+    return true
 end
 
 --============================================================
@@ -397,6 +419,7 @@ end
 
 --- 选择要放置的预制体（点击 UI 预制体列表后调用）
 function EditorCore:SelectPrefab(prefabName)
+    if not _ensureBridge() then return end
     if not PrefabRegistry.IsValid(prefabName) then
         print("[UGCEditorCore] 未知预制体: " .. tostring(prefabName))
         return
@@ -432,6 +455,7 @@ end
 --- 每 Tick 由 PlayerController 调用，让 Ghost 跟随鼠标
 function EditorCore:UpdateGhostPosition(screenX, screenY)
     if not _ghostActor then return end
+    if not _ensureBridge() then return end
     -- 传入 _ghostActor 让射线忽略自身，避免自碰撞反馈
     local hitPos = _bridge:LineTraceScreenPosition(screenX, screenY, _ghostActor)
     -- ZeroVector 表示没打到任何东西，保持原位（不归零）
@@ -467,6 +491,7 @@ end
 function EditorCore:OnViewportClick(screenX, screenY)
     if _currentState ~= State.Edit then return end
     if _isDragging then return end   -- 拖拽中忽略点击选中
+    if not _ensureBridge() then return end
 
     if _pendingPrefab then
         -- 点预制体按钮时同帧触发的 IA_EditorClick，跳过一次不放置
@@ -681,6 +706,7 @@ end
 
 --- 鼠标按下时调用，记录拖拽起点和当前选中 Actor 的原始 Transform
 function EditorCore:BeginDrag(x, y)
+    if not _ensureBridge() then return end
     _dragStartX, _dragStartY = x, y
     _isDragging       = false
     _preDragTransform = nil

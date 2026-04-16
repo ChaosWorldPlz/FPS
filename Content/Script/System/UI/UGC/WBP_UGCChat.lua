@@ -1,9 +1,34 @@
 --[[
     WBP_UGCChat.lua
     绑定：WBP_UGCChat → UnLuaInterface → GetModuleName = "System.UI.UGC.WBP_UGCChat"
+
+    聊天记录缓存：
+    - 显示消息（{text, isUser} 列表）持久化到 Saved/UGC/chat_display.json
+    - LLM 多轮历史持久化在 LLMGateway（Saved/UGC/chat_history.json）
+    - 最多保留 MAX_DISPLAY 条显示消息，避免文件过大
 ]]
 
+local json = require("Gameplay.UGC.json")
+
 local M = UnLua.Class()
+
+local MAX_DISPLAY = 40   -- 最多保留 40 条显示消息
+
+--============================================================
+-- 路径工具
+--============================================================
+
+local function getSavedDir()
+    return UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/UGC/"
+end
+
+local function getDisplayPath()
+    return getSavedDir() .. "chat_display.json"
+end
+
+local function ensureDir()
+    pcall(function() UE.UKismetSystemLibrary.MakeDirectory(getSavedDir()) end)
+end
 
 --============================================================
 -- 生命周期
@@ -16,6 +41,9 @@ function M:Construct()
     if self.w_btn_close then
         self.w_btn_close.OnPressed:Add(self, self.OnClickClose)
     end
+    if self.w_btn_clear then
+        self.w_btn_clear.OnPressed:Add(self, self.OnClickClear)
+    end
     if self.w_editablebox_input then
         self.w_editablebox_input.OnTextCommitted:Add(self, self.OnInputCommitted)
     end
@@ -23,7 +51,12 @@ function M:Construct()
         self.w_text_thinking:SetVisibility(UE.ESlateVisibility.Hidden)
     end
 
-    self:AddMessage("你好！我是 AI 助手，可以帮你修改场景、属性、规则等。试试说：「在0,0,100放一个方块」", false)
+    self._displayMsgs = {}
+
+    -- 尝试恢复历史气泡；无历史则显示欢迎消息
+    if not self:LoadDisplayHistory() then
+        self:_AddBubble("你好！我是 AI 助手，可以帮你修改场景、属性、规则等。试试说：「在0,0,100放一个方块」", false)
+    end
 end
 
 --============================================================
@@ -72,11 +105,31 @@ function M:OnClickClose()
     UIManager:CloseWindow("WBP_UGCChat")
 end
 
+function M:OnClickClear()
+    -- 清空 UI
+    if self.w_scrollbox_messages then
+        self.w_scrollbox_messages:ClearChildren()
+    end
+    self._displayMsgs = {}
+    self:SaveDisplayHistory()
+
+    -- 同步清空 LLM 历史
+    local ok, Gateway = pcall(require, "Gameplay.UGC.LLMGateway")
+    if ok and Gateway and Gateway.ClearHistory then
+        Gateway:ClearHistory()
+    end
+
+    -- 显示欢迎消息（不入历史）
+    self:_AddBubble("聊天记录已清空。", false)
+end
+
 --============================================================
--- 消息气泡
+-- 消息气泡（内部）
+-- _AddBubble: 只创建 Widget，不修改 _displayMsgs（用于恢复重放）
+-- AddMessage:  追加到 _displayMsgs 并持久化，再创建 Widget
 --============================================================
 
-function M:AddMessage(text, isUser)
+function M:_AddBubble(text, isUser)
     if not self.w_scrollbox_messages then return end
 
     local cls = UE.UClass.Load("/Game/_UGC/UI/WBP_UGCChatMsg.WBP_UGCChatMsg_C")
@@ -93,6 +146,7 @@ function M:AddMessage(text, isUser)
             end
         end
     else
+        -- fallback: 纯文本
         if not self._fallbackLines then self._fallbackLines = {} end
         table.insert(self._fallbackLines, (isUser and "[你] " or "[AI] ") .. text)
         if self.w_text_fallback then
@@ -101,6 +155,47 @@ function M:AddMessage(text, isUser)
     end
 
     self.w_scrollbox_messages:ScrollToEnd()
+end
+
+function M:AddMessage(text, isUser)
+    if not self._displayMsgs then self._displayMsgs = {} end
+    table.insert(self._displayMsgs, { text = text, isUser = isUser })
+    -- 超出上限时从头裁掉
+    while #self._displayMsgs > MAX_DISPLAY do
+        table.remove(self._displayMsgs, 1)
+    end
+    self:SaveDisplayHistory()
+    self:_AddBubble(text, isUser)
+end
+
+--============================================================
+-- 持久化
+--============================================================
+
+function M:SaveDisplayHistory()
+    ensureDir()
+    local f = io.open(getDisplayPath(), "w")
+    if f then
+        f:write(json.encode(self._displayMsgs or {}))
+        f:close()
+    end
+end
+
+--- 读取并重放历史气泡，返回 bool（是否有历史）
+function M:LoadDisplayHistory()
+    local f = io.open(getDisplayPath(), "r")
+    if not f then return false end
+    local content = f:read("*a")
+    f:close()
+
+    local msgs = json.decode(content)
+    if type(msgs) ~= "table" or #msgs == 0 then return false end
+
+    self._displayMsgs = msgs
+    for _, m in ipairs(msgs) do
+        self:_AddBubble(m.text, m.isUser == true)
+    end
+    return true
 end
 
 return M
