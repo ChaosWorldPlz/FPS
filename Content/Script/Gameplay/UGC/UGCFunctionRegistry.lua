@@ -179,30 +179,52 @@ function Registry:RegisterAll()
     -- --------------------------------------------------------
 
     self:Register("place_object", {
-        desc = "在场景中放置一个预制体 Actor。可用预制体：Box（方块）、Sphere（球体）、Cylinder（圆柱）、Ramp（斜坡）、SpawnPoint（出生点）、ExtractionZone（撤离点）、TriggerZone（触发区）、WeaponSpawn（武器生成点）",
+        desc = (function()
+            local PrefabReg = require("Gameplay.UGC.UGCPrefabRegistry")
+            local semantic = PrefabReg:GetSemanticDesc()
+            if semantic and semantic ~= "" then
+                return "在场景中放置一个预制体 Actor。可用预制体及说明：" .. semantic
+            end
+            return "在场景中放置一个预制体 Actor。可用预制体：Box、Sphere、Cylinder、Ramp、SpawnPoint、ExtractionZone、TriggerZone、WeaponSpawn"
+        end)(),
         params = {
             { name = "prefab", type = "string", desc = "预制体名称，区分大小写", required = true },
             { name = "x",      type = "number", desc = "世界坐标 X（cm）",      required = true },
             { name = "y",      type = "number", desc = "世界坐标 Y（cm）",      required = true },
             { name = "z",      type = "number", desc = "世界坐标 Z（cm），默认 0", required = false },
+            { name = "yaw",    type = "number", desc = "绕 Z 轴旋转角度（度），默认 0", required = false },
+            { name = "pitch",  type = "number", desc = "绕 Y 轴旋转角度（度），默认 0", required = false },
+            { name = "roll",   type = "number", desc = "绕 X 轴旋转角度（度），默认 0", required = false },
+            { name = "scale_x", type = "number", desc = "X 轴缩放倍率，默认 1", required = false },
+            { name = "scale_y", type = "number", desc = "Y 轴缩放倍率，默认 1", required = false },
+            { name = "scale_z", type = "number", desc = "Z 轴缩放倍率，默认 1", required = false },
         },
         func = function(p)
             if not p.prefab or p.x == nil or p.y == nil then
                 return false, "缺少参数 prefab / x / y"
             end
             local SceneData = require("Gameplay.UGC.UGCSceneData")
-            local loc = UE.FVector(tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0)
-            local sceneID, actor = SceneData:CreateActor(tostring(p.prefab), loc)
+            local loc   = UE.FVector(tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0)
+            local rot   = UE.FRotator(tonumber(p.pitch) or 0, tonumber(p.yaw) or 0, tonumber(p.roll) or 0)
+            local scale = UE.FVector(tonumber(p.scale_x) or 1, tonumber(p.scale_y) or 1, tonumber(p.scale_z) or 1)
+            local transform = UE.UKismetMathLibrary.MakeTransform(loc, rot, scale)
+            local sceneID, actor = SceneData:CreateActorWithTransform(tostring(p.prefab), transform)
+            if not sceneID then
+                -- fallback: 尝试旧接口（2026-04-16 兼容）
+                sceneID, actor = SceneData:CreateActor(tostring(p.prefab), loc)
+            end
             if not sceneID then
                 return false, "放置失败，预制体名称可能不合法或场景已满"
             end
-            return true, string.format("已放置 %s，场景 ID=%d，坐标=(%.0f,%.0f,%.0f)",
-                p.prefab, sceneID, p.x, p.y, tonumber(p.z) or 0)
+            return true, string.format("已放置 %s，场景 ID=%d，坐标=(%.0f,%.0f,%.0f) 旋转=(%.0f,%.0f,%.0f) 缩放=(%.1f,%.1f,%.1f)",
+                p.prefab, sceneID, p.x, p.y, tonumber(p.z) or 0,
+                tonumber(p.pitch) or 0, tonumber(p.yaw) or 0, tonumber(p.roll) or 0,
+                tonumber(p.scale_x) or 1, tonumber(p.scale_y) or 1, tonumber(p.scale_z) or 1)
         end
     })
 
     self:Register("move_object", {
-        desc = "移动场景中已有的 Actor 到新坐标。scene_id 从 list_objects 获取",
+        desc = "移动场景中已有的 Actor 到新坐标。scene_id 从 list_objects 获取。保留原有旋转和缩放",
         params = {
             { name = "scene_id", type = "number", desc = "Actor 的场景 ID（整数）", required = true },
             { name = "x",        type = "number", desc = "目标坐标 X（cm）",       required = true },
@@ -218,9 +240,18 @@ function Registry:RegisterAll()
             if not entry then
                 return false, "找不到 scene_id=" .. tostring(p.scene_id)
             end
+            -- 保留原有的 rotation 和 scale（2026-04-16 修复：不再重置为默认值）
+            local EditorBridge = require("Gameplay.UGC.UGCEditorCore"):GetBridge()
+            local origRot   = UE.FRotator(0, 0, 0)
+            local origScale = UE.FVector(1, 1, 1)
+            if EditorBridge and entry.actor then
+                local origT = EditorBridge:GetActorTransform(entry.actor)
+                local _, r, s = UE.UKismetMathLibrary.BreakTransform(origT)
+                origRot   = r
+                origScale = s
+            end
             local loc = UE.FVector(tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0)
-            local newT = UE.UKismetMathLibrary.MakeTransform(
-                loc, UE.FRotator(0,0,0), UE.FVector(1,1,1))
+            local newT = UE.UKismetMathLibrary.MakeTransform(loc, origRot, origScale)
             local ok = SceneData:ModifyActor(tonumber(p.scene_id), newT)
             return ok, ok and string.format("Actor %d 已移动到 (%.0f,%.0f,%.0f)",
                 p.scene_id, p.x, p.y, tonumber(p.z) or 0) or "移动失败"
@@ -259,6 +290,56 @@ function Registry:RegisterAll()
             end)
             if #lines == 0 then return true, "场景为空" end
             return true, table.concat(lines, "\n")
+        end
+    })
+
+    -- --------------------------------------------------------
+    -- PCG 过程化内容生成（2026-04-16 新增）
+    -- --------------------------------------------------------
+
+    self:Register("pcg_generate", {
+        desc = "在指定位置执行 PCG 过程化内容生成（自动散布掩体/装饰物群）。需要 UGCPCGBridge 组件和配置好的 PCG Graph 资产",
+        params = {
+            { name = "x",      type = "number", desc = "生成中心 X 坐标（cm）", required = true },
+            { name = "y",      type = "number", desc = "生成中心 Y 坐标（cm）", required = true },
+            { name = "z",      type = "number", desc = "生成中心 Z 坐标（cm），默认 0", required = false },
+            { name = "radius", type = "number", desc = "生成半径（cm），默认 1000", required = false },
+            { name = "seed",   type = "number", desc = "随机种子，0 = 随机", required = false },
+            { name = "graph_path", type = "string", desc = "PCG Graph 资产路径，空 = 使用默认", required = false },
+        },
+        func = function(p)
+            if p.x == nil or p.y == nil then
+                return false, "缺少参数 x / y"
+            end
+            local pcgBridge = _pc:GetUGCPCGBridge()
+            if not pcgBridge then
+                return false, "PCG Bridge 组件不可用"
+            end
+            local loc = UE.FVector(tonumber(p.x), tonumber(p.y), tonumber(p.z) or 0)
+            local radius = tonumber(p.radius) or 0
+            local seed = tonumber(p.seed) or 0
+            local graphPath = tostring(p.graph_path or "")
+            local actor = pcgBridge:Generate(loc, radius, seed, graphPath)
+            if actor then
+                return true, string.format("PCG 生成完成，中心=(%.0f,%.0f,%.0f) 半径=%.0f",
+                    p.x, p.y, tonumber(p.z) or 0, radius > 0 and radius or 1000)
+            else
+                return false, "PCG 生成失败，请检查 PCG Graph 配置"
+            end
+        end
+    })
+
+    self:Register("pcg_clear", {
+        desc = "清除所有 PCG 过程化生成的内容",
+        params = {},
+        func = function(p)
+            local pcgBridge = _pc:GetUGCPCGBridge()
+            if not pcgBridge then
+                return false, "PCG Bridge 组件不可用"
+            end
+            local count = pcgBridge:GetActiveCount()
+            pcgBridge:CleanupAll()
+            return true, "已清除 " .. count .. " 个 PCG 生成组"
         end
     })
 

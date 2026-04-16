@@ -81,12 +81,21 @@ public:
     //-------------------------------------------------------------------
 
     /**
-     * 向 Claude 发送消息，携带 UGC 函数 Schema
+     * 向 LLM 发送单条消息（无对话历史），携带 UGC 函数 Schema
      * @param UserMessage  用户输入的自然语言
      * @param ToolsJSON    UGCFunctionRegistry:GetSchemas() 返回的 JSON 字符串
      */
     UFUNCTION(BlueprintCallable, Category = "UGC|LLM")
     void SendMessage(const FString& UserMessage, const FString& ToolsJSON);
+
+    /**
+     * 向 LLM 发送带完整对话历史的请求（多轮对话）
+     * @param MessagesJSON  完整的 messages 数组 JSON，如 [{"role":"user","content":"..."},{"role":"assistant",...}]
+     *                      由 Lua 层维护历史并序列化
+     * @param ToolsJSON     UGCFunctionRegistry:GetSchemas() 返回的 JSON 字符串
+     */
+    UFUNCTION(BlueprintCallable, Category = "UGC|LLM")
+    void SendMessageWithHistory(const FString& MessagesJSON, const FString& ToolsJSON);
 
     /** 取消当前进行中的请求 */
     UFUNCTION(BlueprintCallable, Category = "UGC|LLM")
@@ -117,8 +126,11 @@ public:
     virtual void OnMessageError_Implementation(const FString& ErrorMessage);
 
 private:
-    /** 构建 Claude Messages API 请求体 JSON */
+    /** 构建请求体 JSON（单条用户消息，自动注入 system prompt） */
     FString BuildRequestBody(const FString& UserMessage, const FString& ToolsJSON) const;
+
+    /** 构建请求体 JSON（完整 messages 数组，由调用方提供历史） */
+    FString BuildRequestBodyWithMessages(const FString& MessagesJSON, const FString& ToolsJSON) const;
 
     /** HTTP 响应回调 */
     void OnHttpResponse(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bSuccess);

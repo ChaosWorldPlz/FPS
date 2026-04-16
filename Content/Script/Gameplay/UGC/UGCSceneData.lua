@@ -172,8 +172,9 @@ function SceneData:CreateActor(prefabName, location, rotation)
     _actors[sceneID] = entry
     _isDirty = true
 
-    -- 记录撤销
-    self:PushUndo({ op = "Create", sceneID = sceneID })
+    -- 记录撤销（保存完整信息供 Redo 恢复 — 2026-04-16 补全）
+    local transform = _bridge:GetActorTransform(actor)
+    self:PushUndo({ op = "Create", sceneID = sceneID, prefabName = prefabName, transform = transform })
     _redoStack = {}
 
     -- 如果 Actor 支持 SetProgramID（即 AUGCTriggerZone），赋值关联程序
@@ -182,6 +183,61 @@ function SceneData:CreateActor(prefabName, location, rotation)
     pcall(function() actor:SetDebugVisible(true) end)
 
     print("[UGCSceneData] CreateActor: " .. prefabName .. " SceneID=" .. sceneID)
+    return sceneID, actor
+end
+
+--- 放置一个新 Placeable Actor（完整 Transform 版本，2026-04-16 新增）
+--- @param prefabName string  预制体名称
+--- @param transform  FTransform  完整变换（位置+旋转+缩放）
+--- @return sceneID int, actor AActor
+function SceneData:CreateActorWithTransform(prefabName, transform)
+    if not PrefabRegistry.IsValid(prefabName) then
+        print("[UGCSceneData] CreateActorWithTransform: 未知预制体 " .. tostring(prefabName))
+        return nil, nil
+    end
+
+    if self:Count() >= ACTOR_MAX then
+        print("[UGCSceneData] CreateActorWithTransform: 已达到 Actor 上限 " .. ACTOR_MAX)
+        return nil, nil
+    end
+
+    local path = PrefabRegistry.GetPath(prefabName)
+    if not path then
+        print("[UGCSceneData] CreateActorWithTransform: 预制体没有可用路径 " .. tostring(prefabName))
+        return nil, nil
+    end
+
+    local loc, rot, _ = UE.UKismetMathLibrary.BreakTransform(transform)
+    local actor = _bridge:SpawnPlaceable(path, loc, rot)
+    if not actor then
+        print("[UGCSceneData] CreateActorWithTransform: Spawn 失败")
+        return nil, nil
+    end
+
+    -- 应用完整 Transform（含缩放）
+    _bridge:SetActorTransform(actor, transform)
+
+    local sceneID = _nextID
+    _nextID = _nextID + 1
+
+    local entry = {
+        actor      = actor,
+        prefabName = prefabName,
+        sceneID    = sceneID,
+        actorId    = "actor_" .. sceneID,
+        programId  = "actor_prog_" .. sceneID,
+    }
+    _actors[sceneID] = entry
+    _isDirty = true
+
+    -- 记录撤销（保存完整信息供 Redo 恢复 — 2026-04-16）
+    self:PushUndo({ op = "Create", sceneID = sceneID, prefabName = prefabName, transform = transform })
+    _redoStack = {}
+
+    pcall(function() actor:SetProgramID("actor_prog_" .. tostring(sceneID)) end)
+    pcall(function() actor:SetDebugVisible(true) end)
+
+    print("[UGCSceneData] CreateActorWithTransform: " .. prefabName .. " SceneID=" .. sceneID)
     return sceneID, actor
 end
 
@@ -319,10 +375,33 @@ function SceneData:Redo()
     local record = table.remove(_redoStack)
 
     if record.op == "Create" then
-        -- 这里需要重新 Spawn，但 Redo 后 sceneID 需复原
-        -- 简化：Redo Create = 重新 Spawn 并用原 sceneID
-        -- （要求 prefabName 和 transform 都记录）
-        print("[UGCSceneData] Redo Create 暂不支持，跳过")
+        -- Redo Create：重新 Spawn 并用原 sceneID（2026-04-16 补全）
+        -- 注意：record 需包含 prefabName 和 transform，旧记录若缺失则跳过
+        if not record.prefabName or not record.transform then
+            print("[UGCSceneData] Redo Create: 旧记录缺少 prefabName/transform，无法恢复，跳过")
+        else
+            local path = PrefabRegistry.GetPath(record.prefabName)
+            if path then
+                local loc, rot, _ = UE.UKismetMathLibrary.BreakTransform(record.transform)
+                local actor = _bridge:SpawnPlaceable(path, loc, rot)
+                if actor then
+                    _bridge:SetActorTransform(actor, record.transform)
+                    _actors[record.sceneID] = {
+                        actor      = actor,
+                        prefabName = record.prefabName,
+                        sceneID    = record.sceneID,
+                        actorId    = "actor_" .. record.sceneID,
+                        programId  = "actor_prog_" .. record.sceneID,
+                    }
+                    pcall(function() actor:SetProgramID("actor_prog_" .. tostring(record.sceneID)) end)
+                    pcall(function() actor:SetDebugVisible(true) end)
+                else
+                    print("[UGCSceneData] Redo Create: Spawn 失败 prefab=" .. tostring(record.prefabName))
+                end
+            else
+                print("[UGCSceneData] Redo Create: 预制体路径不存在 " .. tostring(record.prefabName))
+            end
+        end
 
     elseif record.op == "Delete" then
         local entry = _actors[record.sceneID]

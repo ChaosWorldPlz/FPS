@@ -20,41 +20,14 @@
       Registry:AddCustomPrefab({ id, label, category, blueprintPath })
 ]]
 
--- 极简 JSON 工具（仅处理 [{string字段}] 格式，无外部依赖）
-local SimpleJSON = {}
-
--- 解码 [ {...}, {...} ] 格式的字符串数组
-function SimpleJSON.decodeArray(s)
-    local result = {}
-    for obj in s:gmatch("{([^}]+)}") do
-        local entry = {}
-        for key, val in obj:gmatch('"(%w+)"%s*:%s*"([^"]*)"') do
-            entry[key] = val
-        end
-        if next(entry) then result[#result+1] = entry end
-    end
-    return result
-end
-
--- 编码 [{string字段}] 格式
-function SimpleJSON.encodeArray(arr)
-    local parts = {}
-    for _, entry in ipairs(arr) do
-        local fields = {}
-        for k, v in pairs(entry) do
-            if type(v) == "string" then
-                fields[#fields+1] = string.format('"%s":"%s"', k, v:gsub('"', '\\"'))
-            end
-        end
-        parts[#parts+1] = "{" .. table.concat(fields, ",") .. "}"
-    end
-    return "[\n  " .. table.concat(parts, ",\n  ") .. "\n]"
-end
+-- JSON 工具：使用统一的 json.lua 模块
+local json = require("Gameplay.UGC.json")
 
 local Registry = {}
 
 Registry.Prefabs    = {}
 Registry.Categories = {}
+Registry.Meta       = {}   -- id → { description, tags, label, category }
 Registry._dynamic   = {}   -- 仅玩家自定义条目，用于序列化
 
 local PLACEABLE_BASE = "/Game/_UGC/Placeables/"
@@ -114,12 +87,19 @@ end
 local function buildRegistry(entries)
     Registry.Prefabs    = {}
     Registry.Categories = {}
+    Registry.Meta       = {}
 
     local catMap   = {}
     local catOrder = {}
 
     for _, e in ipairs(entries) do
         Registry.Prefabs[e.id] = e.path or idToPath(e.id)
+        Registry.Meta[e.id] = {
+            label       = e.label or e.id,
+            category    = e.category or "方块",
+            description = e.description,
+            tags        = e.tags,
+        }
 
         local cat = e.category or "方块"
         if not catMap[cat] then
@@ -180,7 +160,7 @@ function Registry:LoadDynamic(bridge)
     local manifestPath = getContentDir() .. "_UGC/Placeables/placeable_manifest.json"
     local mf = io.open(manifestPath, "r")
     if mf then
-        local arr = SimpleJSON.decodeArray(mf:read("*a"))
+        local arr = json.decode(mf:read("*a")) or {}
         mf:close()
         local meta = {}
         for _, item in ipairs(arr) do
@@ -190,9 +170,11 @@ function Registry:LoadDynamic(bridge)
         for _, e in ipairs(entries) do
             local item = meta[e.id]
             if item then
-                e.label    = item.label    or e.label
-                e.category = item.category or e.category
-                e.path     = normalizeBlueprintClassPath(item.blueprintPath or item.path) or e.path
+                e.label       = item.label       or e.label
+                e.category    = item.category    or e.category
+                e.description = item.description or e.description
+                e.tags        = item.tags        or e.tags
+                e.path        = normalizeBlueprintClassPath(item.blueprintPath or item.path) or e.path
                 meta[e.id] = nil
             end
         end
@@ -205,10 +187,12 @@ function Registry:LoadDynamic(bridge)
                 if explicitPath then
                     seen[id] = true
                     entries[#entries+1] = {
-                        id       = id,
-                        label    = item.label or id,
-                        category = item.category or "方块",
-                        path     = explicitPath,
+                        id          = id,
+                        label       = item.label or id,
+                        category    = item.category or "方块",
+                        description = item.description,
+                        tags        = item.tags,
+                        path        = explicitPath,
                     }
                     manifestOnlyCount = manifestOnlyCount + 1
                 else
@@ -234,7 +218,7 @@ function Registry:LoadDynamic(bridge)
         local fw = io.open(customPath, "w")
         if fw then fw:write("[]"); fw:close() end
     else
-        local arr = SimpleJSON.decodeArray(cf:read("*a"))
+        local arr = json.decode(cf:read("*a")) or {}
         cf:close()
         for _, e in ipairs(arr) do
             local dynamicPath = normalizeBlueprintClassPath(e.blueprintPath or e.path)
@@ -270,7 +254,7 @@ function Registry:SaveDynamic()
     local path = getSavedDir() .. "custom_prefabs.json"
     local f    = io.open(path, "w")
     if f then
-        f:write(SimpleJSON.encodeArray(Registry._dynamic))
+        f:write(json.encode(Registry._dynamic, "  "))
         f:close()
     end
 end
@@ -281,6 +265,25 @@ end
 
 function Registry.GetPath(id)  return Registry.Prefabs[id] end
 function Registry.IsValid(id)  return Registry.Prefabs[id] ~= nil end
+
+--- 获取预制体元数据（description, tags, label, category）
+function Registry.GetMeta(id)  return Registry.Meta[id] end
+
+--- 为 LLM Schema 生成语义描述（包含所有预制体的 description 和 tags）
+--- 格式：Box — 基础掩体方块(掩体,墙壁,地板); SpawnPoint — 玩家出生位置(出生,玩家,必需); ...
+function Registry:GetSemanticDesc()
+    local parts = {}
+    for id, meta in pairs(Registry.Meta) do
+        local desc = meta.description or meta.label or id
+        local tagStr = ""
+        if meta.tags and #meta.tags > 0 then
+            tagStr = " (" .. table.concat(meta.tags, ",") .. ")"
+        end
+        table.insert(parts, id .. " — " .. desc .. tagStr)
+    end
+    table.sort(parts)
+    return table.concat(parts, "; ")
+end
 
 --============================================================
 -- 运行时添加自定义预制体（玩家上传）

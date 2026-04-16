@@ -56,6 +56,45 @@ void UUGCHttpClient::SendMessage(const FString& UserMessage, const FString& Tool
     }
 }
 
+void UUGCHttpClient::SendMessageWithHistory(const FString& MessagesJSON, const FString& ToolsJSON)
+{
+    if (APIKey.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[UGCHttpClient] APIKey 未配置，请在蓝图 Defaults 中填写"));
+        OnMessageError(TEXT("APIKey 未配置"));
+        return;
+    }
+
+    if (bRequestInProgress)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[UGCHttpClient] 上一个请求尚未完成"));
+        return;
+    }
+
+    FString Body = BuildRequestBodyWithMessages(MessagesJSON, ToolsJSON);
+
+    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Request = FHttpModule::Get().CreateRequest();
+    Request->SetURL(APIEndpoint);
+    Request->SetVerb(TEXT("POST"));
+    Request->SetHeader(TEXT("Content-Type"),  TEXT("application/json"));
+    Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *APIKey));
+    Request->SetContentAsString(Body);
+
+    Request->OnProcessRequestComplete().BindUObject(this, &UUGCHttpClient::OnHttpResponse);
+
+    if (Request->ProcessRequest())
+    {
+        ActiveRequest = Request;
+        bRequestInProgress = true;
+        UE_LOG(LogTemp, Log, TEXT("[UGCHttpClient] 多轮对话请求已发送（%d chars）"), MessagesJSON.Len());
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("[UGCHttpClient] 请求发送失败"));
+        OnMessageError(TEXT("请求发送失败"));
+    }
+}
+
 void UUGCHttpClient::CancelRequest()
 {
     if (ActiveRequest.IsValid())
@@ -119,6 +158,31 @@ FString UUGCHttpClient::BuildRequestBody(const FString& UserMessage, const FStri
         MaxTokens,
         *SafeSystem,
         *SafeUserMsg,
+        *ToolsPart
+    );
+
+    return Body;
+}
+
+FString UUGCHttpClient::BuildRequestBodyWithMessages(const FString& MessagesJSON, const FString& ToolsJSON) const
+{
+    // MessagesJSON 由 Lua 层拼好，已包含 system + 完整历史 + 最新 user message
+    // 格式: [{"role":"system","content":"..."},{"role":"user","content":"..."},...]
+    FString ModelStr = GetModelString(Model);
+
+    FString ToolsPart = ToolsJSON.IsEmpty() ? TEXT("") :
+        FString::Printf(TEXT(",\"tools\":%s,\"tool_choice\":\"auto\""), *ToolsJSON);
+
+    FString Body = FString::Printf(
+        TEXT("{")
+        TEXT("\"model\":\"%s\",")
+        TEXT("\"max_tokens\":%d,")
+        TEXT("\"messages\":%s")
+        TEXT("%s")
+        TEXT("}"),
+        *ModelStr,
+        MaxTokens,
+        *MessagesJSON,
         *ToolsPart
     );
 
