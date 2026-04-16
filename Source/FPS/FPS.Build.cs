@@ -26,7 +26,8 @@ public class FPS : ModuleRules
 			"HTTP",
 			"Json",
 			"DesktopPlatform",
-			"ApplicationCore"
+			"ApplicationCore",
+			"PCG"
 		});
 	}
 }

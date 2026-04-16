@@ -70,7 +70,7 @@ AActor* UUGCPCGBridge::Generate(FVector Location, float Radius, int32 Seed, cons
     }
 
     PCGComp->RegisterComponent();
-    PCGComp->SetGraphInterface(Graph);
+    PCGComp->SetGraph(Graph);
     PCGComp->Seed = UseSeed;
 
     // 设置生成范围（通过 Actor Scale 间接控制 PCG 的 Volume）
