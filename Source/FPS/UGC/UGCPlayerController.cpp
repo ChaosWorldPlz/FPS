@@ -4,6 +4,7 @@
 #include "UGCFunctionBridge.h"
 #include "UGCHttpClient.h"
 #include "UGCEditorBridge.h"
+#include "UGCPCGBridge.h"
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "HAL/PlatformApplicationMisc.h"
@@ -13,6 +14,7 @@ AUGCPlayerController::AUGCPlayerController()
     UGCBridge     = CreateDefaultSubobject<UUGCFunctionBridge>(TEXT("UGCFunctionBridge"));
     UGCHttpClient = CreateDefaultSubobject<UUGCHttpClient>(TEXT("UGCHttpClient"));
     EditorBridge  = CreateDefaultSubobject<UUGCEditorBridge>(TEXT("UGCEditorBridge"));
+    PCGBridge     = CreateDefaultSubobject<UUGCPCGBridge>(TEXT("UGCPCGBridge"));
 }
 
 void AUGCPlayerController::SetupInputComponent()

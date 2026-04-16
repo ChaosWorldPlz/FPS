@@ -1,10 +1,58 @@
 [
-  { "id": "Box",           "label": "方块",   "category": "几何体"   },
-  { "id": "Sphere",        "label": "球体",   "category": "几何体"   },
-  { "id": "Cylinder",      "label": "圆柱",   "category": "几何体"   },
-  { "id": "Ramp",          "label": "斜坡",   "category": "几何体"   },
-  { "id": "SpawnPoint",    "label": "出生点", "category": "关卡功能" },
-  { "id": "Extraction",    "label": "撤离点", "category": "关卡功能" },
-  { "id": "TriggerZone",   "label": "触发区", "category": "关卡功能" },
-  { "id": "WeaponSpawn",   "label": "武器生成","category": "武器道具" }
+  {
+    "id": "Box",
+    "label": "方块",
+    "category": "基础几何体",
+    "description": "基础掩体方块，可缩放做墙壁/障碍物/地板，支持堆叠",
+    "tags": ["掩体", "墙壁", "地板", "障碍物", "建筑基础"]
+  },
+  {
+    "id": "Sphere",
+    "label": "球体",
+    "category": "基础几何体",
+    "description": "球形障碍物，可用作装饰或物理交互对象",
+    "tags": ["装饰", "障碍物", "物理"]
+  },
+  {
+    "id": "Cylinder",
+    "label": "圆柱",
+    "category": "基础几何体",
+    "description": "圆柱体，可用作柱子/掩体/管道",
+    "tags": ["掩体", "柱子", "管道", "建筑"]
+  },
+  {
+    "id": "Ramp",
+    "label": "斜坡",
+    "category": "基础几何体",
+    "description": "斜坡/坡道，用于连接不同高度的平面，玩家可走上去",
+    "tags": ["坡道", "连接", "高度", "通行"]
+  },
+  {
+    "id": "SpawnPoint",
+    "label": "出生点",
+    "category": "关卡功能",
+    "description": "玩家出生位置，每张地图至少需要 2 个（分属不同队伍）",
+    "tags": ["出生", "玩家", "必需"]
+  },
+  {
+    "id": "ExtractionZone",
+    "label": "撤离点",
+    "category": "关卡功能",
+    "description": "撤离/目标区域，玩家到达后触发胜利/撤离逻辑",
+    "tags": ["目标", "胜利条件", "撤离"]
+  },
+  {
+    "id": "TriggerZone",
+    "label": "触发区",
+    "category": "关卡功能",
+    "description": "不可见触发区域，玩家进入/离开时可执行蓝图程序脚本",
+    "tags": ["触发", "脚本", "事件", "逻辑"]
+  },
+  {
+    "id": "WeaponSpawn",
+    "label": "武器生成点",
+    "category": "关卡功能",
+    "description": "武器拾取物生成位置，运行时自动刷出配置的武器",
+    "tags": ["武器", "拾取", "刷新点"]
+  }
 ]

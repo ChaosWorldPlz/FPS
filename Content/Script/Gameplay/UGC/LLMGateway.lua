@@ -15,6 +15,7 @@
 ]]
 
 local Registry = require("Gameplay.UGC.UGCFunctionRegistry")
+local json     = require("Gameplay.UGC.json")
 
 local Gateway = {}
 Gateway.__index = Gateway
@@ -27,6 +28,12 @@ local _pc         = nil
 local _httpClient = nil
 local _onResult   = nil  -- 结果回调 function(success, message)
 
+-- 多轮对话历史（2026-04-16 新增）
+-- 每轮 = 1 条 user + 1 条 assistant（可能含 tool_calls + tool results）
+-- FIFO 策略：超过 MAX_HISTORY_ROUNDS 轮时丢弃最早的
+local _history = {}
+local MAX_HISTORY_ROUNDS = 20  -- 保留最近 20 轮对话
+
 --============================================================
 -- 初始化
 --============================================================
@@ -34,10 +41,17 @@ local _onResult   = nil  -- 结果回调 function(success, message)
 function Gateway:Init(playerController)
     _pc         = playerController
     _httpClient = playerController:GetUGCHttpClient()
+    _history    = {}
     -- 回调路由：UGCHttpClient → AUGCPlayerController::OnLLMResponse/OnLLMError
     --           → UGCPlayerController.lua:OnLLMResponse/OnLLMError
     --           → Gateway:OnResponse/OnError（在 UGCPlayerController.lua 里显式调用）
     print("[LLMGateway] 初始化完成")
+end
+
+--- 清空对话历史（场景重置时调用）
+function Gateway:ClearHistory()
+    _history = {}
+    print("[LLMGateway] 对话历史已清空")
 end
 
 --============================================================
@@ -61,7 +75,50 @@ function Gateway:Send(userMessage, onResult)
     local schemasJSON = Registry:GetSchemas()
     print("[LLMGateway] 发送消息: " .. tostring(userMessage))
 
-    _httpClient:SendMessage(tostring(userMessage), schemasJSON)
+    -- 追加 user message 到历史
+    table.insert(_history, { role = "user", content = tostring(userMessage) })
+
+    -- 构建完整 messages 数组（system + history）
+    -- system prompt 由 C++ UGCHttpClient.SystemPrompt 提供，这里通过 Lua 读取
+    local messages = {}
+
+    -- system prompt（从 C++ 组件属性读取）
+    local systemPrompt = _httpClient.SystemPrompt
+    if systemPrompt and systemPrompt ~= "" then
+        table.insert(messages, { role = "system", content = systemPrompt })
+    end
+
+    -- 历史消息（FIFO 裁剪：每轮 = 若干条 message，按 MAX_HISTORY_ROUNDS 轮计）
+    Gateway:_TrimHistory()
+    for _, msg in ipairs(_history) do
+        table.insert(messages, msg)
+    end
+
+    local messagesJSON = json.encode(messages)
+    _httpClient:SendMessageWithHistory(messagesJSON, schemasJSON)
+end
+
+--- 裁剪历史：保留最近 MAX_HISTORY_ROUNDS 轮
+--- 一轮 = 1 个 user + 后续非 user messages（assistant / tool）
+function Gateway:_TrimHistory()
+    -- 计算轮数（以 user message 为分界）
+    local rounds = 0
+    for _, msg in ipairs(_history) do
+        if msg.role == "user" then
+            rounds = rounds + 1
+        end
+    end
+
+    -- 超出限制时，从头删除最早的完整轮
+    while rounds > MAX_HISTORY_ROUNDS do
+        -- 删掉第一个 user + 其后续 assistant/tool messages
+        table.remove(_history, 1)
+        -- 继续删非 user 消息（同一轮的 assistant / tool 回复）
+        while #_history > 0 and _history[1].role ~= "user" do
+            table.remove(_history, 1)
+        end
+        rounds = rounds - 1
+    end
 end
 
 --============================================================
@@ -71,53 +128,86 @@ end
 function Gateway:OnResponse(responseJSON)
     print("[LLMGateway] 收到响应，开始解析")
 
-    -- OpenAI 兼容格式（DeepSeek）：
+    -- OpenAI 兼容格式（DeepSeek / Qwen）：
     -- tool_calls: choices[0].message.tool_calls[].function.{name, arguments(JSON string)}
     -- 文字回复:   choices[0].message.content
 
+    local data = json.decode(responseJSON)
+    if not data then
+        print("[LLMGateway] JSON 解析失败，尝试 fallback")
+        if _onResult then _onResult(false, "无法解析 LLM 响应") end
+        _onResult = nil
+        return
+    end
+
+    -- 提取 message 对象
+    local message = nil
+    if data.choices and data.choices[1] and data.choices[1].message then
+        message = data.choices[1].message
+    end
+    if not message then
+        if _onResult then _onResult(false, "响应格式异常：缺少 choices[0].message") end
+        _onResult = nil
+        return
+    end
+
+    -- 提取 tool_calls
     local toolCalls = {}
-
-    -- 找所有 "function": { "name": "...", "arguments": "..." } 段
-    local pos = 1
-    while true do
-        local s, e, name = responseJSON:find('"name"%s*:%s*"([^"]+)"', pos)
-        if not s then break end
-
-        -- 往后找 "arguments": "..."（值是转义的 JSON 字符串）
-        local argS, argE, argsRaw = responseJSON:find('"arguments"%s*:%s*"(.-[^\\])"', e)
-        if argS then
-            -- 反转义：\" → "，\\ → \，\n → 换行
-            local argsJSON = argsRaw:gsub('\\"', '"'):gsub('\\\\', '\\'):gsub('\\n', '\n')
-            table.insert(toolCalls, { name = name, inputJSON = argsJSON })
-            pos = argE + 1
-        else
-            pos = e + 1
+    if message.tool_calls and #message.tool_calls > 0 then
+        for _, tc in ipairs(message.tool_calls) do
+            if tc["function"] then
+                local name = tc["function"].name
+                local argsStr = tc["function"].arguments or "{}"
+                -- arguments 可能是字符串（需要二次 decode）或已被解析为 table
+                local params
+                if type(argsStr) == "string" then
+                    params = json.decode(argsStr) or {}
+                elseif type(argsStr) == "table" then
+                    params = argsStr
+                else
+                    params = {}
+                end
+                table.insert(toolCalls, { name = name, params = params, id = tc.id })
+            end
         end
     end
 
     if #toolCalls == 0 then
-        -- 没有函数调用，提取文字回复 choices[0].message.content
-        local text = responseJSON:match('"content"%s*:%s*"(.-[^\\])"')
-        if text then
-            text = text:gsub('\\"', '"'):gsub('\\n', '\n')
-            print("[LLMGateway] 文字回复: " .. text)
+        -- 没有函数调用，提取文字回复
+        local text = message.content
+        if text and text ~= "" then
+            print("[LLMGateway] 文字回复: " .. tostring(text))
+            -- 追加 assistant 回复到历史
+            table.insert(_history, { role = "assistant", content = text })
             if _onResult then _onResult(true, text) end
         else
-            if _onResult then _onResult(false, "无法解析响应") end
+            if _onResult then _onResult(false, "LLM 未返回有效内容") end
         end
         _onResult = nil
         return
     end
+
+    -- 追加 assistant tool_calls 到历史（OpenAI 格式要求）
+    local assistantMsg = { role = "assistant", content = message.content or "" }
+    local tcForHistory = {}
+    for _, call in ipairs(toolCalls) do
+        table.insert(tcForHistory, {
+            id = call.id or ("call_" .. call.name),
+            type = "function",
+            ["function"] = { name = call.name, arguments = json.encode(call.params) }
+        })
+    end
+    assistantMsg.tool_calls = tcForHistory
+    table.insert(_history, assistantMsg)
 
     -- 执行所有函数调用
     local allOk = true
     local messages = {}
 
     for _, call in ipairs(toolCalls) do
-        print("[LLMGateway] 执行函数: " .. call.name .. " 参数: " .. call.inputJSON)
+        print("[LLMGateway] 执行函数: " .. call.name .. " 参数: " .. json.encode(call.params))
 
-        local params = Gateway:ParseInputJSON(call.inputJSON)
-        local ok, result = Registry:Call(call.name, params)
+        local ok, result = Registry:Call(call.name, call.params)
 
         if ok then
             table.insert(messages, "✓ " .. call.name .. ": " .. tostring(result))
@@ -125,6 +215,13 @@ function Gateway:OnResponse(responseJSON)
             allOk = false
             table.insert(messages, "✗ " .. call.name .. ": " .. tostring(result))
         end
+
+        -- 追加 tool 执行结果到历史
+        table.insert(_history, {
+            role = "tool",
+            tool_call_id = call.id or ("call_" .. call.name),
+            content = tostring(result)
+        })
     end
 
     local summary = table.concat(messages, "\n")
@@ -141,10 +238,10 @@ function Gateway:OnError(errorMsg)
 end
 
 --============================================================
--- JSON 工具
+-- JSON 工具（备用）
 --============================================================
 
--- 从 pos 开始提取平衡的 { } 块
+-- 从 pos 开始提取平衡的 { } 块（紧急 fallback 时使用）
 function Gateway:ExtractBalanced(str, pos)
     local depth = 0
     local start = pos
@@ -161,27 +258,10 @@ function Gateway:ExtractBalanced(str, pos)
     return nil
 end
 
--- 简单解析 {"key":"value","key2":number} 为 Lua table
--- 仅处理字符串和数字值，满足 UGC 函数调用场景
-function Gateway:ParseInputJSON(jsonStr)
-    local params = {}
-    -- 字符串值
-    for k, v in jsonStr:gmatch('"([^"]+)"%s*:%s*"([^"]*)"') do
-        params[k] = v
-    end
-    -- 数值
-    for k, v in jsonStr:gmatch('"([^"]+)"%s*:%s*(%-?%d+%.?%d*)') do
-        if params[k] == nil then  -- 不覆盖已解析的字符串
-            params[k] = tonumber(v)
-        end
-    end
-    -- 布尔值
-    for k, v in jsonStr:gmatch('"([^"]+)"%s*:%s*(true|false)') do
-        if params[k] == nil then
-            params[k] = (v == "true")
-        end
-    end
-    return params
-end
+-- ParseInputJSON 已废弃（2026-04-16），统一使用 json.decode
+-- 旧实现有 3 个 bug：
+--   1. tool_calls arguments 正则截断（嵌套 JSON 里的 \" 导致提前终止）
+--   2. 布尔值正则 (true|false) 在 Lua pattern 中 | 是字面量，永远不匹配
+--   3. 不支持嵌套对象/数组
 
 return Gateway

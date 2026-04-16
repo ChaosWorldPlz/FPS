@@ -9,6 +9,7 @@
 class UUGCFunctionBridge;
 class UUGCHttpClient;
 class UUGCEditorBridge;
+class UUGCPCGBridge;
 
 /**
  * AUGCPlayerController
@@ -48,6 +49,10 @@ public:
     /** 获取编辑器原子操作组件 */
     UFUNCTION(BlueprintCallable, Category = "UGC")
     UUGCEditorBridge* GetUGCEditorBridge() const { return EditorBridge; }
+
+    /** 获取 PCG 过程化生成组件（2026-04-16 新增） */
+    UFUNCTION(BlueprintCallable, Category = "UGC")
+    UUGCPCGBridge* GetUGCPCGBridge() const { return PCGBridge; }
 
     /** 切换编辑器（F9），Lua 可覆盖 */
     UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "UGC")
@@ -114,4 +119,8 @@ protected:
     /** 编辑器射线/生成/高亮原子操作组件 */
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UGC")
     UUGCEditorBridge* EditorBridge;
+
+    /** PCG 过程化生成组件（2026-04-16 新增） */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UGC")
+    UUGCPCGBridge* PCGBridge;
 };
