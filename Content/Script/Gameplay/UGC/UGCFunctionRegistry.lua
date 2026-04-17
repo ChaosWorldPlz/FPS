@@ -410,9 +410,41 @@ function Registry:RegisterAll()
         end
     })
 
+    -- --------------------------------------------------------
+    -- 跨调用 batch（2026-04-17 新增）
+    -- 用法：begin_batch("city_block") → 多次原子调用 → end_batch()
+    -- 期间所有原子/生成器产出 Actor 都会归到同一个 batchID，便于一键删除
+    -- --------------------------------------------------------
+
+    self:Register("begin_batch", {
+        desc = "开启一个具名 batch：之后的 scatter_* / place_* / build_* / generate_* 调用会共享同一个 batch_id。完成后用 end_batch 关闭。同名重复调用将复用旧 ID。",
+        params = {
+            { name="name", type="string", desc="自定义 batch 名（如 city_block / forest_a）", required=true },
+        },
+        func = function(p)
+            if not p.name then return false, "缺少 name" end
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local id = SceneData:BeginNamedBatch(tostring(p.name))
+            return true, "已开启 batch: " .. id .. "（后续调用都会归到此 batch）"
+        end
+    })
+
+    self:Register("end_batch", {
+        desc = "关闭当前 active batch。之后的原子/生成器调用会各自创建独立 batch。",
+        params = {},
+        func = function(p)
+            local SceneData = require("Gameplay.UGC.UGCSceneData")
+            local id = SceneData:EndActiveBatch()
+            if id then return true, "已关闭 batch: " .. id end
+            return true, "（无 active batch）"
+        end
+    })
+
     -- 把 Generators 注册表里所有 Gen_* 自动暴露成 generate_<name> 函数
     local Generators = require("Gameplay.UGC.Generators.Init")
     Generators:ExportFunctions(self)
+    -- 把 Atoms 也以独立函数形式暴露给 LLM（scatter_box / place_grid / place_at / ...）
+    Generators:ExportAtomsAsFunctions(self)
 
 end
 

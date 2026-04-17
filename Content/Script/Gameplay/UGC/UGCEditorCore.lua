@@ -424,6 +424,16 @@ function EditorCore:SelectPrefab(prefabName)
         print("[UGCEditorCore] 未知预制体: " .. tostring(prefabName))
         return
     end
+
+    -- AnimAgent 动态 glb：当前阶段不走 ghost 流程（需要 glTFRuntime 把 glb 加载为
+    -- StaticMesh 才能预览），插件落地后在此分支接入 UAnimImportBridge:SpawnMeshActor。
+    if PrefabRegistry.GetKind(prefabName) == "dynamic_glb" then
+        local dyn = PrefabRegistry.GetDynamicGLB(prefabName)
+        print(string.format("[UGCEditorCore] dyn 资产暂未支持放置（待 glTFRuntime）: %s glb=%s",
+            prefabName, dyn and dyn.glb_path or "?"))
+        return
+    end
+
     -- 清除旧 ghost
     self:_destroyGhost()
     self:ClearSelection()

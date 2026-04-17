@@ -29,8 +29,9 @@ local _undoStack  = {}    -- 撤销栈，最多 5 条
 local _redoStack  = {}    -- 重做栈
 local _scripts    = {}    -- 蓝图脚本：{["_level"]=graphData, [sceneID]=graphData, ...}
 local _isDirty    = false -- 脏标记：有未保存的修改时为 true
-local _batches    = {}    -- batchID(string) → { sceneID1, sceneID2, ... } 整批生成追踪
-local _nextBatch  = 1
+local _batches      = {}   -- batchID(string) → { sceneID1, sceneID2, ... } 整批生成追踪
+local _nextBatch    = 1
+local _activeBatch  = nil  -- 跨多次原子调用共享的 batchID（begin_batch/end_batch 显式管理）
 
 local UNDO_MAX = 5
 local ACTOR_MAX = 50
@@ -49,6 +50,7 @@ function SceneData:Init(editorBridge)
     _isDirty   = false
     _batches   = {}
     _nextBatch = 1
+    _activeBatch = nil
     print("[UGCSceneData] 初始化完成")
 end
 
@@ -68,6 +70,7 @@ function SceneData:Clear()
     _isDirty    = false
     _batches    = {}
     _nextBatch  = 1
+    _activeBatch = nil
 
     -- ★ 强制完整 GC：
     --   _actors = {} 令所有 actor userdata 成孤儿，但 Lua 增量 GC 不会立刻回收。
@@ -311,6 +314,28 @@ function SceneData:BeginBatch()
     _nextBatch = _nextBatch + 1
     _batches[id] = {}
     return id
+end
+
+--- 开启一个具名跨调用 batch（多次原子/生成器调用共享同一 batchID）
+--- 同名重复 begin 时复用旧 ID（语义：当前命名 batch 仍然激活）
+function SceneData:BeginNamedBatch(name)
+    local id = "batch_" .. tostring(name or "anon")
+    if not _batches[id] then _batches[id] = {} end
+    _activeBatch = id
+    print("[UGCSceneData] BeginNamedBatch: " .. id)
+    return id
+end
+
+--- 结束当前 active batch，返回结束的 batchID（已无 active 时返回 nil）
+function SceneData:EndActiveBatch()
+    local id = _activeBatch
+    _activeBatch = nil
+    if id then print("[UGCSceneData] EndActiveBatch: " .. id) end
+    return id
+end
+
+function SceneData:GetActiveBatch()
+    return _activeBatch
 end
 
 function SceneData:AddToBatch(batchID, sceneID)

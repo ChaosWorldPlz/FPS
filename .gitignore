@@ -16,3 +16,5 @@ DerivedDataCache/
 /Output/docx_builder
 *.docx
 /Plugins/UnLua/Source
+*.log
+unreal_mcp_advanced.log

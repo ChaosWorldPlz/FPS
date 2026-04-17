@@ -30,6 +30,12 @@ Registry.Categories = {}
 Registry.Meta       = {}   -- id → { description, tags, label, category }
 Registry._dynamic   = {}   -- 仅玩家自定义条目，用于序列化
 
+-- AnimAgent 动态 glb 资产
+-- key: "dyn:{uuid}", value: { uuid, name, glb_path, provider, prompt }
+-- 与传统 Blueprint 预制体并列，spawn 时走 UAnimImportBridge 而非 SpawnActor
+Registry.DynamicGLB = {}
+local DYN_PREFIX = "dyn:"
+
 local PLACEABLE_BASE = "/Game/_UGC/Placeables/"
 
 local function assetNameToClassPath(assetName)
@@ -264,7 +270,21 @@ end
 --============================================================
 
 function Registry.GetPath(id)  return Registry.Prefabs[id] end
-function Registry.IsValid(id)  return Registry.Prefabs[id] ~= nil end
+function Registry.IsValid(id)
+    return Registry.Prefabs[id] ~= nil or Registry.DynamicGLB[id] ~= nil
+end
+
+--- 判定预制体类型："blueprint" | "dynamic_glb" | nil
+function Registry.GetKind(id)
+    if Registry.DynamicGLB[id] then return "dynamic_glb" end
+    if Registry.Prefabs[id] then return "blueprint" end
+    return nil
+end
+
+--- 取动态 glb 资产数据（含 glb_path）
+function Registry.GetDynamicGLB(id)
+    return Registry.DynamicGLB[id]
+end
 
 --- 获取预制体元数据（description, tags, label, category）
 function Registry.GetMeta(id)  return Registry.Meta[id] end
@@ -326,6 +346,12 @@ function Registry:AddCustomPrefab(def)
 end
 
 function Registry:RemovePrefab(id)
+    -- 动态 glb：直接从 DynamicGLB 移除
+    if Registry.DynamicGLB[id] then
+        Registry.DynamicGLB[id] = nil
+        return true
+    end
+
     for i, e in ipairs(Registry._dynamic) do
         if e.id == id then
             table.remove(Registry._dynamic, i)
@@ -336,6 +362,58 @@ function Registry:RemovePrefab(id)
     end
     print("[UGCPrefabRegistry] 不可删除（非自定义）: " .. id)
     return false
+end
+
+--============================================================
+-- AnimAgent 动态 glb 资产注册
+--============================================================
+
+--- 注册一个由 AnimAgent 生成 / 导入的动态资产
+--- @param def { uuid, name, glb_path, provider?, prompt?, label?, category? }
+--- @return string id（"dyn:{uuid}"）或 nil
+function Registry:RegisterDynamicGLB(def)
+    if not def or not def.uuid or not def.glb_path then
+        print("[UGCPrefabRegistry] RegisterDynamicGLB 失败：缺少 uuid 或 glb_path")
+        return nil
+    end
+
+    local id = DYN_PREFIX .. def.uuid
+    Registry.DynamicGLB[id] = {
+        uuid     = def.uuid,
+        name     = def.name or def.uuid,
+        glb_path = def.glb_path,
+        provider = def.provider or "unknown",
+        prompt   = def.prompt or "",
+    }
+
+    -- 同步到 Prefabs / Meta / Categories（path 为空，spawn 时按 kind 走 GLB 通道）
+    Registry.Prefabs[id] = ""
+    Registry.Meta[id] = {
+        label    = def.label or def.name or def.uuid,
+        category = def.category or "AI 生成",
+    }
+
+    local catName = Registry.Meta[id].category
+    for _, cat in ipairs(Registry.Categories) do
+        if cat.name == catName then
+            cat.items[#cat.items+1] = { id = id, label = Registry.Meta[id].label }
+            return id
+        end
+    end
+    Registry.Categories[#Registry.Categories+1] = {
+        name  = catName,
+        items = { { id = id, label = Registry.Meta[id].label } },
+    }
+    return id
+end
+
+--- 列出所有 AnimAgent 动态资产
+function Registry:ListDynamicGLB()
+    local list = {}
+    for id, v in pairs(Registry.DynamicGLB) do
+        table.insert(list, { id = id, data = v })
+    end
+    return list
 end
 
 return Registry
