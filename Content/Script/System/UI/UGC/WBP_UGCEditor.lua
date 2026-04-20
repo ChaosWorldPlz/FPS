@@ -206,6 +206,9 @@ function M:BuildPrefabList()
 
     local addedCount = 0
 
+    -- AnimAgent：在所有分类前插入"+ 导入本地 GLB"按钮
+    self:_BuildImportGLBButton(pc, btnClass)
+
     for _, category in ipairs(cats) do
         local header = UE.UWidgetBlueprintLibrary.Create(pc, btnClass, pc)
         if header then
@@ -252,6 +255,69 @@ function M:BuildPrefabList()
     end
 
     Log(string.format("BuildPrefabList 完成，共添加 %d 个预制体按钮", addedCount))
+end
+
+--============================================================
+-- AnimAgent：本地 GLB 导入入口
+--============================================================
+
+local _animAgentReady = false
+
+local function _ensureAnimAgent(pc)
+    if _animAgentReady then return true end
+    local ok, Core = pcall(require, "Gameplay.AnimAgent.AnimAgentCore")
+    if not ok or not Core then
+        Warn("AnimAgentCore 加载失败: " .. tostring(Core))
+        return false
+    end
+    if not Core:IsReady() then
+        if not Core:Init(pc) then
+            Warn("AnimAgentCore:Init 失败 — 检查 PlayerController 是否挂了 UAnimGenClient")
+            return false
+        end
+    end
+    _animAgentReady = true
+    return true
+end
+
+function M:_BuildImportGLBButton(pc, btnClass)
+    local btn = UE.UWidgetBlueprintLibrary.Create(pc, btnClass, pc)
+    if not btn then
+        Warn("_BuildImportGLBButton: Create 失败")
+        return
+    end
+    if btn.w_label then btn.w_label:SetText("+ 导入本地 GLB") end
+    if btn.w_btn and btn.w_btn.OnPressed then
+        btn.w_btn.OnPressed:Add(self, function() self:OnClickImportGLB() end)
+    end
+    self.w_panel_Prefabs:AddChild(btn)
+end
+
+function M:OnClickImportGLB()
+    local pc = self:GetOwningPlayer()
+    if not pc then return end
+    if not _ensureAnimAgent(pc) then
+        self:SetStatus("AnimAgent 未就绪")
+        return
+    end
+
+    local files = UE.UAnimGenClient.OpenFileDialog(
+        "选择本地 GLB 模型", "", "GLB Model (*.glb)|*.glb", false)
+    if not files or files:Num() == 0 then
+        self:SetStatus("已取消导入")
+        return
+    end
+
+    local Core = require("Gameplay.AnimAgent.AnimAgentCore")
+    local uuid = Core:ImportLocal(files:Get(1), "")  -- UnLua TArray:Get 是 1-based
+    if uuid == "" then
+        self:SetStatus("导入失败 — 检查日志")
+        return
+    end
+
+    self:SetStatus(string.format("导入完成 [%s]，已加入预制体列表", uuid:sub(1, 8)))
+    -- 刷新 placeable 面板，新资产以 dyn:{uuid} 出现在 "AI 生成" 分类下
+    self:RebuildPrefabList()
 end
 
 --============================================================

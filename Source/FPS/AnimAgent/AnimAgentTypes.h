@@ -6,112 +6,39 @@
 #include "CoreMinimal.h"
 #include "AnimAgentTypes.generated.h"
 
+/** 资产来源 */
 UENUM(BlueprintType)
-enum class EAnimGenProvider : uint8
+enum class EAnimAssetSource : uint8
 {
-    Mock    UMETA(DisplayName = "Mock"),
-    Meshy   UMETA(DisplayName = "Meshy"),
-    Tripo   UMETA(DisplayName = "Tripo"),
+    Local       UMETA(DisplayName = "Local"),         // 玩家本地导入
+    Fab         UMETA(DisplayName = "Fab"),           // 后续 Fab 平台下载
+    Generated   UMETA(DisplayName = "Generated"),     // 后续 Fab 调 AI 生成
 };
 
-UENUM(BlueprintType)
-enum class EAnimGenState : uint8
-{
-    Pending     UMETA(DisplayName = "Pending"),
-    Running     UMETA(DisplayName = "Running"),
-    Succeeded   UMETA(DisplayName = "Succeeded"),
-    Failed      UMETA(DisplayName = "Failed"),
-    Cancelled   UMETA(DisplayName = "Cancelled"),
-};
-
-UENUM(BlueprintType)
-enum class EAnimGenStyle : uint8
-{
-    Realistic   UMETA(DisplayName = "Realistic"),
-    Cartoon     UMETA(DisplayName = "Cartoon"),
-    Sculpture   UMETA(DisplayName = "Sculpture"),
-};
-
+/** 单条本地资产记录 */
 USTRUCT(BlueprintType)
-struct FAnimGenRequest
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString Prompt;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString NegativePrompt;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    EAnimGenStyle Style = EAnimGenStyle::Realistic;
-
-    /** 目标三角面数 */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 TargetPolycount = 30000;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bWithTexture = true;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    bool bPBR = true;
-
-    /** 输出格式：glb / fbx，本期固定 glb */
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString Format = TEXT("glb");
-};
-
-USTRUCT(BlueprintType)
-struct FAnimGenJobStatus
+struct FAnimAssetRecord
 {
     GENERATED_BODY()
 
     UPROPERTY(BlueprintReadOnly)
-    EAnimGenState State = EAnimGenState::Pending;
-
-    /** 0~100 */
-    UPROPERTY(BlueprintReadOnly)
-    int32 Progress = 0;
-
-    /** 中间预览图 URL（可选） */
-    UPROPERTY(BlueprintReadOnly)
-    FString PreviewURL;
-
-    /** 完成后产物模型 URL */
-    UPROPERTY(BlueprintReadOnly)
-    FString ModelURL;
+    FString Uuid;
 
     UPROPERTY(BlueprintReadOnly)
-    FString ErrorMessage;
-};
+    FString Name;
 
-USTRUCT(BlueprintType)
-struct FAnimGenJob
-{
-    GENERATED_BODY()
-
-    /** 本地唯一 ID（uuid） */
+    /** 本地 .glb 绝对路径 */
     UPROPERTY(BlueprintReadOnly)
-    FString JobUuid;
-
-    /** 提供商分配的 task id */
-    UPROPERTY(BlueprintReadOnly)
-    FString ProviderTaskId;
+    FString GLBPath;
 
     UPROPERTY(BlueprintReadOnly)
-    EAnimGenProvider Provider = EAnimGenProvider::Mock;
+    EAnimAssetSource Source = EAnimAssetSource::Local;
 
+    /** 来源备注：本地导入时的原文件名；Fab 时的 fab_id；Generated 时的 prompt */
     UPROPERTY(BlueprintReadOnly)
-    FAnimGenRequest Request;
+    FString SourceNote;
 
+    /** 创建时间（Unix 秒） */
     UPROPERTY(BlueprintReadOnly)
-    FAnimGenJobStatus Status;
-
-    /** 本地 glb 缓存路径，下载完成后填充 */
-    UPROPERTY(BlueprintReadOnly)
-    FString LocalGLBPath;
-
-    /** 任务创建时间（秒） */
-    UPROPERTY(BlueprintReadOnly)
-    double CreatedAtSeconds = 0.0;
+    int64 CreatedAtSeconds = 0;
 };

@@ -27,8 +27,8 @@ public class FPS : ModuleRules
 			"Json",
 			"DesktopPlatform",
 			"ApplicationCore",
-			"PCG"
-			// AnimAgent: 安装 glTFRuntime 插件后追加 "glTFRuntime"
+			"PCG",
+			"glTFRuntime"
 		});
 	}
 }

@@ -386,8 +386,9 @@ function Registry:RegisterDynamicGLB(def)
         prompt   = def.prompt or "",
     }
 
-    -- 同步到 Prefabs / Meta / Categories（path 为空，spawn 时按 kind 走 GLB 通道）
-    Registry.Prefabs[id] = ""
+    -- 所有 dyn 资产都用同一个 native host 类。SpawnPlaceable 内部 LoadClass 支持 native 类路径。
+    -- spawn 后由 UGCEditorCore 立即调 SetDynMesh 注入实际的 UStaticMesh。
+    Registry.Prefabs[id] = "/Script/FPS.AnimAgentDynamicPlaceable"
     Registry.Meta[id] = {
         label    = def.label or def.name or def.uuid,
         category = def.category or "AI 生成",

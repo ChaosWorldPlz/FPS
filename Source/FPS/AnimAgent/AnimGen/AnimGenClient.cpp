@@ -1,22 +1,18 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AnimGenClient.h"
-#include "IAnimGenProvider.h"
-#include "Provider/MockProvider.h"
-#include "Provider/MeshyProvider.h"
-#include "Provider/TripoProvider.h"
 
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
-#include "HAL/PlatformFilemanager.h"
+#include "HAL/PlatformFileManager.h"
 #include "HAL/FileManager.h"
-#include "TimerManager.h"
-#include "Engine/World.h"
-
-#include "HttpModule.h"
-#include "Interfaces/IHttpRequest.h"
-#include "Interfaces/IHttpResponse.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonWriter.h"
+#include "DesktopPlatformModule.h"
+#include "IDesktopPlatform.h"
+#include "Framework/Application/SlateApplication.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogAnimGenClient, Log, All);
 
@@ -28,322 +24,170 @@ UAnimGenClient::UAnimGenClient()
 void UAnimGenClient::BeginPlay()
 {
     Super::BeginPlay();
-
-    // 构造所有 Provider 实例（无 Key 也允许构造，调用时再校验）
-    TSharedPtr<FMockProvider> Mock = MakeShared<FMockProvider>();
-    if (!MockSampleGLBPath.IsEmpty())
-    {
-        Mock->SetSampleGLBPath(MockSampleGLBPath);
-    }
-    Providers.Add(EAnimGenProvider::Mock, Mock);
-    Providers.Add(EAnimGenProvider::Meshy, MakeShared<FMeshyProvider>());
-    Providers.Add(EAnimGenProvider::Tripo, MakeShared<FTripoProvider>());
-
-    UE_LOG(LogAnimGenClient, Log, TEXT("AnimGenClient ready (Mock fallback=%s)"),
-        bAllowMockFallback ? TEXT("on") : TEXT("off"));
+    UE_LOG(LogAnimGenClient, Log, TEXT("AnimGenClient ready (local-import mode)"));
 }
 
-void UAnimGenClient::EndPlay(const EEndPlayReason::Type EndPlayReason)
+FString UAnimGenClient::GetAssetsCacheDir()
 {
-    if (UWorld* World = GetWorld())
-    {
-        for (auto& Pair : PollTimers)
-        {
-            World->GetTimerManager().ClearTimer(Pair.Value);
-        }
-    }
-    PollTimers.Empty();
-    Jobs.Empty();
-    Providers.Empty();
-
-    Super::EndPlay(EndPlayReason);
+    return FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("AnimAgent"), TEXT("assets"));
 }
 
-FString UAnimGenClient::CreateTask(EAnimGenProvider Provider, const FAnimGenRequest& Request)
+namespace
 {
-    // 选择实际 Provider：若主选 Provider 没 Key 且允许 mock，回退到 Mock
-    EAnimGenProvider Resolved = Provider;
-    const bool bMissingKey =
-        (Provider == EAnimGenProvider::Meshy && MeshyApiKey.IsEmpty()) ||
-        (Provider == EAnimGenProvider::Tripo && TripoApiKey.IsEmpty());
-
-    if (bMissingKey)
+    void* GetParentWindowHandle()
     {
-        if (bAllowMockFallback)
+        if (FSlateApplication::IsInitialized())
         {
-            UE_LOG(LogAnimGenClient, Warning, TEXT("CreateTask: %d 未配置 Key，回退 Mock"), (int32)Provider);
-            Resolved = EAnimGenProvider::Mock;
+            TSharedPtr<SWindow> Win = FSlateApplication::Get().GetActiveTopLevelWindow();
+            if (Win.IsValid() && Win->GetNativeWindow().IsValid())
+            {
+                return Win->GetNativeWindow()->GetOSWindowHandle();
+            }
         }
-        else
-        {
-            UE_LOG(LogAnimGenClient, Error, TEXT("CreateTask: %d 未配置 Key 且禁用 Mock 回退"), (int32)Provider);
-            return FString();
-        }
+        return nullptr;
     }
+}
 
-    TSharedPtr<IAnimGenProvider>* Found = Providers.Find(Resolved);
-    if (!Found || !Found->IsValid())
+TArray<FString> UAnimGenClient::OpenFileDialog(
+    const FString& DialogTitle,
+    const FString& DefaultPath,
+    const FString& FileTypes,
+    bool bAllowMulti)
+{
+    TArray<FString> OutFiles;
+    IDesktopPlatform* Desktop = FDesktopPlatformModule::Get();
+    if (!Desktop) return OutFiles;
+
+    const uint32 Flags = bAllowMulti
+        ? (uint32)EFileDialogFlags::Multiple
+        : (uint32)EFileDialogFlags::None;
+
+    Desktop->OpenFileDialog(
+        GetParentWindowHandle(),
+        DialogTitle,
+        DefaultPath,
+        TEXT(""),
+        FileTypes,
+        Flags,
+        OutFiles);
+
+    return OutFiles;
+}
+
+FString UAnimGenClient::SaveFileDialog(
+    const FString& DialogTitle,
+    const FString& DefaultPath,
+    const FString& DefaultFileName,
+    const FString& FileTypes)
+{
+    IDesktopPlatform* Desktop = FDesktopPlatformModule::Get();
+    if (!Desktop) return FString();
+
+    TArray<FString> OutFiles;
+    if (!Desktop->SaveFileDialog(
+            GetParentWindowHandle(),
+            DialogTitle,
+            DefaultPath,
+            DefaultFileName,
+            FileTypes,
+            (uint32)EFileDialogFlags::None,
+            OutFiles))
     {
-        UE_LOG(LogAnimGenClient, Error, TEXT("CreateTask: provider %d 未注册"), (int32)Resolved);
+        return FString();
+    }
+    return OutFiles.Num() > 0 ? OutFiles[0] : FString();
+}
+
+FString UAnimGenClient::ImportLocalGLB(const FString& SourceFilePath, const FString& DesiredName)
+{
+    if (SourceFilePath.IsEmpty() || !FPaths::FileExists(SourceFilePath))
+    {
+        UE_LOG(LogAnimGenClient, Error, TEXT("ImportLocalGLB: 源文件不存在: %s"), *SourceFilePath);
+        OnAssetImportFailed.Broadcast(FString(), TEXT("源文件不存在"));
         return FString();
     }
 
-    const FString JobUuid = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower);
-
-    FAnimGenJob Job;
-    Job.JobUuid = JobUuid;
-    Job.Provider = Resolved;
-    Job.Request = Request;
-    Job.Status.State = EAnimGenState::Pending;
-    Job.CreatedAtSeconds = FPlatformTime::Seconds();
-    Jobs.Add(JobUuid, Job);
-
-    const FString ApiKey = (Resolved == EAnimGenProvider::Meshy) ? MeshyApiKey
-        : (Resolved == EAnimGenProvider::Tripo) ? TripoApiKey
-        : FString();
-
-    TWeakObjectPtr<UAnimGenClient> WeakThis(this);
-    FOnAnimGenTaskCreated OnCreated;
-    OnCreated.BindLambda([WeakThis, JobUuid](bool bOk, FString TaskId, FString Error)
+    const FString Extension = FPaths::GetExtension(SourceFilePath, /*bIncludeDot*/false).ToLower();
+    if (Extension != TEXT("glb"))
     {
-        UAnimGenClient* Self = WeakThis.Get();
-        if (!Self) return;
-
-        FAnimGenJob* JobPtr = Self->Jobs.Find(JobUuid);
-        if (!JobPtr) return;
-
-        if (!bOk)
-        {
-            JobPtr->Status.State = EAnimGenState::Failed;
-            JobPtr->Status.ErrorMessage = Error;
-            Self->OnJobUpdated.Broadcast(JobUuid, JobPtr->Status);
-            Self->OnJobFailed.Broadcast(JobUuid, Error);
-            return;
-        }
-
-        JobPtr->ProviderTaskId = TaskId;
-        JobPtr->Status.State = EAnimGenState::Running;
-        Self->OnJobUpdated.Broadcast(JobUuid, JobPtr->Status);
-
-        // 启动轮询
-        if (UWorld* World = Self->GetWorld())
-        {
-            FTimerHandle Handle;
-            FTimerDelegate Del = FTimerDelegate::CreateUObject(Self, &UAnimGenClient::TickPolling, JobUuid);
-            World->GetTimerManager().SetTimer(Handle, Del, Self->PollIntervalSeconds, true, 0.5f);
-            Self->PollTimers.Add(JobUuid, Handle);
-        }
-    });
-
-    (*Found)->CreateTextTo3DTask(ApiKey, Request, OnCreated);
-    return JobUuid;
-}
-
-FAnimGenJobStatus UAnimGenClient::GetJobStatus(const FString& JobUuid) const
-{
-    if (const FAnimGenJob* Job = Jobs.Find(JobUuid))
-    {
-        return Job->Status;
-    }
-    FAnimGenJobStatus Empty;
-    Empty.State = EAnimGenState::Failed;
-    Empty.ErrorMessage = TEXT("Job 不存在");
-    return Empty;
-}
-
-void UAnimGenClient::CancelJob(const FString& JobUuid)
-{
-    FAnimGenJob* Job = Jobs.Find(JobUuid);
-    if (!Job) return;
-
-    ClearTimer(JobUuid);
-
-    if (TSharedPtr<IAnimGenProvider>* Found = Providers.Find(Job->Provider))
-    {
-        const FString ApiKey = (Job->Provider == EAnimGenProvider::Meshy) ? MeshyApiKey
-            : (Job->Provider == EAnimGenProvider::Tripo) ? TripoApiKey
-            : FString();
-        (*Found)->CancelTask(ApiKey, Job->ProviderTaskId);
+        UE_LOG(LogAnimGenClient, Error, TEXT("ImportLocalGLB: 仅支持 .glb，当前: %s"), *Extension);
+        OnAssetImportFailed.Broadcast(FString(), TEXT("仅支持 .glb 文件"));
+        return FString();
     }
 
-    Job->Status.State = EAnimGenState::Cancelled;
-    OnJobUpdated.Broadcast(JobUuid, Job->Status);
-}
-
-TArray<FString> UAnimGenClient::ListActiveJobs() const
-{
-    TArray<FString> Result;
-    for (const auto& Pair : Jobs)
-    {
-        const EAnimGenState S = Pair.Value.Status.State;
-        if (S == EAnimGenState::Pending || S == EAnimGenState::Running)
-        {
-            Result.Add(Pair.Key);
-        }
-    }
-    return Result;
-}
-
-//------------------------------------------------------------------
-// 私有
-//------------------------------------------------------------------
-
-void UAnimGenClient::TickPolling(FString JobUuid)
-{
-    FAnimGenJob* Job = Jobs.Find(JobUuid);
-    if (!Job)
-    {
-        ClearTimer(JobUuid);
-        return;
-    }
-
-    // 超时检查
-    const double Elapsed = FPlatformTime::Seconds() - Job->CreatedAtSeconds;
-    if (Elapsed > TaskTimeoutSeconds)
-    {
-        ClearTimer(JobUuid);
-        Job->Status.State = EAnimGenState::Failed;
-        Job->Status.ErrorMessage = FString::Printf(TEXT("任务超时 (%.0fs)"), Elapsed);
-        OnJobUpdated.Broadcast(JobUuid, Job->Status);
-        OnJobFailed.Broadcast(JobUuid, Job->Status.ErrorMessage);
-        return;
-    }
-
-    TSharedPtr<IAnimGenProvider>* Found = Providers.Find(Job->Provider);
-    if (!Found || !Found->IsValid())
-    {
-        ClearTimer(JobUuid);
-        return;
-    }
-
-    const FString ApiKey = (Job->Provider == EAnimGenProvider::Meshy) ? MeshyApiKey
-        : (Job->Provider == EAnimGenProvider::Tripo) ? TripoApiKey
-        : FString();
-
-    TWeakObjectPtr<UAnimGenClient> WeakThis(this);
-    FOnAnimGenTaskQueried OnQueried;
-    OnQueried.BindLambda([WeakThis, JobUuid](FAnimGenJobStatus NewStatus)
-    {
-        if (UAnimGenClient* Self = WeakThis.Get())
-        {
-            Self->HandleQueried(JobUuid, NewStatus);
-        }
-    });
-
-    (*Found)->QueryTask(ApiKey, Job->ProviderTaskId, OnQueried);
-}
-
-void UAnimGenClient::HandleQueried(FString JobUuid, FAnimGenJobStatus NewStatus)
-{
-    FAnimGenJob* Job = Jobs.Find(JobUuid);
-    if (!Job) return;
-
-    Job->Status = NewStatus;
-    OnJobUpdated.Broadcast(JobUuid, Job->Status);
-
-    if (NewStatus.State == EAnimGenState::Succeeded)
-    {
-        ClearTimer(JobUuid);
-        if (!NewStatus.ModelURL.IsEmpty())
-        {
-            StartDownload(JobUuid, NewStatus.ModelURL);
-        }
-        else
-        {
-            Job->Status.State = EAnimGenState::Failed;
-            Job->Status.ErrorMessage = TEXT("Provider 标记完成但缺少 ModelURL");
-            OnJobFailed.Broadcast(JobUuid, Job->Status.ErrorMessage);
-        }
-    }
-    else if (NewStatus.State == EAnimGenState::Failed || NewStatus.State == EAnimGenState::Cancelled)
-    {
-        ClearTimer(JobUuid);
-        OnJobFailed.Broadcast(JobUuid, NewStatus.ErrorMessage);
-    }
-}
-
-void UAnimGenClient::StartDownload(FString JobUuid, FString ModelURL)
-{
-    // 本地缓存路径：Saved/AnimAgent/assets/{uuid}/source.glb
-    const FString TargetDir = FPaths::Combine(FPaths::ProjectSavedDir(), TEXT("AnimAgent"), TEXT("assets"), JobUuid);
+    const FString Uuid = FGuid::NewGuid().ToString(EGuidFormats::DigitsWithHyphensLower);
+    const FString TargetDir = FPaths::Combine(GetAssetsCacheDir(), Uuid);
     const FString TargetPath = FPaths::Combine(TargetDir, TEXT("source.glb"));
-    IFileManager::Get().MakeDirectory(*TargetDir, true);
 
-    // file:// 直接拷贝，否则走 HTTP
-    if (ModelURL.StartsWith(TEXT("file://")))
+    IFileManager::Get().MakeDirectory(*TargetDir, /*Tree*/true);
+
+    if (IFileManager::Get().Copy(*TargetPath, *SourceFilePath) != COPY_OK)
     {
-        FString LocalSrc = ModelURL.RightChop(7);
-        // 容忍 file:///C:/... 三斜杠形式
-        if (LocalSrc.StartsWith(TEXT("/")) && LocalSrc.Len() >= 3 && LocalSrc[2] == TEXT(':'))
-        {
-            LocalSrc = LocalSrc.RightChop(1);
-        }
-        FPaths::NormalizeFilename(LocalSrc);
-        if (IFileManager::Get().Copy(*TargetPath, *LocalSrc) == COPY_OK)
-        {
-            if (FAnimGenJob* Job = Jobs.Find(JobUuid))
-            {
-                Job->LocalGLBPath = TargetPath;
-                OnJobCompleted.Broadcast(JobUuid, TargetPath);
-            }
-        }
-        else if (FAnimGenJob* Job = Jobs.Find(JobUuid))
-        {
-            Job->Status.State = EAnimGenState::Failed;
-            Job->Status.ErrorMessage = FString::Printf(TEXT("拷贝 mock 文件失败: %s"), *LocalSrc);
-            OnJobFailed.Broadcast(JobUuid, Job->Status.ErrorMessage);
-        }
-        return;
+        UE_LOG(LogAnimGenClient, Error, TEXT("ImportLocalGLB: 拷贝失败 %s -> %s"),
+            *SourceFilePath, *TargetPath);
+        OnAssetImportFailed.Broadcast(Uuid, TEXT("拷贝失败"));
+        return FString();
     }
 
-    TSharedRef<IHttpRequest, ESPMode::ThreadSafe> Req = FHttpModule::Get().CreateRequest();
-    Req->SetURL(ModelURL);
-    Req->SetVerb(TEXT("GET"));
+    // 落 meta.json（玩家把 Saved 目录拷走也能识别来源）
+    const FString OriginalName = FPaths::GetBaseFilename(SourceFilePath);
+    const FString DisplayName = DesiredName.IsEmpty() ? OriginalName : DesiredName;
+    const int64 NowSeconds = FDateTime::UtcNow().ToUnixTimestamp();
 
-    TWeakObjectPtr<UAnimGenClient> WeakThis(this);
-    Req->OnProcessRequestComplete().BindLambda(
-        [WeakThis, JobUuid, TargetPath](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bOk)
-        {
-            UAnimGenClient* Self = WeakThis.Get();
-            if (!Self) return;
+    TSharedRef<FJsonObject> Meta = MakeShared<FJsonObject>();
+    Meta->SetStringField(TEXT("uuid"), Uuid);
+    Meta->SetStringField(TEXT("name"), DisplayName);
+    Meta->SetStringField(TEXT("source"), TEXT("Local"));
+    Meta->SetStringField(TEXT("source_note"), OriginalName);
+    Meta->SetStringField(TEXT("original_path"), SourceFilePath);
+    Meta->SetNumberField(TEXT("created_at"), (double)NowSeconds);
 
-            FAnimGenJob* Job = Self->Jobs.Find(JobUuid);
-            if (!Job) return;
+    FString MetaStr;
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&MetaStr);
+    FJsonSerializer::Serialize(Meta, Writer);
+    FFileHelper::SaveStringToFile(MetaStr, *FPaths::Combine(TargetDir, TEXT("meta.json")));
 
-            if (!bOk || !Response.IsValid())
-            {
-                Job->Status.State = EAnimGenState::Failed;
-                Job->Status.ErrorMessage = TEXT("下载 glb 失败（网络错误）");
-                Self->OnJobFailed.Broadcast(JobUuid, Job->Status.ErrorMessage);
-                return;
-            }
+    UE_LOG(LogAnimGenClient, Log, TEXT("ImportLocalGLB ok: uuid=%s name=%s -> %s"),
+        *Uuid, *DisplayName, *TargetPath);
 
-            const TArray<uint8>& Bytes = Response->GetContent();
-            if (!FFileHelper::SaveArrayToFile(Bytes, *TargetPath))
-            {
-                Job->Status.State = EAnimGenState::Failed;
-                Job->Status.ErrorMessage = FString::Printf(TEXT("写入失败: %s"), *TargetPath);
-                Self->OnJobFailed.Broadcast(JobUuid, Job->Status.ErrorMessage);
-                return;
-            }
-
-            Job->LocalGLBPath = TargetPath;
-            UE_LOG(LogAnimGenClient, Log, TEXT("Job %s 完成，glb 已保存到 %s (%d bytes)"),
-                *JobUuid, *TargetPath, Bytes.Num());
-            Self->OnJobCompleted.Broadcast(JobUuid, TargetPath);
-        });
-
-    Req->ProcessRequest();
+    OnAssetImported.Broadcast(Uuid, TargetPath);
+    return Uuid;
 }
 
-void UAnimGenClient::ClearTimer(const FString& JobUuid)
+bool UAnimGenClient::ExportLocalGLB(const FString& AssetUuid, const FString& TargetFilePath)
 {
-    if (FTimerHandle* Handle = PollTimers.Find(JobUuid))
+    if (AssetUuid.IsEmpty() || TargetFilePath.IsEmpty())
     {
-        if (UWorld* World = GetWorld())
-        {
-            World->GetTimerManager().ClearTimer(*Handle);
-        }
-        PollTimers.Remove(JobUuid);
+        UE_LOG(LogAnimGenClient, Error, TEXT("ExportLocalGLB: 参数为空"));
+        return false;
     }
+
+    const FString SourceDir = FPaths::Combine(GetAssetsCacheDir(), AssetUuid);
+    const FString SourceGLB = FPaths::Combine(SourceDir, TEXT("source.glb"));
+    if (!FPaths::FileExists(SourceGLB))
+    {
+        UE_LOG(LogAnimGenClient, Error, TEXT("ExportLocalGLB: 资产 %s 的 source.glb 不存在"), *AssetUuid);
+        return false;
+    }
+
+    // 确保目标目录存在
+    const FString TargetDir = FPaths::GetPath(TargetFilePath);
+    IFileManager::Get().MakeDirectory(*TargetDir, /*Tree*/true);
+
+    if (IFileManager::Get().Copy(*TargetFilePath, *SourceGLB) != COPY_OK)
+    {
+        UE_LOG(LogAnimGenClient, Error, TEXT("ExportLocalGLB: 拷贝失败 -> %s"), *TargetFilePath);
+        return false;
+    }
+
+    // 同目录顺手输出 .meta.json（带 uuid 和原始 meta 拷贝）
+    const FString SourceMeta = FPaths::Combine(SourceDir, TEXT("meta.json"));
+    if (FPaths::FileExists(SourceMeta))
+    {
+        const FString TargetMeta = TargetFilePath + TEXT(".meta.json");
+        IFileManager::Get().Copy(*TargetMeta, *SourceMeta);
+    }
+
+    UE_LOG(LogAnimGenClient, Log, TEXT("ExportLocalGLB ok: %s -> %s"), *AssetUuid, *TargetFilePath);
+    return true;
 }

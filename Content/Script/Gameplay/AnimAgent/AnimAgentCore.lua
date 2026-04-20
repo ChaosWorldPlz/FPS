@@ -1,29 +1,23 @@
 --[[
     AnimAgentCore.lua
-    AnimAgent 顶层编排器（Phase 1 极简版）
+    AnimAgent 顶层编排器（Phase L1：本地导入）
 
     职责：
     - 持有 UAnimGenClient（C++ 组件）的引用
-    - 注入 API Key（运行时从配置读取，不持久化到蓝图）
-    - 订阅 OnJobUpdated / OnJobCompleted / OnJobFailed
-    - Job 完成后：
+    - 订阅 OnAssetImported / OnAssetImportFailed
+    - 资产导入完成后：
         ① 写入 AnimAssetLibrary
-        ② 调 UAnimImportBridge 导入为 UStaticMesh
-        ③ 注册到 UGCPrefabRegistry 的 dyn:{uuid} 命名空间
+        ② 注册到 UGCPrefabRegistry 的 dyn:{uuid} 命名空间
+        ③ （可选）触发 ImportBridge 加载为 UStaticMesh，缓存待用
     - 提供 Lua 侧 API 给 UI 调用：
-        Core:Generate(provider, prompt, opts) → uuid
-        Core:GetJobStatus(uuid)
-        Core:CancelJob(uuid)
+        Core:ImportLocal(filePath, name)  → uuid
+        Core:ExportLocal(uuid, targetPath) → bool
+        Core:ListAssets()
+        Core:RemoveAsset(uuid)
 
     依赖：
     - PlayerController 必须挂 UAnimGenClient（蓝图配置）
-    - 可选挂 UAnimImportBridge（无则跳过导入步骤）
-
-    用法（UI / LLM 工具）：
-        local Core = require("Gameplay.AnimAgent.AnimAgentCore")
-        Core:Init(playerController)
-        Core:SetApiKey("meshy", "msy_xxx")
-        local uuid = Core:Generate("meshy", "a fire sword", { style = "realistic" })
+    - 可选挂 UAnimImportBridge（无则跳过 mesh 加载，仅做元数据登记）
 ]]
 
 local Library  = require("Gameplay.AnimAgent.AnimAssetLibrary")
@@ -31,41 +25,17 @@ local Registry = require("Gameplay.UGC.UGCPrefabRegistry")
 
 local Core = {}
 
---============================================================
--- 内部状态
---============================================================
-
-local _pc       = nil
-local _client   = nil   -- UAnimGenClient*
-local _import   = nil   -- UAnimImportBridge*  (可选)
+local _pc      = nil
+local _client  = nil   -- UAnimGenClient*
+local _import  = nil   -- UAnimImportBridge*  (可选)
 local _initialized = false
 
--- uuid → { prompt, provider, name, on_done }
-local _jobMeta = {}
-
-local PROVIDER_ENUM = {
-    mock  = 0,    -- EAnimGenProvider::Mock
-    meshy = 1,
-    tripo = 2,
-}
-
-local function _providerEnum(name)
-    return PROVIDER_ENUM[string.lower(name or "mock")] or 0
-end
-
-local function _providerName(enumVal)
-    for k, v in pairs(PROVIDER_ENUM) do
-        if v == enumVal then return k end
-    end
-    return "mock"
-end
-
 --============================================================
--- 初始化 / 反初始化
+-- 初始化
 --============================================================
 
 --- @param playerController APlayerController*
---- @param opts? { import_bridge?: UAnimImportBridge*, mock_glb?: string }
+--- @param opts? { import_bridge?: UAnimImportBridge* }
 function Core:Init(playerController, opts)
     if _initialized then return true end
     if not playerController then
@@ -73,50 +43,57 @@ function Core:Init(playerController, opts)
         return false
     end
 
-    -- 优先用 GetComponentByClass 兜底（蓝图未生成 getter 时）
+    -- 优先用 GetAnimGenClient 蓝图 getter（需在 BP 里实现），失败兜底 GetComponentByClass
     local client = nil
-    pcall(function()
-        client = playerController:GetAnimGenClient()
-    end)
+    pcall(function() client = playerController:GetAnimGenClient() end)
     if not client then
-        pcall(function()
-            client = playerController:GetComponentByClass(UE.UAnimGenClient)
-        end)
+        pcall(function() client = playerController:GetComponentByClass(UE.UAnimGenClient) end)
     end
-    if not client then
-        print("[AnimAgentCore] Init 失败：未找到 UAnimGenClient 组件")
+
+    -- UnLua 的 GetComponentByClass 在没找到时可能返回"包了 nullptr 的 wrapper"而不是 nil；
+    -- 用 IsValid 二次校验
+    local valid = false
+    if client then
+        local ok, isValid = pcall(function() return UE.UKismetSystemLibrary.IsValid(client) end)
+        valid = ok and isValid
+    end
+    if not valid then
+        print("[AnimAgentCore] Init 失败：PlayerController 上没找到 UAnimGenClient 组件")
+        print("[AnimAgentCore]   → 请打开 PlayerController 蓝图，Add Component 加 AnimGenClient")
+        print("[AnimAgentCore]   → 当前 PlayerController 类: " .. tostring(playerController:GetClass():GetName()))
         return false
+    end
+
+    -- 同样 try import bridge（蓝图里挂没挂都能用，没挂就 nil，跳过 mesh 预加载）
+    local importBridge = opts and opts.import_bridge or nil
+    if not importBridge then
+        pcall(function() importBridge = playerController:GetComponentByClass(UE.UAnimImportBridge) end)
+        if importBridge then
+            local ok, isValid = pcall(function() return UE.UKismetSystemLibrary.IsValid(importBridge) end)
+            if not (ok and isValid) then importBridge = nil end
+        end
     end
 
     _pc     = playerController
     _client = client
-    _import = opts and opts.import_bridge or nil
-
-    if opts and opts.mock_glb then
-        _client.MockSampleGLBPath = opts.mock_glb
-    end
+    _import = importBridge
 
     Library:Init()
 
-    -- 订阅事件
-    _client.OnJobUpdated:Add(self, Core.OnJobUpdated)
-    _client.OnJobCompleted:Add(self, Core.OnJobCompleted)
-    _client.OnJobFailed:Add(self, Core.OnJobFailed)
+    -- 注：UnLua 的 multicast delegate :Add 要求 self 必须是 UObject，Core 是 Lua table 不行。
+    -- 当前 ImportLocalGLB 是同步实现，调用方拿到 uuid 立刻自己处理（见 ImportLocal 函数），
+    -- 因此不订阅 OnAssetImported / OnAssetImportFailed。
+    -- 后续 Fab 阶段如需异步事件，应让 PlayerController 作为接收 UObject 中转到 Lua。
 
     _initialized = true
-    print("[AnimAgentCore] 初始化完成")
+    print(string.format("[AnimAgentCore] 初始化完成（local-import 模式，import_bridge=%s）",
+        importBridge and "yes" or "no"))
     return true
 end
 
 function Core:Shutdown()
     if not _initialized then return end
-    if _client then
-        pcall(function() _client.OnJobUpdated:Remove(self, Core.OnJobUpdated) end)
-        pcall(function() _client.OnJobCompleted:Remove(self, Core.OnJobCompleted) end)
-        pcall(function() _client.OnJobFailed:Remove(self, Core.OnJobFailed) end)
-    end
     _client, _pc, _import = nil, nil, nil
-    _jobMeta = {}
     _initialized = false
 end
 
@@ -125,150 +102,97 @@ function Core:IsReady()
 end
 
 --============================================================
--- 配置
---============================================================
-
---- 注入 API Key（不持久化；玩家在 UI 输入后调用）
-function Core:SetApiKey(provider, key)
-    if not _client then return end
-    local p = string.lower(provider or "")
-    if p == "meshy" then
-        _client.MeshyApiKey = key or ""
-    elseif p == "tripo" then
-        _client.TripoApiKey = key or ""
-    end
-end
-
-function Core:GetApiKey(provider)
-    if not _client then return "" end
-    local p = string.lower(provider or "")
-    if p == "meshy" then return _client.MeshyApiKey end
-    if p == "tripo" then return _client.TripoApiKey end
-    return ""
-end
-
---============================================================
 -- 公共 API
 --============================================================
 
---- 创建生成任务
---- @param provider "mock" | "meshy" | "tripo"
---- @param prompt string
---- @param opts? { name?, negative_prompt?, style?, polycount?, on_done?(uuid, glbPath, success, err) }
+--- 从本地 .glb 文件导入（同步流程：拷贝 → 写库 → 注册 → 预加载 mesh）
+--- @param filePath string  绝对路径
+--- @param desiredName? string
 --- @return string uuid（失败返回 ""）
-function Core:Generate(provider, prompt, opts)
+function Core:ImportLocal(filePath, desiredName)
     if not self:IsReady() then
-        print("[AnimAgentCore] Generate 失败：未初始化")
+        print("[AnimAgentCore] ImportLocal 失败：未初始化")
         return ""
     end
-    if not prompt or prompt == "" then
-        print("[AnimAgentCore] Generate 失败：prompt 为空")
-        return ""
-    end
+    if not filePath or filePath == "" then return "" end
 
-    opts = opts or {}
+    local uuid = _client:ImportLocalGLB(filePath, desiredName or "")
+    if not uuid or uuid == "" then return "" end
 
-    local req = UE.FAnimGenRequest()
-    req.Prompt          = prompt
-    req.NegativePrompt  = opts.negative_prompt or ""
-    req.TargetPolycount = opts.polycount or 30000
-    req.bWithTexture    = opts.with_texture ~= false
-    req.bPBR            = opts.pbr ~= false
+    -- C++ 已经把 source.glb + meta.json 落在 Saved/AnimAgent/assets/{uuid}/
+    local glbPath = string.format("%sSaved/AnimAgent/assets/%s/source.glb",
+        UE.UKismetSystemLibrary.GetProjectDirectory(), uuid)
 
-    if opts.style == "cartoon" then
-        req.Style = UE.EAnimGenStyle.Cartoon
-    elseif opts.style == "sculpture" then
-        req.Style = UE.EAnimGenStyle.Sculpture
-    else
-        req.Style = UE.EAnimGenStyle.Realistic
-    end
-
-    local uuid = _client:CreateTask(_providerEnum(provider), req)
-    if not uuid or uuid == "" then
-        print("[AnimAgentCore] CreateTask 返回空 uuid")
-        return ""
-    end
-
-    _jobMeta[uuid] = {
-        prompt   = prompt,
-        provider = string.lower(provider or "mock"),
-        name     = opts.name or prompt,
-        on_done  = opts.on_done,
-    }
-
-    print(string.format("[AnimAgentCore] Generate uuid=%s provider=%s prompt=%s",
-        uuid, provider, prompt))
+    self:_processImportedAsset(uuid, glbPath, desiredName or "")
     return uuid
 end
 
-function Core:GetJobStatus(uuid)
-    if not _client then return nil end
-    return _client:GetJobStatus(uuid)
+--- 导出到本地路径
+function Core:ExportLocal(uuid, targetPath)
+    if not self:IsReady() or not uuid or uuid == "" then return false end
+    return _client:ExportLocalGLB(uuid, targetPath or "")
 end
 
-function Core:CancelJob(uuid)
-    if not _client then return end
-    _client:CancelJob(uuid)
+--- 列出已导入资产（按时间倒序）
+function Core:ListAssets()
+    return Library:GetAll()
 end
 
-function Core:ListActiveJobs()
-    if not _client then return {} end
-    local arr = _client:ListActiveJobs()
-    local out = {}
-    for i = 1, arr:Num() do out[i] = arr:Get(i - 1) end
-    return out
+--- 删除资产（仅 Library / Registry 元数据；不删 Saved 目录文件）
+function Core:RemoveAsset(uuid)
+    if not uuid or uuid == "" then return false end
+    Registry:RemovePrefab("dyn:" .. uuid)
+    return Library:Remove(uuid)
 end
 
 --============================================================
--- 事件回调（C++ → Lua）
+-- 内部：导入完成后的统一处理
 --============================================================
 
-function Core:OnJobUpdated(uuid, status)
-    -- status: FAnimGenJobStatus { State, Progress, PreviewURL, ModelURL, ErrorMessage }
-    local meta = _jobMeta[uuid]
-    print(string.format("[AnimAgentCore] OnJobUpdated uuid=%s state=%d progress=%d",
-        uuid, status.State, status.Progress))
-end
+function Core:_processImportedAsset(uuid, glbPath, desiredName)
+    -- ① 优先用 desiredName，否则解析 meta.json 取显示名
+    local name = desiredName ~= "" and desiredName or uuid
+    local sourceNote = ""
+    pcall(function()
+        local metaPath = glbPath:gsub("source%.glb$", "meta.json")
+        local f = io.open(metaPath, "r")
+        if f then
+            local content = f:read("*a")
+            f:close()
+            local json = require("Gameplay.UGC.json")
+            local meta = json.decode(content)
+            if meta then
+                if desiredName == "" then name = meta.name or name end
+                sourceNote = meta.source_note or ""
+            end
+        end
+    end)
 
-function Core:OnJobCompleted(uuid, glbPath)
-    local meta = _jobMeta[uuid] or {}
-    print(string.format("[AnimAgentCore] OnJobCompleted uuid=%s path=%s", uuid, glbPath))
-
-    -- ① 写入资产库
+    -- ② 写入资产库
     Library:Add({
         uuid       = uuid,
-        name       = meta.name or uuid,
-        prompt     = meta.prompt or "",
-        provider   = meta.provider or "mock",
+        name       = name,
+        prompt     = sourceNote,
+        provider   = "local",
         glb_path   = glbPath,
         created_at = os.time(),
     })
 
-    -- ② 注册到 UGCPrefabRegistry 的 dyn: 命名空间
+    -- ③ 注册到 UGCPrefabRegistry（出现在 UGC 编辑器的"AI 生成"分类下）
     Registry:RegisterDynamicGLB({
         uuid     = uuid,
-        name     = meta.name or uuid,
+        name     = name,
         glb_path = glbPath,
-        provider = meta.provider or "mock",
-        prompt   = meta.prompt or "",
+        provider = "local",
+        prompt   = sourceNote,
     })
 
-    -- ③ 触发运行时导入（若 import bridge 可用）
+    -- ④ 让 ImportBridge 预加载 mesh（首次放置时无 IO 卡顿）
     if _import then
         pcall(function() _import:ImportGLBAsync(uuid, glbPath) end)
     end
 
-    if meta.on_done then
-        pcall(meta.on_done, uuid, glbPath, true, nil)
-    end
-end
-
-function Core:OnJobFailed(uuid, errorMessage)
-    print(string.format("[AnimAgentCore] OnJobFailed uuid=%s err=%s", uuid, errorMessage))
-    local meta = _jobMeta[uuid]
-    if meta and meta.on_done then
-        pcall(meta.on_done, uuid, nil, false, errorMessage)
-    end
+    print(string.format("[AnimAgentCore] 资产已就绪 uuid=%s name=%s", uuid, name))
 end
 
 return Core

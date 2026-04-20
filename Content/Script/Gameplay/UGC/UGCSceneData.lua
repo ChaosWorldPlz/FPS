@@ -33,12 +33,28 @@ local _batches      = {}   -- batchID(string) → { sceneID1, sceneID2, ... } �
 local _nextBatch    = 1
 local _activeBatch  = nil  -- 跨多次原子调用共享的 batchID（begin_batch/end_batch 显式管理）
 
+-- post-spawn 钩子：function(actor, prefabName)，所有 SpawnPlaceable 后触发
+-- AnimAgent dyn 资产用它在 spawn 后注入 UStaticMesh
+local _onActorCreated = nil
+
+local function _fireSpawnHook(actor, prefabName)
+    if _onActorCreated and actor then
+        pcall(_onActorCreated, actor, prefabName)
+    end
+end
+
 local UNDO_MAX = 5
 local ACTOR_MAX = 50
 
 --============================================================
 -- 初始化
 --============================================================
+
+--- 注册"actor spawn 后"回调，所有从 PrefabRegistry 路径 spawn 的 actor 都会触发一次
+--- @param fn function(actor, prefabName)
+function SceneData:SetActorCreatedHook(fn)
+    _onActorCreated = fn
+end
 
 function SceneData:Init(editorBridge)
     _bridge    = editorBridge
@@ -167,6 +183,7 @@ function SceneData:CreateActor(prefabName, location, rotation)
         print("[UGCSceneData] CreateActor: Spawn 失败 prefab=" .. tostring(prefabName) .. " path=" .. tostring(path))
         return nil, nil
     end
+    _fireSpawnHook(actor, prefabName)
 
     local sceneID = _nextID
     _nextID = _nextID + 1
@@ -222,6 +239,7 @@ function SceneData:CreateActorWithTransform(prefabName, transform)
         print("[UGCSceneData] CreateActorWithTransform: Spawn 失败")
         return nil, nil
     end
+    _fireSpawnHook(actor, prefabName)
 
     -- 应用完整 Transform（含缩放）
     _bridge:SetActorTransform(actor, transform)
@@ -480,6 +498,7 @@ function SceneData:Undo()
         local loc, rot, _ = UE.UKismetMathLibrary.BreakTransform(record.transform)
         local actor = _bridge:SpawnPlaceable(path, loc, rot)
         if actor then
+            _fireSpawnHook(actor, record.prefabName)
             _bridge:SetActorTransform(actor, record.transform)
             _actors[record.sceneID] = {
                 actor      = actor,
@@ -520,6 +539,7 @@ function SceneData:Redo()
                 local loc, rot, _ = UE.UKismetMathLibrary.BreakTransform(record.transform)
                 local actor = _bridge:SpawnPlaceable(path, loc, rot)
                 if actor then
+                    _fireSpawnHook(actor, record.prefabName)
                     _bridge:SetActorTransform(actor, record.transform)
                     _actors[record.sceneID] = {
                         actor      = actor,
@@ -657,6 +677,7 @@ function SceneData:DeserializeFromJSON(json)
             if path then
                 local actor = _bridge:SpawnPlaceable(path, loc, rot)
                 if actor then
+                    _fireSpawnHook(actor, prefab)
                     _bridge:SetActorTransform(actor, transform)
                     _actors[sceneID] = {
                         actor      = actor,
