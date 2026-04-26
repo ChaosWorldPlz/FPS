@@ -20,3 +20,4 @@ DerivedDataCache/
 unreal_mcp_advanced.log
 /Backend
 /Plugins/UnLua/Source
+*.log
