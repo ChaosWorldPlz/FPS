@@ -25,6 +25,7 @@ public class FPS : ModuleRules
 			"UnLua",
 			"HTTP",
 			"Json",
+			"JsonUtilities",
 			"DesktopPlatform",
 			"ApplicationCore",
 			"PCG",
