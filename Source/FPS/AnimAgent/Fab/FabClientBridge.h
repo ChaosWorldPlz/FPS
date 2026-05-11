@@ -45,6 +45,19 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
     FOnFabDownloadProgress OnDownloadProgress;
 
+    /** 下载终态多播；成功 Err.IsOk()==true，失败 Err 带 HttpCode/BizCode/Message。
+     *  给 Lua / UMG 订阅：Lua 里 `bridge.OnDownloadCompleted:Add(self, self.OnDone)` 即可。*/
+    UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
+    FOnFabDownloadCompleted OnDownloadCompleted;
+
+    /** 登录终态多播；成功 Err.IsOk()==true。给 Lua/UMG 订阅 */
+    UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
+    FOnFabAuthCompleted OnLoginCompleted;
+
+    /** 注册终态多播；成功 Err.IsOk()==true，后端会自动登录并回填 Result */
+    UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
+    FOnFabAuthCompleted OnRegisterCompleted;
+
     UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
     FOnFabUploadProgress OnUploadProgress;
 
@@ -58,6 +71,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Fab|Auth")
     void Register(const FString& Account, const FString& Password, const FString& UserName,
                   const FFabAuthDelegate& OnComplete);
+
+    /** Lua 友好的登录入口：不带一次性委托；结果走 OnLoginCompleted 多播 */
+    UFUNCTION(BlueprintCallable, Category = "Fab|Auth")
+    void LoginSimple(const FString& Account, const FString& Password);
+
+    /** Lua 友好的注册入口：不带一次性委托；结果走 OnRegisterCompleted 多播 */
+    UFUNCTION(BlueprintCallable, Category = "Fab|Auth")
+    void RegisterSimple(const FString& Account, const FString& Password, const FString& UserName);
 
     UFUNCTION(BlueprintCallable, Category = "Fab|Auth")
     void Logout();

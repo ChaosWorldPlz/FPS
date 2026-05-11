@@ -46,6 +46,67 @@ bool UFabUrlDispatcher::Parse(const FString& SchemeUrl, FString& OutAction,
     return !OutAction.IsEmpty();
 }
 
+bool UFabUrlDispatcher::Dispatch(
+    UFabClientBridge* Bridge,
+    const FString& SchemeUrl,
+    FFabError& OutError)
+{
+    OutError = FFabError::Ok();
+
+    if (!IsFabScheme(SchemeUrl))
+    {
+        OutError.HttpCode = 0; OutError.BizCode = -1;
+        OutError.Message = TEXT("not a uefab:// url");
+        return false;
+    }
+    if (!Bridge)
+    {
+        OutError.HttpCode = 0; OutError.BizCode = -1;
+        OutError.Message = TEXT("FabClientBridge 未绑定");
+        return false;
+    }
+
+    FString Action;
+    TMap<FString, FString> Params;
+    if (!Parse(SchemeUrl, Action, Params))
+    {
+        OutError.HttpCode = 0; OutError.BizCode = -1;
+        OutError.Message = TEXT("URL 格式错误");
+        return false;
+    }
+
+    const FString ActionLower = Action.ToLower();
+    if (ActionLower == TEXT("download") || ActionLower == TEXT("import"))
+    {
+        const FString* IdStrPtr = Params.Find(TEXT("id"));
+        if (!IdStrPtr || IdStrPtr->IsEmpty())
+        {
+            OutError.HttpCode = 0; OutError.BizCode = -1;
+            OutError.Message = TEXT("缺少 id 参数");
+            return false;
+        }
+        const int32 AssetId = FCString::Atoi(**IdStrPtr);
+        if (AssetId <= 0)
+        {
+            OutError.HttpCode = 0; OutError.BizCode = -1;
+            OutError.Message = FString::Printf(TEXT("id 非法: %s"), **IdStrPtr);
+            return false;
+        }
+
+        UE_LOG(LogFabUrl, Log, TEXT("dispatch %s id=%d (fire-and-forget)"), *ActionLower, AssetId);
+
+        // 派发后结果走 Bridge->OnDownloadCompleted 多播；这里扔一个空 lambda
+        Bridge->DownloadAssetEx(AssetId,
+            [](const FFabError&, const FFabDownloadResult&) {});
+        return true;
+    }
+
+    OutError.HttpCode = 0; OutError.BizCode = -1;
+    OutError.Message = FString::Printf(TEXT("未知 action: %s"), *Action);
+    UE_LOG(LogFabUrl, Warning, TEXT("unknown action '%s' in url %s"), *Action, *SchemeUrl);
+    return false;
+}
+
 bool UFabUrlDispatcher::DispatchDownload(
     UFabClientBridge* Bridge,
     const FString& SchemeUrl,

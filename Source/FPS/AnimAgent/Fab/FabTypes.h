@@ -357,6 +357,29 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
     int32, TotalBytes,
     const FString&, LocalFilePath);
 
+/**
+ * 下载完成多播（无论成功失败都广播）。
+ * 给 UI 订阅用，尤其是 Lua：UnLua 对 DECLARE_DYNAMIC_DELEGATE 的一次性回调绑定不友好，
+ * 用多播就能 :Add(self, fn) 搞定。
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(
+    FOnFabDownloadCompleted,
+    int32, AssetId,
+    const FFabError&, Error,
+    const FFabDownloadResult&, Result);
+
+/**
+ * 登录 / 注册完成多播（无论成功失败都广播）。
+ * 使用场景同 OnDownloadCompleted，给 UMG/Lua 订阅。
+ * 和既有的 `FFabAuthDelegate`（一次性）并存：
+ *   - 纯 BP 项目：`Login(acc, pwd, BP 生成的 OnComplete)` 用一次性回调
+ *   - Lua 项目：`LoginSimple(acc, pwd)` + 订阅 `OnLoginCompleted` 多播
+ */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+    FOnFabAuthCompleted,
+    const FFabError&, Error,
+    const FFabAuthResult&, Result);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
     FOnFabUploadProgress,
     const FString&, LocalFilePath,

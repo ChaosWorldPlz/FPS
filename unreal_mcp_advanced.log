@@ -6473,3 +6473,178 @@
 2026-04-19 17:22:15,962 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:114] - Listing templates
 2026-04-19 17:22:15,962 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
 2026-04-19 17:22:15,963 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-20 22:43:25,094 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-04-20 22:43:25,094 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-04-20 22:43:25,095 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-04-20 22:43:25,095 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-04-20 22:43:25,095 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-04-20 22:43:25,095 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-04-20 22:43:25,095 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-04-20 22:43:25,095 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-04-20 22:43:25,203 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-04-20 22:43:25,208 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-04-20 22:43:25,213 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-04-20 22:43:25,214 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-04-20 22:43:25,221 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-04-20 22:43:25,222 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000239B65AA150>
+2026-04-20 22:43:25,223 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-04-20 22:43:25,223 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-04-20 22:43:25,224 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-20 22:43:25,224 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000239B64DDD90>
+2026-04-20 22:43:25,224 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-04-20 22:43:25,224 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-04-20 22:43:25,226 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000239B64AB490>
+2026-04-20 22:43:25,226 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-04-20 22:43:25,227 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-04-20 22:43:25,227 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-04-20 22:43:25,227 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-20 22:43:25,228 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000239B65AB090>
+2026-04-20 22:43:25,228 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourceTemplatesRequest
+2026-04-20 22:43:25,228 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourceTemplatesRequest
+2026-04-20 22:43:25,228 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:114] - Listing templates
+2026-04-20 22:43:25,228 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-20 22:43:25,228 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 01:50:42,317 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-04-21 01:50:42,318 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-04-21 01:50:42,318 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-04-21 01:50:42,318 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-04-21 01:50:42,318 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-04-21 01:50:42,318 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-04-21 01:50:42,318 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-04-21 01:50:42,319 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-04-21 01:50:42,490 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-04-21 01:50:42,496 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-04-21 01:50:42,500 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-04-21 01:50:42,500 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-04-21 01:50:42,518 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-04-21 01:50:42,520 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001CFBE186BD0>
+2026-04-21 01:50:42,521 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-04-21 01:50:42,521 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-04-21 01:50:42,522 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 01:50:42,522 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001CFBE484210>
+2026-04-21 01:50:42,523 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-04-21 01:50:42,523 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-04-21 01:50:42,523 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001CFBE473490>
+2026-04-21 01:50:42,524 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-04-21 01:50:42,524 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-04-21 01:50:42,524 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-04-21 01:50:42,524 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 01:50:42,524 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001CFBE4B06D0>
+2026-04-21 01:50:42,525 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourceTemplatesRequest
+2026-04-21 01:50:42,525 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourceTemplatesRequest
+2026-04-21 01:50:42,525 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:114] - Listing templates
+2026-04-21 01:50:42,525 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 01:50:42,526 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 01:53:08,444 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:371] - Unreal connection reset
+2026-04-21 01:53:08,444 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:383] - Unreal MCP Advanced server shut down
+2026-04-21 13:19:16,170 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-04-21 13:19:16,170 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-04-21 13:19:16,171 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-04-21 13:19:16,171 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-04-21 13:19:16,171 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-04-21 13:19:16,171 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-04-21 13:19:16,171 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-04-21 13:19:16,171 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-04-21 13:19:16,238 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-04-21 13:19:16,242 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-04-21 13:19:16,245 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-04-21 13:19:16,246 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-04-21 13:19:16,253 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-04-21 13:19:16,254 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000224EA6FAC50>
+2026-04-21 13:19:16,254 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-04-21 13:19:16,254 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-04-21 13:19:16,255 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 13:19:16,256 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000224EA747210>
+2026-04-21 13:19:16,256 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-04-21 13:19:16,256 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-04-21 13:19:16,257 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000224EA76A890>
+2026-04-21 13:19:16,257 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-04-21 13:19:16,257 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-04-21 13:19:16,258 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-04-21 13:19:16,258 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 13:19:16,258 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000224EA6E48D0>
+2026-04-21 13:19:16,258 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourceTemplatesRequest
+2026-04-21 13:19:16,259 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourceTemplatesRequest
+2026-04-21 13:19:16,259 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:114] - Listing templates
+2026-04-21 13:19:16,259 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-21 13:19:16,260 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-24 13:12:32,764 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-04-24 13:12:32,764 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-04-24 13:12:32,764 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-04-24 13:12:32,764 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-04-24 13:12:32,765 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-04-24 13:12:32,765 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-04-24 13:12:32,765 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-04-24 13:12:32,765 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-04-24 13:12:32,942 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-04-24 13:12:32,970 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-04-24 13:12:32,975 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-04-24 13:12:32,975 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-04-24 13:12:33,020 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-04-24 13:12:33,021 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000255C9D66BD0>
+2026-04-24 13:12:33,021 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-04-24 13:12:33,021 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-04-24 13:12:33,024 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-24 13:12:33,025 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000255CA0C6A50>
+2026-04-24 13:12:33,025 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-04-24 13:12:33,025 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-04-24 13:12:33,026 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000255C9F92B10>
+2026-04-24 13:12:33,026 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-04-24 13:12:33,026 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-04-24 13:12:33,027 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-04-24 13:12:33,027 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-24 13:12:33,028 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-26 23:17:01,393 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-04-26 23:17:01,394 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-04-26 23:17:01,394 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-04-26 23:17:01,394 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-04-26 23:17:01,394 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-04-26 23:17:01,394 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-04-26 23:17:01,394 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-04-26 23:17:01,394 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-04-26 23:17:01,486 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-04-26 23:17:01,490 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-04-26 23:17:01,493 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-04-26 23:17:01,493 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-04-26 23:17:01,503 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-04-26 23:17:01,504 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C1EDFFF7D0>
+2026-04-26 23:17:01,504 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-04-26 23:17:01,504 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-04-26 23:17:01,505 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-26 23:17:01,507 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C1EE04BB50>
+2026-04-26 23:17:01,507 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-04-26 23:17:01,507 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-04-26 23:17:01,508 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001C1EE0B7AD0>
+2026-04-26 23:17:01,508 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-04-26 23:17:01,508 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-04-26 23:17:01,508 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-04-26 23:17:01,509 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-26 23:17:01,510 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-30 19:16:43,532 - mcp.server.lowlevel.server - DEBUG - [server.py:162] - Initializing server 'UnrealMCP_Advanced'
+2026-04-30 19:16:43,532 - mcp.server.lowlevel.server - DEBUG - [server.py:439] - Registering handler for ListToolsRequest
+2026-04-30 19:16:43,533 - mcp.server.lowlevel.server - DEBUG - [server.py:519] - Registering handler for CallToolRequest
+2026-04-30 19:16:43,533 - mcp.server.lowlevel.server - DEBUG - [server.py:301] - Registering handler for ListResourcesRequest
+2026-04-30 19:16:43,533 - mcp.server.lowlevel.server - DEBUG - [server.py:336] - Registering handler for ReadResourceRequest
+2026-04-30 19:16:43,533 - mcp.server.lowlevel.server - DEBUG - [server.py:263] - Registering handler for PromptListRequest
+2026-04-30 19:16:43,533 - mcp.server.lowlevel.server - DEBUG - [server.py:285] - Registering handler for GetPromptRequest
+2026-04-30 19:16:43,533 - mcp.server.lowlevel.server - DEBUG - [server.py:321] - Registering handler for ListResourceTemplatesRequest
+2026-04-30 19:16:43,651 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:2744] - Starting Advanced MCP server with stdio transport
+2026-04-30 19:16:43,658 - asyncio - DEBUG - [proactor_events.py:633] - Using proactor: IocpProactor
+2026-04-30 19:16:43,664 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:376] - UnrealMCP Advanced server starting up
+2026-04-30 19:16:43,664 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:377] - Connection will be established lazily on first tool call
+2026-04-30 19:16:43,674 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: root=InitializedNotification(method='notifications/initialized', params=None, jsonrpc='2.0')
+2026-04-30 19:16:43,675 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001400430ACD0>
+2026-04-30 19:16:43,676 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListToolsRequest
+2026-04-30 19:16:43,676 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListToolsRequest
+2026-04-30 19:16:43,677 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-30 19:16:43,678 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x000001400428C210>
+2026-04-30 19:16:43,679 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListPromptsRequest
+2026-04-30 19:16:43,679 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListPromptsRequest
+2026-04-30 19:16:43,679 - mcp.server.lowlevel.server - DEBUG - [server.py:675] - Received message: <mcp.shared.session.RequestResponder object at 0x00000140042E7C10>
+2026-04-30 19:16:43,679 - mcp.server.lowlevel.server - INFO - [server.py:720] - Processing request of type ListResourcesRequest
+2026-04-30 19:16:43,681 - mcp.server.lowlevel.server - DEBUG - [server.py:723] - Dispatching request of type ListResourcesRequest
+2026-04-30 19:16:43,681 - mcp.server.fastmcp.resources.resource_manager - DEBUG - [resource_manager.py:109] - Listing resources
+2026-04-30 19:16:43,681 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-30 19:16:43,681 - mcp.server.lowlevel.server - DEBUG - [server.py:790] - Response sent
+2026-04-30 19:27:49,049 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:371] - Unreal connection reset
+2026-04-30 19:27:49,049 - UnrealMCP_Advanced - INFO - [unreal_mcp_server_advanced.py:383] - Unreal MCP Advanced server shut down

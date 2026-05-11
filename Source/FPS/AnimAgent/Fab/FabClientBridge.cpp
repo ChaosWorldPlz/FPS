@@ -713,10 +713,12 @@ void UFabClientBridge::Login(const FString& Account, const FString& Password,
             FFabAuthResult Result;
             if (!Err.IsOk() || !ParseAuthResult(Data, Result))
             {
+                Self->OnLoginCompleted.Broadcast(Err, Result);
                 CaptCb.ExecuteIfBound(Err, Result);
                 return;
             }
             Self->ApplyAuthResult(Result);
+            Self->OnLoginCompleted.Broadcast(FFabError::Ok(), Result);
             CaptCb.ExecuteIfBound(FFabError::Ok(), Result);
         });
 }
@@ -744,12 +746,27 @@ void UFabClientBridge::Register(const FString& Account, const FString& Password,
             FFabAuthResult Result;
             if (!Err.IsOk() || !ParseAuthResult(Data, Result))
             {
+                Self->OnRegisterCompleted.Broadcast(Err, Result);
                 CaptCb.ExecuteIfBound(Err, Result);
                 return;
             }
             Self->ApplyAuthResult(Result);
+            Self->OnRegisterCompleted.Broadcast(FFabError::Ok(), Result);
             CaptCb.ExecuteIfBound(FFabError::Ok(), Result);
         });
+}
+
+void UFabClientBridge::LoginSimple(const FString& Account, const FString& Password)
+{
+    FFabAuthDelegate Empty;
+    Login(Account, Password, Empty);
+}
+
+void UFabClientBridge::RegisterSimple(const FString& Account, const FString& Password,
+                                      const FString& UserName)
+{
+    FFabAuthDelegate Empty;
+    Register(Account, Password, UserName, Empty);
 }
 
 void UFabClientBridge::Logout()
@@ -879,6 +896,7 @@ void UFabClientBridge::DownloadAssetEx(
             }
             if (!Err.IsOk() || !Data.IsValid())
             {
+                Self->OnDownloadCompleted.Broadcast(AssetId, Err, Result);
                 if (OnComplete) OnComplete(Err, Result);
                 return;
             }
@@ -889,6 +907,7 @@ void UFabClientBridge::DownloadAssetEx(
             {
                 FFabError E; E.HttpCode = 200; E.BizCode = -1;
                 E.Message = TEXT("download url empty");
+                Self->OnDownloadCompleted.Broadcast(AssetId, E, Result);
                 if (OnComplete) OnComplete(E, Result);
                 return;
             }
@@ -940,6 +959,7 @@ void UFabClientBridge::DownloadAssetEx(
                     if (!bOk || !Response.IsValid())
                     {
                         FFabError E = FFabError::Network(TEXT("download network error"));
+                        S->OnDownloadCompleted.Broadcast(AssetId, E, Result);
                         if (OnComplete) OnComplete(E, Result);
                         return;
                     }
@@ -948,6 +968,7 @@ void UFabClientBridge::DownloadAssetEx(
                     {
                         FFabError E; E.HttpCode = Code; E.BizCode = -1;
                         E.Message = FString::Printf(TEXT("download http=%d"), Code);
+                        S->OnDownloadCompleted.Broadcast(AssetId, E, Result);
                         if (OnComplete) OnComplete(E, Result);
                         return;
                     }
@@ -957,6 +978,7 @@ void UFabClientBridge::DownloadAssetEx(
                     {
                         FFabError E; E.HttpCode = 0; E.BizCode = -1;
                         E.Message = FString::Printf(TEXT("save file failed: %s"), *TargetPath);
+                        S->OnDownloadCompleted.Broadcast(AssetId, E, Result);
                         if (OnComplete) OnComplete(E, Result);
                         return;
                     }
@@ -966,6 +988,7 @@ void UFabClientBridge::DownloadAssetEx(
                     UE_LOG(LogFabClient, Log, TEXT("asset %d downloaded -> %s (%d bytes)"),
                         AssetId, *TargetPath, Bytes.Num());
 
+                    S->OnDownloadCompleted.Broadcast(AssetId, FFabError::Ok(), Result);
                     if (OnComplete) OnComplete(FFabError::Ok(), Result);
                 });
 

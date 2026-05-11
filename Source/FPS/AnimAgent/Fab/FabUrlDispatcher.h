@@ -45,17 +45,28 @@ public:
                       TMap<FString, FString>& OutParams);
 
     /**
-     * 统一入口：解析 URL，命中 download 类 action 即调 Bridge 下载。
+     * 统一入口（推荐）：解析 URL，命中 download 类 action 即调 Bridge 下载。
+     * 不接受一次性回调 — 调用方请订阅 Bridge->OnDownloadCompleted 多播（Lua/UMG 友好）
+     * 以及 Bridge->OnDownloadProgress 看进度；action 解析失败时通过返回值和 OutError 反馈。
      *
      * @param Bridge      已登录的 UFabClientBridge；nullptr 视作错误
      * @param SchemeUrl   uefab://... URL
-     * @param OnComplete  下载完成（或失败）回调，BP 动态委托；action 未识别 / 参数非法时
-     *                    也会立刻触发回调，err.Message 说明原因
-     * @return true  表示 URL 已被识别并派发（不代表下载成功）
-     *         false 表示 URL 不是 uefab scheme 或内部直接失败，**且 OnComplete 已被立刻 fire**
+     * @param OutError    本地解析 / 参数校验失败时填错误；HTTP 层错误走多播不走这里
+     * @return true  URL 已被识别并派发（不代表下载成功；等多播结果）
+     *         false URL 不是 uefab scheme 或参数非法，OutError 带说明，**多播不会触发**
      *
      * Action 目前支持：
-     *   download  / import  → 下载资产到 Saved/AnimAgent/assets/{uuid}/source.glb
+     *   download / import   → 下载资产到 Saved/AnimAgent/assets/{uuid}/source.glb
+     */
+    UFUNCTION(BlueprintCallable, Category = "Fab|Url")
+    static bool Dispatch(
+        UFabClientBridge* Bridge,
+        const FString& SchemeUrl,
+        FFabError& OutError);
+
+    /**
+     * 带一次性 BP 动态委托的派发入口（给纯 BP 项目用）。
+     * Lua 侧优先用 `Dispatch` + 订阅 Bridge 多播，这个函数仅为 BP 便利保留。
      */
     UFUNCTION(BlueprintCallable, Category = "Fab|Url")
     static bool DispatchDownload(

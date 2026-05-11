@@ -2,40 +2,32 @@
     WBP_FabPanel.lua
     Fab 平台面板（路线 B 核心 UMG）
 
-    控件树（需在编辑器里按这个命名搭建）：
+    控件树（必须"Is Variable"勾选，命名严格对齐；和 UGCEditor 一致的 w_ 前缀规范）：
       Root (Canvas Panel)
-      └── Border "FabRoot"
+      └── Border        w_border_Root         -- 整张面板外壳
           └── Vertical Box
-              ├── Horizontal Box "TitleBar"
-              │   ├── Text "TxtTitle"
-              │   └── Button "BtnClose"
-              ├── WebBrowser "WebBrowser"
-              └── Horizontal Box "StatusBar"
-                  ├── Text "TxtStatus"
-                  └── ProgressBar "BarProgress"
+              ├── Horizontal Box  w_panel_Title
+              │   ├── Text Block   w_text_Title       ("Fab 资产平台")
+              │   └── Button       w_btn_Close        (子 Text "✕")
+              ├── WebBrowser      w_browser_Web      -- 真正的 CEF 承载
+              └── Horizontal Box  w_panel_Status
+                  ├── Text Block   w_text_Status      -- 下载进度 / 错误提示
+                  └── Progress Bar w_bar_Progress     -- Visibility 默认 Collapsed
 
-    职责划分：
-    - Lua：
-        * 初始化：Init FabClient，拿到 bridge / base_url
-        * 注入：每次 OnLoadCompleted 往 CEF 注 cookie + 客户端标识
-        * 拦截：OnUrlChanged 时识别 uefab:// scheme，调 BP 派发；回退 URL
-        * 下载完成回调（BP 拿到 C++ 结果后回灌 Lua）：走 FabClient:RegisterDownloadedAsset
-        * 状态栏显示 + 关闭按钮
-
-    - Blueprint：
-        * 承接 UFabUrlDispatcher 的动态委托（Lua 直接 Bind 动态委托坑多）
-        * 订阅 Bridge 的 OnDownloadProgress 多播事件 → 调 Lua SetProgress
-        * 接收 Lua 信号后 CreateWidget / AddToViewport / RemoveFromParent 等容器管理
-
-    约定：
-    - Lua 里所有 "需要 BP 承接 / 派发" 的函数都以 BP_ 前缀命名（BP 里用 Custom Event 同名节点调过来）
+    架构说明：
+    - UnLua 对 UMG 的大部分反射都支持，所以 LoadURL / ExecuteJavascript / 多播订阅
+      都直接在 Lua 里做，BP 图**不需要**画任何 Custom Event
+    - 唯一例外：用户关掉面板想回到 UGC 编辑器这种"跨 Widget 容器"动作，可以直接
+      `self:RemoveFromParent()` 或通过 BP 在 OnVisibilityChanged 里补操作
+    - 下载完成事件通过 UFabClientBridge::OnDownloadCompleted 多播回来（动态 delegate 多播
+      UnLua 友好）；UFabUrlDispatcher.Dispatch 是 fire-and-forget
 ]]
 
-local UEClass = UE.UClass
+local WBP_FabPanel = UnLua.Class()
 
-local WBP_FabPanel = {}
-
--- 静态：打开面板前要用 "BP 里 CreateWidget + AddToViewport" 组合；Lua 没法直接实例化 UMG
+local LOG_TAG = "[System.UI.Fab.WBP_FabPanel]"
+local function Log(s) print(LOG_TAG .. " " .. tostring(s)) end
+local function Warn(s) print(LOG_TAG .. "[Warn] " .. tostring(s)) end
 
 --============================================================
 -- 生命周期
@@ -44,40 +36,40 @@ local WBP_FabPanel = {}
 function WBP_FabPanel:Construct()
     self.BaseUrl   = "http://127.0.0.1:8000"
     self.LastGoodUrl = ""
-    self.PendingDownloads = {}    -- { [asset_id] = true } 去重
+    self.PendingDownloads = {}
     self.Initialized = false
 
-    -- 读取 FabClient（单例）拿到 bridge
-    local ok, FabClient = pcall(function()
+    -- 1) 拿 FabClient（单例）
+    local okMod, FabClient = pcall(function()
         return require("Gameplay.Fab.FabClient")
     end)
-    if not ok or not FabClient then
-        self:_setStatus("加载 FabClient 失败", true)
+    if not okMod or not FabClient then
+        self:SetStatus("加载 FabClient 失败", true)
         return
     end
     self.FabClient = FabClient
 
-    -- 基于 UWorld 去找 PlayerController；用 UGameplayStatics
+    -- 2) 拿 PlayerController
     local pc = nil
     pcall(function()
         pc = UE.UGameplayStatics.GetPlayerController(self, 0)
     end)
     if not pc then
-        self:_setStatus("未找到 PlayerController", true)
+        self:SetStatus("未找到 PlayerController", true)
         return
     end
 
     if not FabClient:Init(pc) then
-        self:_setStatus("FabClient 初始化失败", true)
+        self:SetStatus("FabClient 初始化失败", true)
         return
     end
     self.Bridge = FabClient:GetBridge()
     if not self.Bridge then
-        self:_setStatus("未找到 FabClientBridge 组件", true)
+        self:SetStatus("未找到 FabClientBridge 组件", true)
         return
     end
 
-    -- 读取配置里的 BaseUrl（若 UFabConfig UCLASS 可访问）
+    -- 3) 读配置里的 BaseUrl
     pcall(function()
         local cfg = UE.UFabConfig.Get()
         if cfg and cfg.BaseUrl and cfg.BaseUrl ~= "" then
@@ -85,93 +77,130 @@ function WBP_FabPanel:Construct()
         end
     end)
 
-    -- 绑定 WebBrowser 事件（BP 里会把 OnUrlChanged/OnLoadCompleted 委托路由到这里）
-    if self.BtnClose then
-        self.BtnClose.OnClicked:Add(self, WBP_FabPanel.OnClickClose)
+    -- 4) 关闭按钮
+    if self.w_btn_Close and self.w_btn_Close.OnClicked then
+        self.w_btn_Close.OnClicked:Add(self, WBP_FabPanel.OnClickClose)
+    else
+        Warn("w_btn_Close 没有暴露为变量 / 没有 OnClicked")
     end
 
-    -- 初始状态
-    self:_setStatus("加载中…", false)
-    self:_setProgress(-1)  -- 隐藏进度条
+    -- 5) WebBrowser 事件订阅（UnLua 支持 BP 多播 :Add）
+    if self.w_browser_Web then
+        if self.w_browser_Web.OnUrlChanged then
+            self.w_browser_Web.OnUrlChanged:Add(self, WBP_FabPanel.OnWebUrlChanged)
+        end
+        if self.w_browser_Web.OnLoadCompleted then
+            self.w_browser_Web.OnLoadCompleted:Add(self, WBP_FabPanel.OnWebLoadCompleted)
+        end
+    else
+        Warn("w_browser_Web 控件缺失，请检查控件命名")
+    end
 
-    -- 首次导航：交给 BP 做 WebBrowser:LoadURL(BaseUrl)
-    -- （UnLua 对 UWebBrowser:LoadURL 的绑定不稳定，放 BP 更保险）
-    self:BP_RequestInitialNavigate(self.BaseUrl)
+    -- 6) Bridge 多播订阅
+    if self.Bridge.OnDownloadProgress then
+        self.Bridge.OnDownloadProgress:Add(self, WBP_FabPanel.OnDownloadProgress)
+    end
+    if self.Bridge.OnDownloadCompleted then
+        self.Bridge.OnDownloadCompleted:Add(self, WBP_FabPanel.OnDownloadCompleted)
+    end
+    if self.Bridge.OnAuthExpired then
+        self.Bridge.OnAuthExpired:Add(self, WBP_FabPanel.OnAuthExpired)
+    end
+
+    -- 7) 初始 UI 状态 + 导航
+    self:SetStatus("加载中…", false)
+    self:SetProgress(-1)
+
+    if self.w_browser_Web and self.w_browser_Web.LoadURL then
+        self.w_browser_Web:LoadURL(self.BaseUrl)
+    end
 
     self.Initialized = true
-    print(string.format("[WBP_FabPanel] Construct 完成，BaseUrl=%s", self.BaseUrl))
+    Log(string.format("Construct 完成，BaseUrl=%s", self.BaseUrl))
 end
 
 function WBP_FabPanel:Destruct()
-    self.PendingDownloads = nil
-    print("[WBP_FabPanel] Destruct")
-end
-
---============================================================
--- WebBrowser 事件入口（由 BP 在 OnUrlChanged / OnLoadCompleted 里调过来）
---============================================================
-
---- 每次页面加载完成：注 cookie + 注 UE 客户端标识
---- BP 实现示例：
----   OnLoadCompleted(Url):
----     Lua:OnWebLoadCompleted(Url)
-function WBP_FabPanel:OnWebLoadCompleted(Url)
-    if not self.Initialized then return end
-
-    local access = self.FabClient:GetAccessToken() or ""
-    local refresh = self.FabClient:GetRefreshToken() or ""
-
-    -- 注入 cookie + 全局标识；SameSite=Lax 可让浏览器带到同源请求
-    local js = string.format([[
-        (function() {
-            document.cookie = "access_token=%s; path=/; SameSite=Lax";
-            document.cookie = "refresh_token=%s; path=/; SameSite=Lax";
-            window.__FAB_UE_CLIENT__ = true;
-        })();
-    ]], access:gsub('"', '\\"'), refresh:gsub('"', '\\"'))
-
-    self:BP_ExecuteJavascript(js)
-
-    -- 不是 scheme URL 才记为"上一个有效 URL"
-    if Url and not self:_isFabScheme(Url) then
-        self.LastGoodUrl = Url
+    -- UnLua 会在 Widget 销毁时自动解绑，但显式 Remove 更稳
+    if self.Bridge then
+        pcall(function() self.Bridge.OnDownloadProgress:Remove(self, WBP_FabPanel.OnDownloadProgress) end)
+        pcall(function() self.Bridge.OnDownloadCompleted:Remove(self, WBP_FabPanel.OnDownloadCompleted) end)
+        pcall(function() self.Bridge.OnAuthExpired:Remove(self, WBP_FabPanel.OnAuthExpired) end)
     end
+    self.PendingDownloads = nil
+    Log("Destruct")
 end
 
---- URL 变化时检查是否命中 uefab:// scheme；命中则派发并回退 URL
---- BP 实现示例：
----   OnUrlChanged(Text):
----     Url = Text:ToString()
----     Lua:OnWebUrlChanged(Url)
-function WBP_FabPanel:OnWebUrlChanged(Url)
-    if not self.Initialized or not Url or Url == "" then return end
+--============================================================
+-- WebBrowser 事件
+--============================================================
 
-    if not self:_isFabScheme(Url) then
-        -- 正常导航，更新 LastGood
-        self.LastGoodUrl = Url
+--- 页面导航：成功或失败后 CEF 都会回调；签名 OnUrlChanged(Text NewURL)
+--- UnLua 把 UE.FText 传过来，ToString 取 FString
+function WBP_FabPanel:OnWebUrlChanged(NewUrl)
+    if not self.Initialized then return end
+    local url = NewUrl and NewUrl:ToString() or ""
+    if url == "" then return end
+
+    if self:_isFabScheme(url) then
+        Log("拦截 uefab scheme: " .. url)
+
+        -- 回退页面，避免 CEF 停在 "unsupported scheme" 错误页
+        local back = (self.LastGoodUrl ~= "" and self.LastGoodUrl) or self.BaseUrl
+        if self.w_browser_Web and self.w_browser_Web.LoadURL then
+            self.w_browser_Web:LoadURL(back)
+        end
+
+        -- 派发（fire-and-forget，结果走 OnDownloadCompleted）
+        local ok, err = UE.UFabUrlDispatcher.Dispatch(self.Bridge, url)
+        if not ok then
+            self:SetStatus("请求失败: " .. (err and tostring(err.Message) or "unknown"), true)
+        else
+            self:SetStatus("处理请求: " .. url, false)
+        end
         return
     end
 
-    print(string.format("[WBP_FabPanel] 拦截 uefab scheme: %s", Url))
+    -- 普通导航，记为 last good
+    self.LastGoodUrl = url
+end
 
-    -- 回退：立即导航回上一个有效 URL，避免 CEF 停在 "unsupported scheme" 错误页
-    if self.LastGoodUrl and self.LastGoodUrl ~= "" then
-        self:BP_NavigateTo(self.LastGoodUrl)
-    else
-        self:BP_NavigateTo(self.BaseUrl)
+--- 页面加载完成：注 cookie + 注 UE 客户端标识
+--- 注意：签名 OnLoadCompleted() 无参数，URL 得现查 w_browser_Web:GetUrl()
+function WBP_FabPanel:OnWebLoadCompleted()
+    if not self.Initialized then return end
+
+    local access  = self.FabClient:GetAccessToken()  or ""
+    local refresh = self.FabClient:GetRefreshToken() or ""
+
+    -- access_token 里可能含特殊字符（JWT 本身是 base64url，不会有 "，但保险起见 escape）
+    local function esc(s) return (tostring(s):gsub('"', '\\"')) end
+
+    local js = string.format([[
+(function(){
+  document.cookie = "access_token=%s; path=/; SameSite=Lax";
+  document.cookie = "refresh_token=%s; path=/; SameSite=Lax";
+  window.__FAB_UE_CLIENT__ = true;
+})();
+]], esc(access), esc(refresh))
+
+    if self.w_browser_Web and self.w_browser_Web.ExecuteJavascript then
+        self.w_browser_Web:ExecuteJavascript(js)
     end
 
-    -- 派发：交给 BP 调 UFabUrlDispatcher.DispatchDownload(bridge, Url, BP_OnDownloadDone)
-    self:BP_DispatchFabUrl(Url)
-    self:_setStatus("处理请求: " .. Url, false)
+    -- 更新 LastGood（loaded 的页面肯定不是 scheme）
+    if self.w_browser_Web and self.w_browser_Web.GetUrl then
+        local okGet, u = pcall(function() return self.w_browser_Web:GetUrl() end)
+        if okGet and u and u ~= "" then self.LastGoodUrl = u end
+    end
+
+    self:SetStatus("就绪", false)
 end
 
 --============================================================
--- 下载生命周期回调（由 BP 在 UFabUrlDispatcher 完成 / 进度事件里调过来）
+-- Bridge 事件
 --============================================================
 
---- BP 绑 UFabClientBridge::OnDownloadProgress 多播委托，把参数透传给 Lua
---- 签名: int32 AssetId, int32 BytesReceived, int32 TotalBytes, FString LocalPath
+--- 下载进度；签名 (AssetId, BytesReceived, TotalBytes, LocalFilePath)
 function WBP_FabPanel:OnDownloadProgress(AssetId, BytesReceived, TotalBytes, LocalPath)
     self.PendingDownloads[AssetId] = true
 
@@ -179,93 +208,99 @@ function WBP_FabPanel:OnDownloadProgress(AssetId, BytesReceived, TotalBytes, Loc
     if TotalBytes and TotalBytes > 0 then
         pct = BytesReceived / TotalBytes
     end
-    self:_setProgress(pct)
-    self:_setStatus(string.format("下载中 #%d  %.1f KB", AssetId, (BytesReceived or 0) / 1024), false)
+    self:SetProgress(pct)
+    self:SetStatus(string.format("下载中 #%d  %.1f KB",
+        AssetId, (BytesReceived or 0) / 1024), false)
 end
 
---- BP 在 UFabUrlDispatcher.DispatchDownload 的完成回调里调过来
---- @param Err   FFabError（Lua 镜像：HttpCode / BizCode / Message）
---- @param Result FFabDownloadResult（AssetId / LocalFilePath / LocalUuid / SizeBytes）
-function WBP_FabPanel:OnDownloadDone(Err, Result)
-    self:_setProgress(-1)  -- 隐藏
+--- 下载完成（成功/失败都触发）；签名 (AssetId, FFabError, FFabDownloadResult)
+function WBP_FabPanel:OnDownloadCompleted(AssetId, Err, Result)
+    self:SetProgress(-1)
+    self.PendingDownloads[AssetId] = nil
 
-    local assetId = (Result and Result.AssetId) or 0
-    self.PendingDownloads[assetId] = nil
-
-    -- err.Message 在 UnLua 里是 FString，转 string 保险
-    local msg = Err and Err.Message and tostring(Err.Message) or ""
+    local msg      = Err and Err.Message and tostring(Err.Message) or ""
     local httpCode = Err and Err.HttpCode or 0
-    local bizCode = Err and Err.BizCode or 0
-    local ok = (httpCode == 200 or httpCode == 0) and bizCode == 0
+    local bizCode  = Err and Err.BizCode or 0
+    local ok = (httpCode == 0 or (httpCode >= 200 and httpCode < 300)) and bizCode == 0
 
     if not ok then
-        self:_setStatus(string.format("下载失败: %s (http=%d biz=%d)",
+        self:SetStatus(string.format("下载失败: %s (http=%d biz=%d)",
             msg ~= "" and msg or "unknown", httpCode, bizCode), true)
         return
     end
 
-    -- 成功：走 FabClient:RegisterDownloadedAsset（入库 + 注册 + glTFRuntime 预加载）
     local uuid = self.FabClient:RegisterDownloadedAsset({
-        AssetId       = assetId,
+        AssetId       = AssetId,
         LocalFilePath = Result and Result.LocalFilePath and tostring(Result.LocalFilePath) or "",
         LocalUuid     = Result and Result.LocalUuid and tostring(Result.LocalUuid) or "",
         SizeBytes     = Result and Result.SizeBytes or 0,
     }, nil)
 
     if uuid and uuid ~= "" then
-        self:_setStatus(string.format("已添加到 Project: %s", uuid), false)
+        self:SetStatus(string.format("已添加到 Project: %s", uuid), false)
     else
-        self:_setStatus("下载成功但入库失败", true)
+        self:SetStatus("下载成功但入库失败", true)
     end
 end
 
+--- Token 两次都刷新失败 → 关闭面板回登录
+function WBP_FabPanel:OnAuthExpired()
+    self:SetStatus("登录已过期，请重新登录", true)
+    self:Close()
+end
+
 --============================================================
--- 关闭按钮
+-- 操作
 --============================================================
 
 function WBP_FabPanel:OnClickClose()
-    self:BP_RequestClose()
+    self:Close()
+end
+
+function WBP_FabPanel:Close()
+    pcall(function() self:RemoveFromParent() end)
+end
+
+--============================================================
+-- 状态 UI
+--============================================================
+
+function WBP_FabPanel:SetStatus(text, isError)
+    if self.w_text_Status then
+        pcall(function() self.w_text_Status:SetText(UE.FText(text or "")) end)
+        -- 颜色：错误红 / 正常浅灰
+        pcall(function()
+            local color
+            if isError then
+                color = UE.FLinearColor(0.91, 0.32, 0.36, 1.0)  -- #E8525C
+            else
+                color = UE.FLinearColor(0.69, 0.69, 0.71, 1.0)  -- #B0B0B4
+            end
+            self.w_text_Status:SetColorAndOpacity(color)
+        end)
+    end
+end
+
+--- @param pct number|nil  0.0~1.0 显示；<0 或 nil 隐藏
+function WBP_FabPanel:SetProgress(pct)
+    if not self.w_bar_Progress then return end
+    if not pct or pct < 0 then
+        pcall(function() self.w_bar_Progress:SetVisibility(UE.ESlateVisibility.Collapsed) end)
+    else
+        pcall(function()
+            self.w_bar_Progress:SetVisibility(UE.ESlateVisibility.SelfHitTestInvisible)
+            self.w_bar_Progress:SetPercent(pct)
+        end)
+    end
 end
 
 --============================================================
 -- 内部工具
 --============================================================
 
-function WBP_FabPanel:_isFabScheme(Url)
-    if not Url then return false end
-    local lower = tostring(Url):lower()
-    return lower:sub(1, 8) == "uefab://"
+function WBP_FabPanel:_isFabScheme(url)
+    if not url then return false end
+    return tostring(url):lower():sub(1, 8) == "uefab://"
 end
-
-function WBP_FabPanel:_setStatus(text, isError)
-    if not self.TxtStatus then return end
-    local ft = UE.FText(text or "")
-    pcall(function() self.TxtStatus:SetText(ft) end)
-    -- 颜色变化交给 BP 实现（Lua 改字体颜色需要 FSlateFontInfo 的写法略繁，先忽略）
-end
-
---- @param pct number|nil  0.0~1.0 显示进度；-1 隐藏；nil=indeterminate
-function WBP_FabPanel:_setProgress(pct)
-    if not self.BarProgress then return end
-    if not pct or pct < 0 then
-        pcall(function() self.BarProgress:SetVisibility(UE.ESlateVisibility.Collapsed) end)
-    else
-        pcall(function()
-            self.BarProgress:SetVisibility(UE.ESlateVisibility.SelfHitTestInvisible)
-            self.BarProgress:SetPercent(pct)
-        end)
-    end
-end
-
---============================================================
--- BP 侧占位（Lua 发信号 / 等接收；在 BP 图表里用 Custom Event 实现）
---============================================================
--- 只是文档性质：Lua 自己不会 override，实际由 BP 图表实现后 overload
-
-function WBP_FabPanel:BP_RequestInitialNavigate(Url) end
-function WBP_FabPanel:BP_NavigateTo(Url) end
-function WBP_FabPanel:BP_ExecuteJavascript(Js) end
-function WBP_FabPanel:BP_DispatchFabUrl(SchemeUrl) end
-function WBP_FabPanel:BP_RequestClose() end
 
 return WBP_FabPanel

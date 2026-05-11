@@ -1,37 +1,25 @@
 --[[
     WBP_FabLogin.lua
-    Fab 登录 / 注册面板 Lua VM（路线 B 保留的唯一 UMG 登录入口）
+    Fab 登录 / 注册面板 Lua VM（路线 B 唯一的 UMG 登录入口）
 
-    登录成功后，BP 图应该：
-      1) 调 Lua M:OnLoginResult(err, result)  → Lua 写状态
-      2) 若 err 为 ok → BP CreateWidget(WBP_FabPanel) + AddToViewport + RemoveFromParent(self)
-         （Lua 发信号 M:BP_RequestOpenFabPanel()，BP 在同名 Custom Event 里实现）
+    零 BP 节点方案：
+    - 提交按钮：Lua 直接调 bridge:LoginSimple / RegisterSimple（C++ 端 fire-and-forget）
+    - 完成回调：订阅 bridge.OnLoginCompleted / OnRegisterCompleted 多播
+    - 登录成功 → Lua 侧 CreateWidget WBP_FabPanel 并 AddToViewport，自己 RemoveFromParent
 
-    蓝图绑定：WBP_FabLogin → GetModuleName = "System.UI.Fab.WBP_FabLogin"
+    BP 图可以完全空白；UnLua Module 字段填 `System.UI.Fab.WBP_FabLogin`。
 
-    Widget 结构（在 UE 编辑器里创建 WBP_FabLogin.uasset，控件名务必一致）：
+    控件命名（必须 Is Variable 勾选，和 w_ 前缀规范一致）：
     ┌──────────────────────────────────────┐
-    │ [w_tab_Login]      EditableTextBox   │  ← 切 Login tab 的按钮（CheckBox 或 Button）
-    │ [w_tab_Register]   EditableTextBox   │
+    │ [w_tab_Login]      Button            │  ← 切 Login tab
+    │ [w_tab_Register]   Button            │  ← 切 Register tab
     │ [w_input_Account]  EditableTextBox   │
-    │ [w_input_Password] EditableTextBox   │
-    │ [w_input_Name]     EditableTextBox   │  ← 注册时才显示
+    │ [w_input_Password] EditableTextBox   │  IsPassword=true
+    │ [w_input_Name]     EditableTextBox   │  注册时才显示
     │ [w_btn_Submit]     Button            │
     │ [w_btn_Cancel]     Button            │
     │ [w_text_Status]    TextBlock         │
     └──────────────────────────────────────┘
-
-    Async 调用的接线说明：
-    --------
-    UnLua 对 dynamic delegate 参数的支持在不同版本有差异；为稳妥起见，
-    推荐在 WBP_FabLogin 的 **BP 图**里：
-        1) 在 w_btn_Submit Clicked 节点里，先收集 Lua 层暴露的 pending payload
-           （Lua 侧把 account/password/name 暂存到 `self.pending_*`，BP 读这些字段）
-        2) 调用 bridge:Login(acc, pwd, Event OnLoginResult)
-        3) Event OnLoginResult 里调 Lua 函数 M:OnLoginResult(err, result)
-
-    其它回调（OnAuthChanged / OnGlobalError / OnAuthExpired）是 multicast，
-    在 Construct 里直接 :Add(self, M.OnXxx) 即可。
 ]]
 
 local FabClient = require("Gameplay.Fab.FabClient")
@@ -61,18 +49,16 @@ end
 
 function M:Construct()
     self.current_tab = TAB_LOGIN
-
-    -- 缓存用户输入（Async Submit 时 BP 读这些字段）
     self.pending_account  = ""
     self.pending_password = ""
     self.pending_name     = ""
+    self.busy = false
 
     bindButton(self, "w_tab_Login",    M.OnClickTabLogin)
     bindButton(self, "w_tab_Register", M.OnClickTabRegister)
     bindButton(self, "w_btn_Submit",   M.OnClickSubmit)
     bindButton(self, "w_btn_Cancel",   M.OnClickCancel)
 
-    -- 输入框同步到 pending_*
     if self.w_input_Account and self.w_input_Account.OnTextChanged then
         self.w_input_Account.OnTextChanged:Add(self, M.OnTextAccountChanged)
     end
@@ -83,13 +69,36 @@ function M:Construct()
         self.w_input_Name.OnTextChanged:Add(self, M.OnTextNameChanged)
     end
 
-    -- 订阅 Bridge 的 multicast 事件
+    -- 先 Init FabClient，拿到 PC 上挂的 Bridge
+    local pc = UE.UGameplayStatics.GetPlayerController(self, 0)
+    if pc then FabClient:Init(pc) end
+
     local bridge = FabClient:GetBridge()
-    if bridge then
-        bridge.OnAuthChanged:Add(self, M.OnAuthChanged)
-        bridge.OnGlobalError:Add(self, M.OnGlobalError)
-    else
+    if not bridge then
         Warn("FabClient 未初始化或 Bridge 未挂载在 PC 上")
+        self:SetStatus("内部错误：未找到 FabClientBridge 组件")
+    else
+        self.Bridge = bridge
+        -- 订阅 Bridge 多播
+        if bridge.OnLoginCompleted then
+            bridge.OnLoginCompleted:Add(self, M.OnLoginCompleted)
+        end
+        if bridge.OnRegisterCompleted then
+            bridge.OnRegisterCompleted:Add(self, M.OnRegisterCompleted)
+        end
+        if bridge.OnAuthChanged then
+            bridge.OnAuthChanged:Add(self, M.OnAuthChanged)
+        end
+        if bridge.OnGlobalError then
+            bridge.OnGlobalError:Add(self, M.OnGlobalError)
+        end
+
+        -- 已登录（token.dat 已恢复）：直接打开 FabPanel
+        if bridge:IsLoggedIn() then
+            Log("检测到已登录态，直接打开 FabPanel")
+            self:OpenFabPanel()
+            return
+        end
     end
 
     self:ApplyTab(TAB_LOGIN)
@@ -98,10 +107,11 @@ function M:Construct()
 end
 
 function M:Destruct()
-    local bridge = FabClient:GetBridge()
-    if bridge then
-        pcall(function() bridge.OnAuthChanged:Remove(self, M.OnAuthChanged) end)
-        pcall(function() bridge.OnGlobalError:Remove(self, M.OnGlobalError) end)
+    if self.Bridge then
+        pcall(function() self.Bridge.OnLoginCompleted:Remove(self, M.OnLoginCompleted) end)
+        pcall(function() self.Bridge.OnRegisterCompleted:Remove(self, M.OnRegisterCompleted) end)
+        pcall(function() self.Bridge.OnAuthChanged:Remove(self, M.OnAuthChanged) end)
+        pcall(function() self.Bridge.OnGlobalError:Remove(self, M.OnGlobalError) end)
     end
 end
 
@@ -116,9 +126,16 @@ function M:ApplyTab(tab)
         self.w_input_Name:SetVisibility(
             isRegister and UE.ESlateVisibility.Visible or UE.ESlateVisibility.Collapsed)
     end
-    if self.w_text_Status then
-        self.w_text_Status:SetText(FText(""))
+    if self.w_btn_Submit then
+        local label = isRegister and "注册" or "登录"
+        pcall(function()
+            local textChild = self.w_btn_Submit.GetChildAt and self.w_btn_Submit:GetChildAt(0)
+            if textChild and textChild.SetText then
+                textChild:SetText(UE.FText(label))
+            end
+        end)
     end
+    self:SetStatus("")
 end
 
 function M:OnClickTabLogin()    self:ApplyTab(TAB_LOGIN) end
@@ -136,9 +153,12 @@ function M:OnTextNameChanged(text)     self.pending_name     = text:ToString() e
 -- 提交 / 取消
 --============================================================
 
---- BP 读 self.current_tab / self.pending_* 决定调 Bridge:Login 还是 Bridge:Register，
---- 回调最终进到 M:OnLoginResult / M:OnRegisterResult。
 function M:OnClickSubmit()
+    if self.busy then return end
+    if not self.Bridge then
+        self:SetStatus("Bridge 未就绪")
+        return
+    end
     if self.pending_account == "" or self.pending_password == "" then
         self:SetStatus("账号和密码不能为空")
         return
@@ -148,60 +168,69 @@ function M:OnClickSubmit()
         return
     end
 
-    self:SetStatus(self.current_tab == TAB_LOGIN and "登录中..." or "注册中...")
+    self.busy = true
     self:SetSubmitEnabled(false)
 
-    -- BP 图节点：Event OnSubmit → Bridge:Login / Bridge:Register → Event OnResult → M:OnLoginResult
-    -- 此处只是准备就绪信号，实际 HTTP 调用交给 BP
+    if self.current_tab == TAB_REGISTER then
+        self:SetStatus("注册中…")
+        self.Bridge:RegisterSimple(self.pending_account, self.pending_password, self.pending_name or "")
+    else
+        self:SetStatus("登录中…")
+        self.Bridge:LoginSimple(self.pending_account, self.pending_password)
+    end
 end
 
 function M:OnClickCancel()
+    if self.busy then return end
     self.pending_account  = ""
     self.pending_password = ""
     self.pending_name     = ""
-    if self.w_input_Account  then self.w_input_Account:SetText(FText("")) end
-    if self.w_input_Password then self.w_input_Password:SetText(FText("")) end
-    if self.w_input_Name     then self.w_input_Name:SetText(FText("")) end
+    if self.w_input_Account  then self.w_input_Account:SetText(UE.FText("")) end
+    if self.w_input_Password then self.w_input_Password:SetText(UE.FText("")) end
+    if self.w_input_Name     then self.w_input_Name:SetText(UE.FText("")) end
     self:SetStatus("")
     self:SetSubmitEnabled(true)
-    -- BP 图里可以在这里 RemoveFromParent 或 Close Panel
+    -- 直接关闭登录面板（UGCEditor 里点 "Fab" 会重开）
+    pcall(function() self:RemoveFromParent() end)
 end
 
 --============================================================
--- 回调（由 BP 图在 Bridge:Login/Register 完成事件里调用）
+-- Bridge 多播回调
 --============================================================
 
-function M:OnLoginResult(err, result)
+function M:OnLoginCompleted(err, result)
+    self.busy = false
     self:SetSubmitEnabled(true)
     if err and err.BizCode and err.BizCode ~= 0 then
         self:SetStatus(string.format("登录失败(%d): %s", err.BizCode, err.Message or ""))
         return
     end
+    if err and err.HttpCode and err.HttpCode ~= 0 and (err.HttpCode < 200 or err.HttpCode >= 300) then
+        self:SetStatus(string.format("登录失败(http=%d): %s", err.HttpCode, err.Message or ""))
+        return
+    end
     self:SetStatus("登录成功，正在打开 Fab 面板…")
-    -- BP 接这个信号：CreateWidget(WBP_FabPanel) + AddToViewport + RemoveFromParent(self)
-    self:BP_RequestOpenFabPanel()
+    self:OpenFabPanel()
 end
 
-function M:OnRegisterResult(err, result)
+function M:OnRegisterCompleted(err, result)
+    self.busy = false
     self:SetSubmitEnabled(true)
     if err and err.BizCode and err.BizCode ~= 0 then
         self:SetStatus(string.format("注册失败(%d): %s", err.BizCode, err.Message or ""))
         return
     end
+    if err and err.HttpCode and err.HttpCode ~= 0 and (err.HttpCode < 200 or err.HttpCode >= 300) then
+        self:SetStatus(string.format("注册失败(http=%d): %s", err.HttpCode, err.Message or ""))
+        return
+    end
     self:SetStatus("注册成功，已自动登录，正在打开 Fab 面板…")
-    self:BP_RequestOpenFabPanel()
+    self:OpenFabPanel()
 end
-
---- BP 占位：Lua 发信号；BP 图里用同名 Custom Event 承接
-function M:BP_RequestOpenFabPanel() end
-
---============================================================
--- Bridge 事件
---============================================================
 
 function M:OnAuthChanged(user)
     if user and user.Id and user.Id > 0 then
-        Log(string.format("用户登录: id=%d account=%s", user.Id, user.UserAccount))
+        Log(string.format("用户登录: id=%d account=%s", user.Id, user.UserAccount or ""))
     else
         Log("用户已登出")
     end
@@ -209,7 +238,40 @@ end
 
 function M:OnGlobalError(err)
     if not err then return end
-    self:SetStatus(string.format("错误(%d): %s", err.BizCode or -1, err.Message or ""))
+    -- 全局错误只做日志，不打断登录页 status（本地校验优先）
+    Log(string.format("全局错误(biz=%d http=%d): %s",
+        err.BizCode or -1, err.HttpCode or 0, err.Message or ""))
+end
+
+--============================================================
+-- 打开 FabPanel
+--============================================================
+
+--- 创建 WBP_FabPanel 并 AddToViewport；自身 RemoveFromParent。
+--- 资产路径硬编码 /Game/_UGC/UI/WBP_FabPanel.WBP_FabPanel_C；
+--- 工程改动资产位置时同步更新此处即可。
+function M:OpenFabPanel()
+    local PanelClassPath = "/Game/_UGC/UI/WBP_FabPanel.WBP_FabPanel_C"
+    local PanelClass = UE.UClass.Load(PanelClassPath)
+    if not PanelClass then
+        Warn("加载 WBP_FabPanel 类失败: " .. PanelClassPath)
+        self:SetStatus("打开 Fab 面板失败：资源未找到")
+        return
+    end
+
+    local pc = UE.UGameplayStatics.GetPlayerController(self, 0)
+    if not pc then
+        Warn("未找到 PlayerController")
+        return
+    end
+
+    local panel = UE.UWidgetBlueprintLibrary.Create(self, PanelClass, pc)
+    if not panel then
+        Warn("CreateWidget 失败")
+        return
+    end
+    panel:AddToViewport(10)
+    self:RemoveFromParent()
 end
 
 --============================================================
@@ -218,7 +280,7 @@ end
 
 function M:SetStatus(msg)
     if self.w_text_Status then
-        self.w_text_Status:SetText(FText(msg or ""))
+        pcall(function() self.w_text_Status:SetText(UE.FText(msg or "")) end)
     end
 end
 
