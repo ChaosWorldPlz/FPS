@@ -140,6 +140,23 @@ function FabClient:GetRefreshToken()
     return (ok and t) or ""
 end
 
+--- 返回本地资产库中已经关联过的 Fab 资产 ID。
+--- 给 WBP_FabPanel 注入 Web localStorage，用于详情页显示“已在 Project 中”。
+function FabClient:GetDownloadedFabIds()
+    Library:Init()
+    local ids = {}
+    local seen = {}
+    local list = Library:GetAll()
+    for _, item in ipairs(list or {}) do
+        local id = item and item.fab_id
+        if id and id ~= "" and not seen[tostring(id)] then
+            table.insert(ids, id)
+            seen[tostring(id)] = true
+        end
+    end
+    return ids
+end
+
 --============================================================
 -- 下载成功后统一入库
 --============================================================

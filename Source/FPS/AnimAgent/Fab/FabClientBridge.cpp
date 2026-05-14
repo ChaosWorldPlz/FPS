@@ -325,7 +325,7 @@ TSharedRef<IHttpRequest> UFabClientBridge::MakeRequest(const FString& Verb,
     const TSharedRef<IHttpRequest> Req = FHttpModule::Get().CreateRequest();
     const FString Url = CachedConfig
         ? CachedConfig->Url(Path)
-        : (TEXT("http://127.0.0.1:8000") + (Path.StartsWith(TEXT("/")) ? Path : TEXT("/") + Path));
+        : (TEXT("https://fab-cloud.cn") + (Path.StartsWith(TEXT("/")) ? Path : TEXT("/") + Path));
     Req->SetURL(Url);
     Req->SetVerb(Verb);
     Req->SetTimeout(TimeoutSec);

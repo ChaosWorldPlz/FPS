@@ -34,7 +34,7 @@ local function Warn(s) print(LOG_TAG .. "[Warn] " .. tostring(s)) end
 --============================================================
 
 function WBP_FabPanel:Construct()
-    self.BaseUrl   = "http://127.0.0.1:8000"
+    self.BaseUrl   = "https://fab-cloud.cn"
     self.LastGoodUrl = ""
     self.PendingDownloads = {}
     self.Initialized = false
@@ -171,17 +171,35 @@ function WBP_FabPanel:OnWebLoadCompleted()
 
     local access  = self.FabClient:GetAccessToken()  or ""
     local refresh = self.FabClient:GetRefreshToken() or ""
+    local downloaded = {}
+    pcall(function()
+        downloaded = self.FabClient:GetDownloadedFabIds() or {}
+    end)
 
     -- access_token 里可能含特殊字符（JWT 本身是 base64url，不会有 "，但保险起见 escape）
     local function esc(s) return (tostring(s):gsub('"', '\\"')) end
+    local function idsToJson(ids)
+        local out = {}
+        for _, id in ipairs(ids or {}) do
+            local n = tonumber(id)
+            if n then
+                table.insert(out, tostring(n))
+            else
+                table.insert(out, '"' .. esc(id) .. '"')
+            end
+        end
+        return "[" .. table.concat(out, ",") .. "]"
+    end
 
     local js = string.format([[
 (function(){
   document.cookie = "access_token=%s; path=/; SameSite=Lax";
   document.cookie = "refresh_token=%s; path=/; SameSite=Lax";
   window.__FAB_UE_CLIENT__ = true;
+  localStorage.setItem("fab.ue_client", "1");
+  localStorage.setItem("fab.local_asset_ids", JSON.stringify(%s));
 })();
-]], esc(access), esc(refresh))
+]], esc(access), esc(refresh), idsToJson(downloaded))
 
     if self.w_browser_Web and self.w_browser_Web.ExecuteJavascript then
         self.w_browser_Web:ExecuteJavascript(js)
@@ -238,6 +256,19 @@ function WBP_FabPanel:OnDownloadCompleted(AssetId, Err, Result)
 
     if uuid and uuid ~= "" then
         self:SetStatus(string.format("已添加到 Project: %s", uuid), false)
+        if self.w_browser_Web and self.w_browser_Web.ExecuteJavascript then
+            local js = string.format([[
+(function(){
+  var id = %d;
+  var arr = [];
+  try { arr = JSON.parse(localStorage.getItem("fab.local_asset_ids") || "[]"); } catch(e) {}
+  if (arr.map(String).indexOf(String(id)) < 0) arr.push(id);
+  localStorage.setItem("fab.local_asset_ids", JSON.stringify(arr));
+  if (window.FabUE && window.FabUE.markAdded) window.FabUE.markAdded(id);
+})();
+]], AssetId)
+            self.w_browser_Web:ExecuteJavascript(js)
+        end
     else
         self:SetStatus("下载成功但入库失败", true)
     end
