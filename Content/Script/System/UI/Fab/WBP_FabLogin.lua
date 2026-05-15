@@ -33,6 +33,23 @@ local function Warn(s) print(LOG_TAG .. "[Warn] " .. tostring(s)) end
 local TAB_LOGIN    = "login"
 local TAB_REGISTER = "register"
 
+local function TextToString(text)
+    if text == nil then return "" end
+    if type(text) == "string" then return text end
+    if type(text) == "number" or type(text) == "boolean" then return tostring(text) end
+    if text.ToString then
+        local ok, result = pcall(function() return text:ToString() end)
+        if ok and result ~= nil then return tostring(result) end
+    end
+    return tostring(text)
+end
+
+local function SetWidgetText(widget, text)
+    if widget and widget.SetText then
+        pcall(function() widget:SetText(tostring(text or "")) end)
+    end
+end
+
 local function bindButton(self, name, handler)
     local w = self[name]
     if not w or not w.OnClicked then
@@ -131,7 +148,7 @@ function M:ApplyTab(tab)
         pcall(function()
             local textChild = self.w_btn_Submit.GetChildAt and self.w_btn_Submit:GetChildAt(0)
             if textChild and textChild.SetText then
-                textChild:SetText(UE.FText(label))
+                SetWidgetText(textChild, label)
             end
         end)
     end
@@ -145,9 +162,9 @@ function M:OnClickTabRegister() self:ApplyTab(TAB_REGISTER) end
 -- 输入捕获
 --============================================================
 
-function M:OnTextAccountChanged(text)  self.pending_account  = text:ToString() end
-function M:OnTextPasswordChanged(text) self.pending_password = text:ToString() end
-function M:OnTextNameChanged(text)     self.pending_name     = text:ToString() end
+function M:OnTextAccountChanged(text)  self.pending_account  = TextToString(text) end
+function M:OnTextPasswordChanged(text) self.pending_password = TextToString(text) end
+function M:OnTextNameChanged(text)     self.pending_name     = TextToString(text) end
 
 --============================================================
 -- 提交 / 取消
@@ -185,9 +202,9 @@ function M:OnClickCancel()
     self.pending_account  = ""
     self.pending_password = ""
     self.pending_name     = ""
-    if self.w_input_Account  then self.w_input_Account:SetText(UE.FText("")) end
-    if self.w_input_Password then self.w_input_Password:SetText(UE.FText("")) end
-    if self.w_input_Name     then self.w_input_Name:SetText(UE.FText("")) end
+    SetWidgetText(self.w_input_Account, "")
+    SetWidgetText(self.w_input_Password, "")
+    SetWidgetText(self.w_input_Name, "")
     self:SetStatus("")
     self:SetSubmitEnabled(true)
     -- 直接关闭登录面板（UGCEditor 里点 "Fab" 会重开）
@@ -279,9 +296,7 @@ end
 --============================================================
 
 function M:SetStatus(msg)
-    if self.w_text_Status then
-        pcall(function() self.w_text_Status:SetText(UE.FText(msg or "")) end)
-    end
+    SetWidgetText(self.w_text_Status, msg or "")
 end
 
 function M:SetSubmitEnabled(enabled)

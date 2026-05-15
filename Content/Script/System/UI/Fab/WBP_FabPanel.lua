@@ -29,15 +29,51 @@ local LOG_TAG = "[System.UI.Fab.WBP_FabPanel]"
 local function Log(s) print(LOG_TAG .. " " .. tostring(s)) end
 local function Warn(s) print(LOG_TAG .. "[Warn] " .. tostring(s)) end
 
+local function AppendPanelLog(action, detail)
+    local line = string.format("[%s] %s %s\n",
+        os.date("%Y-%m-%d %H:%M:%S"),
+        tostring(action or ""),
+        tostring(detail or ""))
+    Log(line:gsub("\n$", ""))
+
+    pcall(function()
+        local dir = UE.UKismetSystemLibrary.GetProjectDirectory() .. "Saved/Fab/"
+        UE.UKismetSystemLibrary.MakeDirectory(dir)
+        local f = io.open(dir .. "panel_actions.log", "a")
+        if f then
+            f:write(line)
+            f:close()
+        end
+    end)
+end
+
+local function TextToString(text)
+    if text == nil then return "" end
+    if type(text) == "string" then return text end
+    if text.ToString then
+        local ok, result = pcall(function() return text:ToString() end)
+        if ok and result ~= nil then return tostring(result) end
+    end
+    return tostring(text)
+end
+
+local function WithUEClientFlag(url)
+    local s = tostring(url or "")
+    if s == "" or s:find("ue_client=1", 1, true) then return s end
+    local sep = s:find("?", 1, true) and "&" or "?"
+    return s .. sep .. "ue_client=1"
+end
+
 --============================================================
 -- 生命周期
 --============================================================
 
 function WBP_FabPanel:Construct()
-    self.BaseUrl   = "https://fab-cloud.cn"
+    self.BaseUrl   = "http://111.229.172.143:8765"
     self.LastGoodUrl = ""
     self.PendingDownloads = {}
     self.Initialized = false
+    AppendPanelLog("Construct", "FabPanel opening")
 
     -- 1) 拿 FabClient（单例）
     local okMod, FabClient = pcall(function()
@@ -112,11 +148,13 @@ function WBP_FabPanel:Construct()
     self:SetProgress(-1)
 
     if self.w_browser_Web and self.w_browser_Web.LoadURL then
-        self.w_browser_Web:LoadURL(self.BaseUrl)
+        local entryUrl = WithUEClientFlag(self.BaseUrl)
+        AppendPanelLog("LoadURL", entryUrl)
+        self.w_browser_Web:LoadURL(entryUrl)
     end
 
     self.Initialized = true
-    Log(string.format("Construct 完成，BaseUrl=%s", self.BaseUrl))
+    AppendPanelLog("ConstructDone", string.format("BaseUrl=%s", self.BaseUrl))
 end
 
 function WBP_FabPanel:Destruct()
@@ -127,7 +165,7 @@ function WBP_FabPanel:Destruct()
         pcall(function() self.Bridge.OnAuthExpired:Remove(self, WBP_FabPanel.OnAuthExpired) end)
     end
     self.PendingDownloads = nil
-    Log("Destruct")
+    AppendPanelLog("Destruct", "FabPanel closed")
 end
 
 --============================================================
@@ -138,23 +176,27 @@ end
 --- UnLua 把 UE.FText 传过来，ToString 取 FString
 function WBP_FabPanel:OnWebUrlChanged(NewUrl)
     if not self.Initialized then return end
-    local url = NewUrl and NewUrl:ToString() or ""
+    local url = TextToString(NewUrl)
     if url == "" then return end
+    AppendPanelLog("UrlChanged", url)
 
     if self:_isFabScheme(url) then
-        Log("拦截 uefab scheme: " .. url)
+        AppendPanelLog("FabScheme", url)
 
         -- 回退页面，避免 CEF 停在 "unsupported scheme" 错误页
         local back = (self.LastGoodUrl ~= "" and self.LastGoodUrl) or self.BaseUrl
         if self.w_browser_Web and self.w_browser_Web.LoadURL then
+            AppendPanelLog("LoadURL.Back", back)
             self.w_browser_Web:LoadURL(back)
         end
 
         -- 派发（fire-and-forget，结果走 OnDownloadCompleted）
         local ok, err = UE.UFabUrlDispatcher.Dispatch(self.Bridge, url)
         if not ok then
+            AppendPanelLog("DispatchFailed", err and tostring(err.Message) or "unknown")
             self:SetStatus("请求失败: " .. (err and tostring(err.Message) or "unknown"), true)
         else
+            AppendPanelLog("DispatchOK", url)
             self:SetStatus("处理请求: " .. url, false)
         end
         return
@@ -168,6 +210,11 @@ end
 --- 注意：签名 OnLoadCompleted() 无参数，URL 得现查 w_browser_Web:GetUrl()
 function WBP_FabPanel:OnWebLoadCompleted()
     if not self.Initialized then return end
+    local currentUrl = ""
+    if self.w_browser_Web and self.w_browser_Web.GetUrl then
+        pcall(function() currentUrl = tostring(self.w_browser_Web:GetUrl() or "") end)
+    end
+    AppendPanelLog("LoadCompleted", currentUrl)
 
     local access  = self.FabClient:GetAccessToken()  or ""
     local refresh = self.FabClient:GetRefreshToken() or ""
@@ -203,6 +250,8 @@ function WBP_FabPanel:OnWebLoadCompleted()
 
     if self.w_browser_Web and self.w_browser_Web.ExecuteJavascript then
         self.w_browser_Web:ExecuteJavascript(js)
+        AppendPanelLog("InjectState", string.format("has_access=%s downloaded_count=%d",
+            access ~= "" and "yes" or "no", #downloaded))
     end
 
     -- 更新 LastGood（loaded 的页面肯定不是 scheme）
@@ -226,6 +275,8 @@ function WBP_FabPanel:OnDownloadProgress(AssetId, BytesReceived, TotalBytes, Loc
     if TotalBytes and TotalBytes > 0 then
         pct = BytesReceived / TotalBytes
     end
+    AppendPanelLog("DownloadProgress", string.format("asset=%s bytes=%s total=%s path=%s",
+        tostring(AssetId), tostring(BytesReceived or 0), tostring(TotalBytes or 0), TextToString(LocalPath)))
     self:SetProgress(pct)
     self:SetStatus(string.format("下载中 #%d  %.1f KB",
         AssetId, (BytesReceived or 0) / 1024), false)
@@ -242,19 +293,29 @@ function WBP_FabPanel:OnDownloadCompleted(AssetId, Err, Result)
     local ok = (httpCode == 0 or (httpCode >= 200 and httpCode < 300)) and bizCode == 0
 
     if not ok then
+        AppendPanelLog("DownloadFailed", string.format("asset=%s http=%d biz=%d msg=%s",
+            tostring(AssetId), httpCode, bizCode, msg ~= "" and msg or "unknown"))
         self:SetStatus(string.format("下载失败: %s (http=%d biz=%d)",
             msg ~= "" and msg or "unknown", httpCode, bizCode), true)
         return
     end
 
+    local localPath = Result and Result.LocalFilePath and tostring(Result.LocalFilePath) or ""
+    local localUuid = Result and Result.LocalUuid and tostring(Result.LocalUuid) or ""
+    local sizeBytes = Result and Result.SizeBytes or 0
+    AppendPanelLog("DownloadCompleted", string.format("asset=%s uuid=%s size=%s path=%s",
+        tostring(AssetId), localUuid, tostring(sizeBytes), localPath))
+
     local uuid = self.FabClient:RegisterDownloadedAsset({
         AssetId       = AssetId,
-        LocalFilePath = Result and Result.LocalFilePath and tostring(Result.LocalFilePath) or "",
-        LocalUuid     = Result and Result.LocalUuid and tostring(Result.LocalUuid) or "",
-        SizeBytes     = Result and Result.SizeBytes or 0,
+        LocalFilePath = localPath,
+        LocalUuid     = localUuid,
+        SizeBytes     = sizeBytes,
     }, nil)
 
     if uuid and uuid ~= "" then
+        AppendPanelLog("RegisterOK", string.format("asset=%s uuid=%s path=%s",
+            tostring(AssetId), uuid, localPath))
         self:SetStatus(string.format("已添加到 Project: %s", uuid), false)
         if self.w_browser_Web and self.w_browser_Web.ExecuteJavascript then
             local js = string.format([[
@@ -270,12 +331,14 @@ function WBP_FabPanel:OnDownloadCompleted(AssetId, Err, Result)
             self.w_browser_Web:ExecuteJavascript(js)
         end
     else
+        AppendPanelLog("RegisterFailed", string.format("asset=%s path=%s", tostring(AssetId), localPath))
         self:SetStatus("下载成功但入库失败", true)
     end
 end
 
 --- Token 两次都刷新失败 → 关闭面板回登录
 function WBP_FabPanel:OnAuthExpired()
+    AppendPanelLog("AuthExpired", "closing panel")
     self:SetStatus("登录已过期，请重新登录", true)
     self:Close()
 end
@@ -298,17 +361,7 @@ end
 
 function WBP_FabPanel:SetStatus(text, isError)
     if self.w_text_Status then
-        pcall(function() self.w_text_Status:SetText(UE.FText(text or "")) end)
-        -- 颜色：错误红 / 正常浅灰
-        pcall(function()
-            local color
-            if isError then
-                color = UE.FLinearColor(0.91, 0.32, 0.36, 1.0)  -- #E8525C
-            else
-                color = UE.FLinearColor(0.69, 0.69, 0.71, 1.0)  -- #B0B0B4
-            end
-            self.w_text_Status:SetColorAndOpacity(color)
-        end)
+        pcall(function() self.w_text_Status:SetText(tostring(text or "")) end)
     end
 end
 

@@ -55,6 +55,19 @@ local function bindButton(self, widgetName, handler)
     return true
 end
 
+local function bindAnyButton(self, widgetNames, handler)
+    for _, widgetName in ipairs(widgetNames) do
+        local widget = self[widgetName]
+        if widget and widget.OnClicked then
+            widget.OnClicked:Add(self, handler)
+            Log("绑定按钮: " .. widgetName)
+            return true
+        end
+    end
+    Warn("缺少按钮控件: " .. table.concat(widgetNames, " / ") .. "（请检查蓝图命名和 Is Variable）")
+    return false
+end
+
 local function bindTextCommit(self, widgetName)
     local widget = self[widgetName]
     if not widget then
@@ -90,6 +103,10 @@ function M:Construct()
         if not bindButton(self, pair[1], pair[2]) then
             missingCount = missingCount + 1
         end
+    end
+
+    if not bindAnyButton(self, { "w_btn_Fab", "btn_fab" }, M.OnClickFab) then
+        missingCount = missingCount + 1
     end
 
     for _, widgetName in ipairs({
@@ -529,6 +546,34 @@ function M:OnClickChat()
     pc:ScheduleCallback(function()
         local UIManager = require("Gameplay.Core.UIManager")
         UIManager:ToggleWindow("WBP_UGCChat")
+    end, 1)
+end
+
+--- 打开 Fab 资产平台面板。
+function M:OnClickFab()
+    local pc = self:GetOwningPlayer()
+    if not pc then
+        self:SetStatus("打开 Fab 失败：未找到 PlayerController")
+        return
+    end
+
+    pc:ScheduleCallback(function()
+        local PanelClassPath = "/Game/_UGC/UI/WBP_FabPanel.WBP_FabPanel_C"
+        local PanelClass = UE.UClass.Load(PanelClassPath)
+        if not PanelClass then
+            Warn("加载 WBP_FabPanel 类失败: " .. PanelClassPath)
+            self:SetStatus("打开 Fab 面板失败：资源未找到")
+            return
+        end
+
+        local widget = UE.UWidgetBlueprintLibrary.Create(self, PanelClass, pc)
+        if not widget then
+            self:SetStatus("打开 Fab 面板失败：CreateWidget 失败")
+            return
+        end
+
+        widget:AddToViewport(20)
+        self:SetStatus("已打开 Fab 资产平台")
     end, 1)
 end
 

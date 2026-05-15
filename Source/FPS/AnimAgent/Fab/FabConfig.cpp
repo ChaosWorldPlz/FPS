@@ -15,7 +15,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogFabConfig, Log, All);
 TWeakObjectPtr<UFabConfig> UFabConfig::GCached;
 
 UFabConfig::UFabConfig()
-    : BaseUrl(TEXT("https://fab-cloud.cn"))
+    : BaseUrl(TEXT("http://111.229.172.143:8765"))
 {
 }
 
