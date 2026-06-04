@@ -115,6 +115,27 @@ namespace
         }
         return Out;
     }
+
+    TArray<FString> SplitCsvTags(const FString& TagsCsv)
+    {
+        TArray<FString> Out;
+        TArray<FString> Parts;
+        TagsCsv.ParseIntoArray(Parts, TEXT(","), true);
+        for (FString Part : Parts)
+        {
+            Part.TrimStartAndEndInline();
+            if (!Part.IsEmpty())
+            {
+                Out.Add(MoveTemp(Part));
+            }
+        }
+        return Out;
+    }
+
+    bool IsFabOk(const FFabError& Err)
+    {
+        return Err.BizCode == 0 && (Err.HttpCode == 0 || (Err.HttpCode >= 200 && Err.HttpCode < 300));
+    }
 }
 
 //=============================================================================
@@ -1117,6 +1138,35 @@ void UFabClientBridge::UploadAsset(const FFabUploadRequest& Request,
         });
 }
 
+void UFabClientBridge::UploadModelSimple(const FString& Name,
+                                         const FString& LocalFilePath,
+                                         const FString& Description,
+                                         const FString& TagsCsv)
+{
+    FFabUploadRequest Request;
+    Request.Name = Name;
+    Request.AssetType = EFabAssetType::Model;
+    Request.LocalFilePath = LocalFilePath;
+    Request.Description = Description;
+    Request.Tags = SplitCsvTags(TagsCsv);
+
+    UploadAssetEx(Request,
+        [this](const FFabError& Err, const FFabAssetItem& Item)
+        {
+            if (IsFabOk(Err))
+            {
+                UE_LOG(LogFabClient, Log, TEXT("upload completed: asset_id=%d name=%s"),
+                    Item.Id, *Item.Name);
+            }
+            else
+            {
+                UE_LOG(LogFabClient, Warning, TEXT("upload failed: http=%d biz=%d %s"),
+                    Err.HttpCode, Err.BizCode, *Err.Message);
+            }
+            OnUploadCompleted.Broadcast(Err, Item);
+        });
+}
+
 void UFabClientBridge::UpdateAssetEx(
     int32 AssetId, const FFabAssetPatch& Patch,
     TFunction<void(const FFabError&, const FFabAssetItem&)> OnComplete)
@@ -1219,6 +1269,25 @@ void UFabClientBridge::CreateAiTextTask(const FString& Prompt, const FString& Mo
         });
 }
 
+void UFabClientBridge::CreateAiTextTaskSimple(const FString& Prompt, const FString& Mode)
+{
+    CreateAiTextTaskEx(Prompt, Mode,
+        [this](const FFabError& Err, const FFabAiTask& Task)
+        {
+            if (IsFabOk(Err))
+            {
+                UE_LOG(LogFabClient, Log, TEXT("ai text task created: task_id=%d status=%d progress=%d"),
+                    Task.Id, (int32)Task.Status, Task.Progress);
+            }
+            else
+            {
+                UE_LOG(LogFabClient, Warning, TEXT("ai text task failed: http=%d biz=%d %s"),
+                    Err.HttpCode, Err.BizCode, *Err.Message);
+            }
+            OnAiTaskCompleted.Broadcast(Err, Task);
+        });
+}
+
 void UFabClientBridge::CreateAiImageTaskEx(
     const FString& ImageUrl, const FString& Mode,
     TFunction<void(const FFabError&, const FFabAiTask&)> OnComplete)
@@ -1252,6 +1321,25 @@ void UFabClientBridge::CreateAiImageTask(const FString& ImageUrl, const FString&
         [CaptCb](const FFabError& Err, const FFabAiTask& T)
         {
             CaptCb.ExecuteIfBound(Err, T);
+        });
+}
+
+void UFabClientBridge::CreateAiImageTaskSimple(const FString& ImageUrl, const FString& Mode)
+{
+    CreateAiImageTaskEx(ImageUrl, Mode,
+        [this](const FFabError& Err, const FFabAiTask& Task)
+        {
+            if (IsFabOk(Err))
+            {
+                UE_LOG(LogFabClient, Log, TEXT("ai image task created: task_id=%d status=%d progress=%d"),
+                    Task.Id, (int32)Task.Status, Task.Progress);
+            }
+            else
+            {
+                UE_LOG(LogFabClient, Warning, TEXT("ai image task failed: http=%d biz=%d %s"),
+                    Err.HttpCode, Err.BizCode, *Err.Message);
+            }
+            OnAiTaskCompleted.Broadcast(Err, Task);
         });
 }
 
@@ -1341,5 +1429,24 @@ void UFabClientBridge::GetAiTask(int32 TaskId, const FFabAiTaskDelegate& OnCompl
         [CaptCb](const FFabError& Err, const FFabAiTask& T)
         {
             CaptCb.ExecuteIfBound(Err, T);
+        });
+}
+
+void UFabClientBridge::GetAiTaskSimple(int32 TaskId)
+{
+    GetAiTaskEx(TaskId,
+        [this](const FFabError& Err, const FFabAiTask& Task)
+        {
+            if (IsFabOk(Err))
+            {
+                UE_LOG(LogFabClient, Log, TEXT("ai task: task_id=%d status=%d progress=%d asset_id=%d error=%s"),
+                    Task.Id, (int32)Task.Status, Task.Progress, Task.AssetId, *Task.ErrorMessage);
+            }
+            else
+            {
+                UE_LOG(LogFabClient, Warning, TEXT("get ai task failed: http=%d biz=%d %s"),
+                    Err.HttpCode, Err.BizCode, *Err.Message);
+            }
+            OnAiTaskCompleted.Broadcast(Err, Task);
         });
 }

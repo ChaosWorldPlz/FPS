@@ -64,6 +64,26 @@ local function WithUEClientFlag(url)
     return s .. sep .. "ue_client=1"
 end
 
+local function RefreshUGCEditorPrefabList()
+    local ok, UIManager = pcall(require, "Gameplay.Core.UIManager")
+    if not ok or not UIManager or not UIManager.GetWindow then
+        AppendPanelLog("RefreshUGCEditorSkipped", "UIManager unavailable")
+        return
+    end
+
+    local editor = UIManager:GetWindow("WBP_UGCEditor")
+    if editor and editor.RebuildPrefabList then
+        local okRefresh, err = pcall(function() editor:RebuildPrefabList() end)
+        if okRefresh then
+            AppendPanelLog("RefreshUGCEditorOK", "prefab list rebuilt")
+        else
+            AppendPanelLog("RefreshUGCEditorFailed", tostring(err))
+        end
+    else
+        AppendPanelLog("RefreshUGCEditorSkipped", "WBP_UGCEditor not open")
+    end
+end
+
 --============================================================
 -- 生命周期
 --============================================================
@@ -317,6 +337,7 @@ function WBP_FabPanel:OnDownloadCompleted(AssetId, Err, Result)
         AppendPanelLog("RegisterOK", string.format("asset=%s uuid=%s path=%s",
             tostring(AssetId), uuid, localPath))
         self:SetStatus(string.format("已添加到 Project: %s", uuid), false)
+        RefreshUGCEditorPrefabList()
         if self.w_browser_Web and self.w_browser_Web.ExecuteJavascript then
             local js = string.format([[
 (function(){

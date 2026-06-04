@@ -61,6 +61,12 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
     FOnFabUploadProgress OnUploadProgress;
 
+    UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
+    FOnFabUploadCompleted OnUploadCompleted;
+
+    UPROPERTY(BlueprintAssignable, Category = "Fab|Events")
+    FOnFabAiTaskCompleted OnAiTaskCompleted;
+
     //---------------------------------------------------------
     // 鉴权
     //---------------------------------------------------------
@@ -121,6 +127,11 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Fab|Asset")
     void UploadAsset(const FFabUploadRequest& Request, const FFabAssetItemDelegate& OnComplete);
 
+    /** Lua/LLM 友好的模型发布入口；完成结果走 OnUploadCompleted 多播。 */
+    UFUNCTION(BlueprintCallable, Category = "Fab|Asset")
+    void UploadModelSimple(const FString& Name, const FString& LocalFilePath,
+                           const FString& Description, const FString& TagsCsv);
+
     UFUNCTION(BlueprintCallable, Category = "Fab|Asset")
     void UpdateAsset(int32 AssetId, const FFabAssetPatch& Patch, const FFabAssetItemDelegate& OnComplete);
 
@@ -134,14 +145,26 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Fab|AI")
     void CreateAiTextTask(const FString& Prompt, const FString& Mode, const FFabAiTaskDelegate& OnComplete);
 
+    /** Lua/LLM 友好的文生模型入口；完成结果走 OnAiTaskCompleted 多播。 */
+    UFUNCTION(BlueprintCallable, Category = "Fab|AI")
+    void CreateAiTextTaskSimple(const FString& Prompt, const FString& Mode);
+
     UFUNCTION(BlueprintCallable, Category = "Fab|AI")
     void CreateAiImageTask(const FString& ImageUrl, const FString& Mode, const FFabAiTaskDelegate& OnComplete);
+
+    /** Lua/LLM 友好的图生模型入口；完成结果走 OnAiTaskCompleted 多播。 */
+    UFUNCTION(BlueprintCallable, Category = "Fab|AI")
+    void CreateAiImageTaskSimple(const FString& ImageUrl, const FString& Mode);
 
     UFUNCTION(BlueprintCallable, Category = "Fab|AI")
     void ListAiTasks(int32 StatusFilter, int32 Page, int32 PageSize, const FFabAiTaskListDelegate& OnComplete);
 
     UFUNCTION(BlueprintCallable, Category = "Fab|AI")
     void GetAiTask(int32 TaskId, const FFabAiTaskDelegate& OnComplete);
+
+    /** Lua/LLM 友好的任务查询入口；完成结果走 OnAiTaskCompleted 多播。 */
+    UFUNCTION(BlueprintCallable, Category = "Fab|AI")
+    void GetAiTaskSimple(int32 TaskId);
 
     //---------------------------------------------------------
     // 内部 API（C++-only，接受 TFunction lambda；不走反射）

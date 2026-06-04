@@ -41,6 +41,52 @@ local function Warn(msg)
     print(LOG_TAG .. "[Warn] " .. tostring(msg))
 end
 
+local Colors = {
+    HeaderBg = UE.FLinearColor(0.08, 0.12, 0.18, 1.0),
+    ItemBg = UE.FLinearColor(0.12, 0.20, 0.30, 1.0),
+    ImportBg = UE.FLinearColor(0.00, 0.55, 0.46, 1.0),
+}
+
+local function callWidgetMethod(widget, methodName, ...)
+    if widget and widget[methodName] then
+        pcall(widget[methodName], widget, ...)
+    end
+end
+
+local function setupPrefabLabel(label, text, wrapAt)
+    if not label then return end
+
+    label:SetText(tostring(text or ""))
+    callWidgetMethod(label, "SetJustification", UE.ETextJustify.Center)
+    callWidgetMethod(label, "SetMinDesiredWidth", 150.0)
+    callWidgetMethod(label, "SetAutoWrapText", true)
+    callWidgetMethod(label, "SetWrapTextAt", wrapAt or 128.0)
+    callWidgetMethod(label, "SetRenderOpacity", 1.0)
+
+    if UE.ETextWrappingPolicy and UE.ETextWrappingPolicy.AllowPerCharacterWrapping then
+        callWidgetMethod(label, "SetWrappingPolicy", UE.ETextWrappingPolicy.AllowPerCharacterWrapping)
+    end
+end
+
+local function setupPrefabButton(button, bgColor)
+    if not button then return end
+
+    callWidgetMethod(button, "SetRenderOpacity", 1.0)
+    if bgColor then
+        callWidgetMethod(button, "SetBackgroundColor", bgColor)
+    end
+end
+
+local function setupPrefabButtonSlot(slot)
+    if not slot then return end
+
+    callWidgetMethod(slot, "SetHorizontalAlignment", UE.EHorizontalAlignment.HAlign_Fill)
+    callWidgetMethod(slot, "SetVerticalAlignment", UE.EVerticalAlignment.VAlign_Center)
+    if UE.FMargin then
+        callWidgetMethod(slot, "SetPadding", UE.FMargin(8.0, 3.0, 8.0, 3.0))
+    end
+end
+
 local function bindButton(self, widgetName, handler)
     local widget = self[widgetName]
     if not widget then
@@ -230,16 +276,16 @@ function M:BuildPrefabList()
         local header = UE.UWidgetBlueprintLibrary.Create(pc, btnClass, pc)
         if header then
             if header.w_label then
-                header.w_label:SetText("── " .. category.name .. " ──")
+                setupPrefabLabel(header.w_label, category.name, 128.0)
             else
                 Warn("分类按钮缺少 w_label: " .. tostring(category.name))
             end
             if header.w_btn then
-                header.w_btn:SetIsEnabled(false)
+                setupPrefabButton(header.w_btn, Colors.HeaderBg)
             else
                 Warn("分类按钮缺少 w_btn: " .. tostring(category.name))
             end
-            self.w_panel_Prefabs:AddChild(header)
+            setupPrefabButtonSlot(self.w_panel_Prefabs:AddChild(header))
         else
             Warn("创建分类标题失败: " .. tostring(category.name))
         end
@@ -248,10 +294,11 @@ function M:BuildPrefabList()
             local btn = UE.UWidgetBlueprintLibrary.Create(pc, btnClass, pc)
             if btn then
                 if btn.w_label then
-                    btn.w_label:SetText(item.label)
+                    setupPrefabLabel(btn.w_label, item.label, 128.0)
                 else
                     Warn("预制体按钮缺少 w_label: " .. tostring(item.id))
                 end
+                setupPrefabButton(btn.w_btn, Colors.ItemBg)
 
                 local prefabID = item.id
                 if btn.w_btn and btn.w_btn.OnPressed then
@@ -262,7 +309,7 @@ function M:BuildPrefabList()
                     Warn("预制体按钮缺少 w_btn 或 OnPressed: " .. tostring(item.id))
                 end
 
-                self.w_panel_Prefabs:AddChild(btn)
+                setupPrefabButtonSlot(self.w_panel_Prefabs:AddChild(btn))
                 addedCount = addedCount + 1
                 Log("添加: " .. tostring(item.id))
             else
@@ -303,11 +350,14 @@ function M:_BuildImportGLBButton(pc, btnClass)
         Warn("_BuildImportGLBButton: Create 失败")
         return
     end
-    if btn.w_label then btn.w_label:SetText("+ 导入本地 GLB") end
+    if btn.w_label then
+        setupPrefabLabel(btn.w_label, "+ GLB", 128.0)
+    end
+    setupPrefabButton(btn.w_btn, Colors.ImportBg)
     if btn.w_btn and btn.w_btn.OnPressed then
         btn.w_btn.OnPressed:Add(self, function() self:OnClickImportGLB() end)
     end
-    self.w_panel_Prefabs:AddChild(btn)
+    setupPrefabButtonSlot(self.w_panel_Prefabs:AddChild(btn))
 end
 
 function M:OnClickImportGLB()

@@ -386,3 +386,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(
     int32, BytesSent,
     int32, TotalBytes,
     const FString&, RequestId);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+    FOnFabUploadCompleted,
+    const FFabError&, Error,
+    const FFabAssetItem&, Asset);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+    FOnFabAiTaskCompleted,
+    const FFabError&, Error,
+    const FFabAiTask&, Task);

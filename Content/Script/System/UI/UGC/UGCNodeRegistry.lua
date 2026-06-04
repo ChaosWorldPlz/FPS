@@ -110,6 +110,7 @@ R.Definitions = {
     Spawn_Weapon = {
         label    = "生成武器",
         category = "动作",
+        visible  = false,
         color    = COLOR_ACTION,
         exec_in  = true,
         exec_out = true,
@@ -169,12 +170,14 @@ R.Definitions = {
 R.Categories = {}
 local _catMap = {}
 for typeName, def in pairs(R.Definitions) do
-    local cat = def.category
-    if not _catMap[cat] then
-        _catMap[cat] = { name = cat, items = {} }
-        table.insert(R.Categories, _catMap[cat])
+    if def.visible ~= false then
+        local cat = def.category
+        if not _catMap[cat] then
+            _catMap[cat] = { name = cat, items = {} }
+            table.insert(R.Categories, _catMap[cat])
+        end
+        table.insert(_catMap[cat].items, { type = typeName, label = def.label })
     end
-    table.insert(_catMap[cat].items, { type = typeName, label = def.label })
 end
 
 return R

@@ -28,6 +28,56 @@ local _pc     = nil   -- PlayerController
 local _bridge = nil   -- UUGCFunctionBridge C++ 组件
 local _funcs  = {}    -- name → { schema, func }
 
+local function _getFabBridge()
+    if not _pc then return nil, "PlayerController 未初始化" end
+
+    local bridge = nil
+    pcall(function()
+        bridge = _pc:GetComponentByClass(UE.UFabClientBridge)
+    end)
+    if not bridge then
+        return nil, "未找到 UFabClientBridge 组件"
+    end
+    local ok, loggedIn = pcall(function() return bridge:IsLoggedIn() end)
+    if not ok or not loggedIn then
+        return nil, "Fab 未登录，请先打开 Fab 面板登录"
+    end
+    return bridge, nil
+end
+
+local function _tagsToCsv(tags)
+    if type(tags) == "table" then
+        local out = {}
+        for _, tag in ipairs(tags) do
+            local s = tostring(tag or "")
+            if s ~= "" then table.insert(out, s) end
+        end
+        return table.concat(out, ",")
+    end
+    return tostring(tags or "")
+end
+
+local function _findLocalAnimAsset(uuid, name)
+    local Library = require("Gameplay.AnimAgent.AnimAssetLibrary")
+    Library:Init()
+
+    local normalizedUuid = tostring(uuid or "")
+    normalizedUuid = normalizedUuid:gsub("^dyn:", "")
+    if normalizedUuid ~= "" then
+        local hit = Library:Find(normalizedUuid)
+        if hit then return hit end
+    end
+
+    local query = tostring(name or "")
+    if query ~= "" then
+        local list = Library:Search(query)
+        if list and list[1] then return list[1] end
+    end
+
+    local all = Library:GetAll()
+    return all and all[1] or nil
+end
+
 --============================================================
 -- 初始化（在 PlayerController BeginPlay 里调用）
 --============================================================
@@ -437,6 +487,97 @@ function Registry:RegisterAll()
             local id = SceneData:EndActiveBatch()
             if id then return true, "已关闭 batch: " .. id end
             return true, "（无 active batch）"
+        end
+    })
+
+    -- --------------------------------------------------------
+    -- Fab 平台操作（异步提交）
+    -- --------------------------------------------------------
+
+    self:Register("fab_publish_local_asset", {
+        desc = "把 UE 本地 AnimAgent/Fab 动态 GLB 资产发布到 Fab 资产平台。可传 uuid 精确发布；不传 uuid 时可按 name 搜索，仍为空则发布最近一个本地资产。该操作异步提交，完成结果见 UE 日志 LogFabClient。",
+        params = {
+            { name = "uuid",        type = "string", desc = "本地资产 uuid，可带 dyn: 前缀；可选", required = false },
+            { name = "name",        type = "string", desc = "发布名称；也可用于搜索本地资产", required = false },
+            { name = "description", type = "string", desc = "资产描述", required = false },
+            { name = "tags",        type = "string", desc = "英文逗号分隔标签，如 weapon,ugc,ai", required = false },
+        },
+        func = function(p)
+            local bridge, err = _getFabBridge()
+            if not bridge then return false, err end
+
+            local item = _findLocalAnimAsset(p.uuid, p.name)
+            if not item or not item.glb_path or item.glb_path == "" then
+                return false, "未找到可发布的本地 GLB 资产"
+            end
+
+            local publishName = tostring(p.name or "")
+            if publishName == "" then publishName = item.name or ("UE资产-" .. tostring(item.uuid or "")) end
+
+            local desc = tostring(p.description or "")
+            if desc == "" then desc = item.prompt or "" end
+
+            local tags = _tagsToCsv(p.tags)
+            if tags == "" then tags = _tagsToCsv(item.tags) end
+
+            bridge:UploadModelSimple(publishName, item.glb_path, desc, tags)
+            return true, string.format("已提交 Fab 发布：%s path=%s（异步完成看 LogFabClient / OnUploadCompleted）",
+                publishName, tostring(item.glb_path))
+        end
+    })
+
+    self:Register("fab_create_ai_model", {
+        desc = "在 Fab 平台创建 Meshy 文生 3D 模型任务。任务完成后服务端会沉淀为 Fab 资产，之后可在 Fab 面板下载添加到 Project。",
+        params = {
+            { name = "prompt", type = "string", desc = "文生 3D 提示词", required = true },
+            { name = "mode",   type = "string", desc = "生成模式，可选；默认 preview", required = false },
+        },
+        func = function(p)
+            if not p.prompt or tostring(p.prompt) == "" then
+                return false, "缺少 prompt"
+            end
+            local bridge, err = _getFabBridge()
+            if not bridge then return false, err end
+
+            local mode = tostring(p.mode or "")
+            if mode == "" then mode = "preview" end
+            bridge:CreateAiTextTaskSimple(tostring(p.prompt), mode)
+            return true, "已提交 Fab AI 文生模型任务，稍后用 fab_check_ai_task 查询状态"
+        end
+    })
+
+    self:Register("fab_create_ai_model_from_image", {
+        desc = "在 Fab 平台创建 Meshy 图生 3D 模型任务。输入必须是可公网访问的图片 URL。",
+        params = {
+            { name = "image_url", type = "string", desc = "公网图片 URL", required = true },
+            { name = "mode",      type = "string", desc = "生成模式，可选；默认 preview", required = false },
+        },
+        func = function(p)
+            if not p.image_url or tostring(p.image_url) == "" then
+                return false, "缺少 image_url"
+            end
+            local bridge, err = _getFabBridge()
+            if not bridge then return false, err end
+
+            local mode = tostring(p.mode or "")
+            if mode == "" then mode = "preview" end
+            bridge:CreateAiImageTaskSimple(tostring(p.image_url), mode)
+            return true, "已提交 Fab AI 图生模型任务，稍后用 fab_check_ai_task 查询状态"
+        end
+    })
+
+    self:Register("fab_check_ai_task", {
+        desc = "查询 Fab AI 生成任务状态。返回结果会写入 UE 日志 LogFabClient，并通过 OnAiTaskCompleted 多播。",
+        params = {
+            { name = "task_id", type = "number", desc = "Fab AI 任务 ID", required = true },
+        },
+        func = function(p)
+            if p.task_id == nil then return false, "缺少 task_id" end
+            local bridge, err = _getFabBridge()
+            if not bridge then return false, err end
+
+            bridge:GetAiTaskSimple(tonumber(p.task_id))
+            return true, "已提交任务状态查询，结果见 LogFabClient / OnAiTaskCompleted"
         end
     })
 

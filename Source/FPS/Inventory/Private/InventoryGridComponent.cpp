@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "FPS/Inventory/Public/InventoryGridComponent.h"
 
-#include "IDetailTreeNode.h"
 #include "FPS/Inventory/Public/ItemDataManager.h"
 
 
@@ -318,6 +317,9 @@ TArray<FInventoryItemPlacement> UInventoryGridComponent::GetAllItems() const
 
 bool UInventoryGridComponent::GetItemPlacement(FGuid ItemInstanceID, FInventoryItemPlacement& OutPlacement) const
 {
+
+	FString s;
+	FName name;
 	const FInventoryItemPlacement* Found = Items.Find(ItemInstanceID);
 	if (Found)
 	{
